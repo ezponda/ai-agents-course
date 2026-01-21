@@ -1,0 +1,508 @@
+{
+  "name": "02 — Routing (Support Ticket Router)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Routing (Choose a path)\n**Goal:** Send each request to the right specialist prompt.\n\n**How to run:** Click **Run: Ticket Routing**.\n\n**Pattern:** Classify → Switch → Specialist response\n\n*(Still text-only — routing is about choosing the next step.)*",
+        "height": 230,
+        "width": 700,
+        "color": 2
+      },
+      "id": "9d28916c-9fe1-4a60-ba17-b8ca75087a8b",
+      "name": "NOTE — Routing",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        120,
+        -420
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "8f1233e2-168d-4b14-bf2c-4349a0e2ecf3",
+      "name": "Run: Ticket Routing",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "981c7f3b-20a1-4df6-8d45-198f77fe4542",
+              "name": "ticket_subject",
+              "type": "string",
+              "value": "Refund request — charged twice"
+            },
+            {
+              "id": "a0ca46ff-ee70-414f-8306-f6f34710420a",
+              "name": "ticket_body",
+              "type": "string",
+              "value": "Hi team,\nI was charged twice for order #A-10492.\nPlease refund the extra charge. I can provide a screenshot if needed.\nThanks,\nJamie"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c909b18e-5224-4d46-90c6-914c715fbfd2",
+      "name": "Input — Support Ticket",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        420,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4.1",
+        "options": {}
+      },
+      "id": "1fb669de-0d09-4478-b9c3-0708d44edc7b",
+      "name": "OpenRouter Chat Model (Routing)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        320,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You route customer support tickets.\n\nChoose exactly ONE route label, lowercase, no punctuation:\n- refund\n- order_status\n- support\n\nReturn ONLY the label."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Subject: {{ $json.ticket_subject }}\nBody:\n{{ $json.ticket_body }}\n\nRoute label:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "ff1c79c3-ba85-4320-b4b9-f1c519226768",
+      "name": "Router — Choose Route",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        660,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de6be91c-012d-46b8-aa94-371be66fe131",
+              "name": "route",
+              "type": "string",
+              "value": "={{ $json.text.trim() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e17dec30-b2c1-4f0b-bb66-f3e62fd36753",
+      "name": "Store Route",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        900,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "830f17a2-a566-4fc3-bdb0-d5256d1d926c",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "refund",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "refund"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "38a54328-245d-4348-873c-94b92e74552b",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "order_status",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "order_status"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b9f36552-f29f-4ee5-a813-a31d92ee7f41",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "support",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "support"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7e1e10ff-75a9-46cd-a582-2853dd262379",
+      "name": "Switch — Route",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1140,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a customer support specialist for refunds.\nWrite a short, professional reply.\n\nRules:\n- Acknowledge the issue\n- Ask for any missing info (only if needed)\n- Explain next steps and expected timeline\n- Keep it under 120 words\n\nOutput ONLY the reply."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "d5c57277-b18a-477a-b9ce-34c6b1ee6342",
+      "name": "Refund Specialist — Draft Reply",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1420,
+        -340
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a customer support specialist for order status.\nWrite a short, professional reply.\n\nRules:\n- Confirm you are checking the order\n- Ask for order number if missing\n- Provide what you can and what you still need\n- Keep it under 120 words\n\nOutput ONLY the reply."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "630e3af7-a52b-49b8-9f87-6851bd12eef2",
+      "name": "Order Status Specialist — Draft Reply",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1420,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a general customer support specialist.\nWrite a short, professional reply.\n\nRules:\n- Clarify the problem\n- Ask 1–2 targeted questions (only if needed)\n- Offer a next step\n- Keep it under 120 words\n\nOutput ONLY the reply."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "7a0b8fca-3fa7-469b-a807-081436543763",
+      "name": "Support Specialist — Draft Reply",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1420,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "39cd03a7-c799-430f-bc12-77d431b28335",
+              "name": "reply",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "id": "cdefd3e8-54bd-4114-96e0-5f942bcafbef",
+              "name": "route",
+              "type": "string",
+              "value": "refund"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "f28fc926-5159-441c-90bd-108e5f795b1b",
+      "name": "Output — Refund Reply",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1660,
+        -340
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0785a25a-deb8-42d4-8484-9bbe3512996b",
+              "name": "reply",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "id": "8a35f16f-5143-41ba-a06d-80632de81e50",
+              "name": "route",
+              "type": "string",
+              "value": "order_status"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "6e9345ba-8563-4302-9d41-2d93742c9d18",
+      "name": "Output — Order Status Reply",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1660,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f4e3a801-7a83-4faf-a6c8-4c48a8e00b9b",
+              "name": "reply",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "id": "36b4d8ee-fd32-4001-b80d-0f35e12faed1",
+              "name": "route",
+              "type": "string",
+              "value": "support"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "f31cf084-e624-467e-ae2e-4a667b3df03f",
+      "name": "Output — Support Reply",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1660,
+        -60
+      ]
+    }
+  ],
+  "connections": {
+    "Run: Ticket Routing": {
+      "main": [
+        [
+          {
+            "node": "Input — Support Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input — Support Ticket": {
+      "main": [
+        [
+          {
+            "node": "Router — Choose Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router — Choose Route": {
+      "main": [
+        [
+          {
+            "node": "Store Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Route": {
+      "main": [
+        [
+          {
+            "node": "Switch — Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch — Route": {
+      "main": [
+        [
+          {
+            "node": "Refund Specialist — Draft Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Order Status Specialist — Draft Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Support Specialist — Draft Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Refund Specialist — Draft Reply": {
+      "main": [
+        [
+          {
+            "node": "Output — Refund Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Order Status Specialist — Draft Reply": {
+      "main": [
+        [
+          {
+            "node": "Output — Order Status Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Support Specialist — Draft Reply": {
+      "main": [
+        [
+          {
+            "node": "Output — Support Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model (Routing)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Router — Choose Route",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Refund Specialist — Draft Reply",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Order Status Specialist — Draft Reply",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Support Specialist — Draft Reply",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

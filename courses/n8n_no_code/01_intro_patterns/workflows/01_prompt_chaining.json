@@ -1,0 +1,331 @@
+{
+  "name": "01 — Prompt Chaining (Text-only)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Prompt Chaining (Text-only)\n**Goal:** Improve reliability by splitting one request into smaller prompts.\n\n**How to run:** Click **Run: Prompt Chaining**.\n\n**Pattern:** Outline → Improve → Draft\n\n*(No tools, no loops — just multiple LLM calls.)*",
+        "height": 230,
+        "width": 700,
+        "color": 3
+      },
+      "id": "7b1aa774-9c6a-4f2f-b352-f3e8eec68e11",
+      "name": "NOTE — Prompt Chaining",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1080,
+        -420
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "1d28aea3-a356-4556-868d-5baf8c9cbbb8",
+      "name": "Run: Prompt Chaining",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1000,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4eef80cc-484e-451a-b1cc-f88aa7d9e1b5",
+              "name": "topic",
+              "type": "string",
+              "value": "Create a short internal memo: Why we should pilot an AI agent for customer support."
+            },
+            {
+              "id": "872d7964-a169-4e99-a45e-b35de195ee72",
+              "name": "audience",
+              "type": "string",
+              "value": "Operations and Customer Support leadership"
+            },
+            {
+              "id": "886b261a-5cc7-4bc7-aa21-c0653fe8b932",
+              "name": "constraints",
+              "type": "string",
+              "value": "Keep it under 400 words. Use clear, non-technical language. Include 3 bullet points with benefits and 1 with risks."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "69946b77-6b64-4749-adc1-b65b7c1c39c8",
+      "name": "Input — Writing Brief",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -780,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4.1",
+        "options": {}
+      },
+      "id": "38ac3511-9dfa-437a-9ceb-1f745e3a6378",
+      "name": "OpenRouter Chat Model (Prompt Chaining)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a writing assistant.\nCreate a clear outline for the memo.\n\nRules:\n- 5–7 sections\n- Include where the benefits bullets and risks bullet will go\n- Output ONLY the outline\n"
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Topic: {{ $json.topic }}\nAudience: {{ $json.audience }}\nConstraints: {{ $json.constraints }}\n\nReturn only the outline."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "8fa915ed-1ac8-4040-a3e4-1d84cf7819c9",
+      "name": "Step 1 — Create Outline",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -540,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1af2ecde-11ec-4093-a100-fa5c461024cb",
+              "name": "outline",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d2e3f1b1-2581-4a1c-95b3-e88e8371bc20",
+      "name": "Store Outline",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -300,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a strict editor.\nImprove the outline using this checklist:\n- Logical flow\n- Clear headings\n- Covers constraints (benefits + risks)\n- Non-technical wording\n\nOutput ONLY the improved outline (no commentary)."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Original outline:\n{{ $json.outline }}\n\nReturn only the improved outline."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "5730d06a-b2ca-49e2-993c-d3d9dd5c63b4",
+      "name": "Step 2 — Improve Outline",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -60,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "21ac4458-da43-4bba-be36-5b7527d41418",
+              "name": "improved_outline",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6092776b-c374-4f81-a5e7-87111b8dd3f1",
+      "name": "Store Improved Outline",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        180,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a business writer.\nWrite the memo based on the outline.\n\nRules:\n- Follow the outline order\n- Keep under 400 words\n- Use clear, non-technical language\n- Include exactly: 3 benefit bullets + 1 risk bullet\n\nOutput ONLY the memo text."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Outline:\n{{ $json.improved_outline }}\n\nWrite the memo now."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "a14ac311-653b-46b8-b5ae-07785ac90df5",
+      "name": "Step 3 — Draft Memo",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        420,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "85cf0a05-d3a0-471e-8b98-4af385819ee3",
+              "name": "final_memo",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "6770e49a-bf9c-4a83-89e1-590aa2417dce",
+      "name": "Output — Final Memo",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        660,
+        -200
+      ]
+    }
+  ],
+  "connections": {
+    "Run: Prompt Chaining": {
+      "main": [
+        [
+          {
+            "node": "Input — Writing Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input — Writing Brief": {
+      "main": [
+        [
+          {
+            "node": "Step 1 — Create Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 1 — Create Outline": {
+      "main": [
+        [
+          {
+            "node": "Store Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Outline": {
+      "main": [
+        [
+          {
+            "node": "Step 2 — Improve Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 2 — Improve Outline": {
+      "main": [
+        [
+          {
+            "node": "Store Improved Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Improved Outline": {
+      "main": [
+        [
+          {
+            "node": "Step 3 — Draft Memo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 3 — Draft Memo": {
+      "main": [
+        [
+          {
+            "node": "Output — Final Memo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model (Prompt Chaining)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Step 1 — Create Outline",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Step 2 — Improve Outline",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Step 3 — Draft Memo",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

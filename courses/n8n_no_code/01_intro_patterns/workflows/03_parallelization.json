@@ -1,0 +1,464 @@
+{
+  "name": "03 — Parallelization (3-way Analysis)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Parallelization (Do tasks at the same time)\n**Goal:** Run independent analyses in parallel, then combine results.\n\n**How to run:** Click **Run: Parallelization**.\n\n**Pattern:** Split → Analyze in parallel → Merge → Finalize",
+        "height": 230,
+        "width": 760,
+        "color": 1
+      },
+      "id": "c3c6b2dc-8b82-497a-aae7-7918a3a69f69",
+      "name": "NOTE — Parallelization",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        -420
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "7b2fc618-c1ae-4087-842a-850c5e87e9c0",
+      "name": "Run: Parallelization",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "acbfdeae-6792-487f-8ae5-6d6c6110adc6",
+              "name": "email_subject",
+              "type": "string",
+              "value": "Can't access my account after password reset"
+            },
+            {
+              "id": "40511289-8791-4e5f-8a14-6e3fdb311afe",
+              "name": "email_body",
+              "type": "string",
+              "value": "Hello,\nI reset my password twice but I still can't log in. It says 'invalid token'.\nI'm trying to access my invoices before end of day.\nCan you help?\n— Sam"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "79e03661-0800-4733-bbf2-d1b67ac8e92b",
+      "name": "Input — Customer Email",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1620,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4.1",
+        "options": {}
+      },
+      "id": "ece7d72e-773a-48ff-94aa-5a7025df951e",
+      "name": "OpenRouter Chat Model (Parallelization)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Extract key facts from the email.\nReturn STRICT JSON with keys:\ncustomer_name, issue, deadline, requested_action, missing_info (array).\nReturn JSON only."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Subject: {{ $json.email_subject }}\nBody:\n{{ $json.email_body }}\n\nJSON:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "3aa6bf86-f125-425c-8720-df56f11947f0",
+      "name": "Branch A — Extract Facts",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1920,
+        -380
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2fde2af2-6e98-4119-a1f1-38aed84a67d0",
+              "name": "facts_json",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "df635144-4995-4247-baf0-07b4c5f8205a",
+      "name": "Store Facts",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2160,
+        -380
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Classify sentiment and urgency.\nReturn STRICT JSON with keys:\nsentiment (positive|neutral|negative), urgency (low|medium|high), risk_flags (array).\nReturn JSON only."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Subject: {{ $json.email_subject }}\nBody:\n{{ $json.email_body }}\n\nJSON:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "25579e42-375a-4ae4-a1c8-129e57f930e3",
+      "name": "Branch B — Sentiment & Urgency",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1920,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4054cf74-425a-4b01-9823-15e69488083b",
+              "name": "sentiment_json",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "e29b6ae2-bdbe-4a3d-8a6e-141b825215c5",
+      "name": "Store Sentiment",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2160,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Draft a helpful customer support email reply.\nRules:\n- Friendly and concise\n- Ask for missing info only if needed\n- Offer 1–2 concrete next steps\n- Under 140 words\n\nOutput ONLY the reply text."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Subject: {{ $json.email_subject }}\nBody:\n{{ $json.email_body }}\n\nReply:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "23ab9b9e-d413-4e8f-acc9-b988fee03787",
+      "name": "Branch C — Draft Reply",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1920,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "81dfa0a9-419c-4c83-a8a1-b4cd240edc4d",
+              "name": "draft_reply",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "b69600ee-d9b4-4941-8941-84db1491acd7",
+      "name": "Store Draft Reply",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2160,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "50d93af1-aa64-46ec-9d36-8982785a823e",
+      "name": "Merge A+B",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2420,
+        -280
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "31c9ae9f-a601-4cac-a9c1-c87c973a6786",
+      "name": "Merge (A+B)+C",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2620,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a senior support agent.\nYou will receive:\n- facts_json (extracted facts)\n- sentiment_json (sentiment & urgency)\n- draft_reply (initial draft)\n\nTask:\n1) Improve the draft to match urgency and include any critical missing info questions.\n2) Keep it under 160 words.\n3) Output ONLY the final reply text."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=facts_json:\n{{ $json.facts_json }}\n\nsentiment_json:\n{{ $json.sentiment_json }}\n\ndraft_reply:\n{{ $json.draft_reply }}\n\nFinal reply:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "d06ada39-f1f8-4127-a059-fa04267cd282",
+      "name": "Finalize — One Improved Reply",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        2860,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b4a7fe08-b345-4587-9d83-12fad6605477",
+              "name": "final_reply",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "73afc530-17d1-403d-9aa1-fe7a1b563a06",
+      "name": "Output — Final Reply",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3100,
+        -120
+      ]
+    }
+  ],
+  "connections": {
+    "Run: Parallelization": {
+      "main": [
+        [
+          {
+            "node": "Input — Customer Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input — Customer Email": {
+      "main": [
+        [
+          {
+            "node": "Branch A — Extract Facts",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Branch B — Sentiment & Urgency",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Branch C — Draft Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Branch A — Extract Facts": {
+      "main": [
+        [
+          {
+            "node": "Store Facts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Branch B — Sentiment & Urgency": {
+      "main": [
+        [
+          {
+            "node": "Store Sentiment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Branch C — Draft Reply": {
+      "main": [
+        [
+          {
+            "node": "Store Draft Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Facts": {
+      "main": [
+        [
+          {
+            "node": "Merge A+B",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Sentiment": {
+      "main": [
+        [
+          {
+            "node": "Merge A+B",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge A+B": {
+      "main": [
+        [
+          {
+            "node": "Merge (A+B)+C",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Draft Reply": {
+      "main": [
+        [
+          {
+            "node": "Merge (A+B)+C",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge (A+B)+C": {
+      "main": [
+        [
+          {
+            "node": "Finalize — One Improved Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalize — One Improved Reply": {
+      "main": [
+        [
+          {
+            "node": "Output — Final Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model (Parallelization)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Branch A — Extract Facts",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Branch B — Sentiment & Urgency",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Branch C — Draft Reply",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Finalize — One Improved Reply",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
