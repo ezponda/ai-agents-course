@@ -19,7 +19,7 @@ from pathlib import Path
 # Paths
 SCRIPT_DIR = Path(__file__).parent
 BOOK_DIR = SCRIPT_DIR / "book"
-WORKFLOWS_DIR = SCRIPT_DIR / "workflows"
+WORKFLOWS_DIR = SCRIPT_DIR / "book" / "_static" / "workflows"
 
 def find_json_references(content: str) -> list[str]:
     """Extract .json filenames from content."""
@@ -175,6 +175,9 @@ def check_prompt_consistency():
             "05_ai_agent_basics_calculator_memory.json",
             "06_ai_agent_tools_wikipedia_calculator.json",
             "07_ai_agent_chat_trigger_memory.json"
+        ],
+        "appendix_prompt_engineering.ipynb": [
+            "08_prompt_engineering_comparison.json"
         ]
     }
 

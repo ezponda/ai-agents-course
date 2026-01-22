@@ -4,11 +4,17 @@ root: 00_introduction
 defaults:
   numbered: true
 
-chapters:
-  - file: 01a_what_is_an_agent
-  - file: 01_setup
-  - file: 02_quick_start
-  - file: 03_core_concepts
-  - file: 04_workflow_examples
-  - file: 05_first_ai_agent
-  - file: 06_node_toolbox
+parts:
+  - caption: Course
+    chapters:
+      - file: 01a_what_is_an_agent
+      - file: 01_setup
+      - file: 02_quick_start
+      - file: 03_core_concepts
+      - file: 04_workflow_examples
+      - file: 05_first_ai_agent
+      - file: 06_node_toolbox
+  - caption: Appendices
+    numbered: false
+    chapters:
+      - file: appendix_prompt_engineering
