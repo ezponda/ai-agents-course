@@ -3,8 +3,8 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## AI Agent Tools — Wikipedia + Calculator (+ Think)\n\n**Goal:** One agent, multiple tools. The agent chooses *which* tool to call.\n\n### Credentials needed\n- **OpenRouter API key** (Settings → Credentials)\n- Wikipedia and Calculator need **no credentials**\n\n### Cost safety\nKeep workflows in **Test mode** (not Activated) while learning.\n\n### What to edit\n- In **Input — Agent Prompt**, change `chatInput`\n- Optional: reuse the same `sessionId` to keep memory\n\n### Tools connected\n- **Wikipedia** → look up a fact (no API key)\n- **Calculator** → do any math\n- **Think** → encourages a quick internal plan before answering\n- **Simple Memory** → remembers context per `sessionId`\n\n### Try this\n1. `Using Wikipedia, who is the CEO of OpenAI? When did they take the role?`\n2. `Look up the population of Tokyo and calculate what 2.5% of it would be.`\n3. Business example: `Research when GDPR was enacted and calculate how many years it's been in effect as of 2026.`\n\n**Common mistake:** Asking the agent to \"guess\" dates — always tell it to verify with Wikipedia first.\n",
-        "height": 380,
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/05_first_ai_agent.html#example-2-multi-tool-agent-wikipedia-calculator-think)\n## AI Agent Tools — Wikipedia + Calculator (+ Think)\n\n**Goal:** One agent, multiple tools. The agent chooses *which* tool to call.\n\n### Credentials needed\n- **OpenRouter API key** (Settings → Credentials)\n- Wikipedia and Calculator need **no credentials**\n\n### Cost safety\nKeep workflows in **Test mode** (not Activated) while learning.\n\n### What to edit\n- In **Input — Agent Prompt**, change `chatInput`\n- Optional: reuse the same `sessionId` to keep memory\n\n### Tools connected\n- **Wikipedia** → look up a fact (no API key)\n- **Calculator** → do any math\n- **Think** → encourages a quick internal plan before answering\n- **Simple Memory** → remembers context per `sessionId`\n\n### Try this\n1. `Using Wikipedia, who is the CEO of OpenAI? When did they take the role?`\n2. `Look up the population of Tokyo and calculate what 2.5% of it would be.`\n3. Business example: `Research when GDPR was enacted and calculate how many years it's been in effect as of 2026.`\n\n**Common mistake:** Asking the agent to \"guess\" dates — always tell it to verify with Wikipedia first.\n",
+        "height": 400,
         "width": 860,
         "color": 2
       },
@@ -13,7 +13,7 @@
       "type": "n8n-nodes-base.stickyNote",
       "position": [
         -760,
-        -270
+        -370
       ],
       "typeVersion": 1
     },

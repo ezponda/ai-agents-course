@@ -117,14 +117,73 @@ https://raw.githubusercontent.com/ezponda/ai-agents-course/main/courses/n8n_no_c
 {download}`filename.json <_static/workflows/filename.json>`
 ```
 
+### 9. Workflow JSON Sticky Notes
+
+Every workflow JSON must include a Sticky Note with:
+1. **Course documentation link** at the top (first line)
+2. **Title and description** of the workflow
+3. **Position** moved up ~100px from nodes to avoid overlap
+
+**Format:**
+```json
+{
+  "parameters": {
+    "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/04_workflow_examples.html#pattern-1-prompt-chaining)\n## Pattern Title\n**Goal:** ...",
+    "height": 240,
+    "width": 700
+  },
+  "position": [-1080, -520]
+}
+```
+
+**Link patterns:**
+- Workflow Examples: `https://ezponda.github.io/ai-agents-course/04_workflow_examples.html#pattern-X-name`
+- AI Agent Examples: `https://ezponda.github.io/ai-agents-course/05_first_ai_agent.html#example-X-name`
+
+**Anchor format:** Header text in lowercase, spaces → hyphens (e.g., `## Pattern 1: Prompt Chaining` → `#pattern-1-prompt-chaining`)
+
+### 10. Data Flow Dropdowns
+
+For each workflow example in the notebooks, add a collapsible dropdown showing the detailed data transformation at each step.
+
+**MyST syntax:**
+```markdown
+::::{dropdown} 🔍 See detailed data transformation at each step
+:color: info
+
+[ASCII diagram showing JSON at each node]
+
+::::
+```
+
+**Requirements:**
+- Place dropdown immediately after the main Data Flow section
+- Show actual JSON fields (verify against workflow JSON)
+- Include visual arrows showing transformation
+- Explain key insights at the bottom
+
+**Example content:**
+```
+┌─────────────────┐            ┌─────────────────┐
+│  Node A         │───────────▶│  Node B         │
+└─────────────────┘            └─────────────────┘
+        │                             │
+        ▼                             ▼
+┌─────────────────┐            ┌─────────────────┐
+│ { "input": "x" }│            │ { "output": "y" }│
+└─────────────────┘            └─────────────────┘
+```
+
 ## Common Edits
 
 **Add a new workflow example:**
 1. Add JSON to `book/_static/workflows/`
-2. Add section in the relevant `.ipynb` with GitHub link
-3. Include node-by-node table with actual node names
-4. Include data flow diagram showing INPUT → OUTPUT
-5. Run `make build-n8n` to verify
+2. **Add Sticky Note with course documentation link** (see section 9)
+3. Add section in the relevant `.ipynb` with GitHub link
+4. Include node-by-node table with actual node names
+5. Include data flow diagram showing INPUT → OUTPUT
+6. **Add dropdown with detailed data transformation** (see section 10)
+7. Run `make build-n8n` to verify
 
 **Fix a broken link:**
 1. Search: `grep -r "old-url" courses/n8n_no_code/book/`
