@@ -1,0 +1,220 @@
+{
+  "name": "05 — AI Agent Basics (Calculator + Memory)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## AI Agent Basics — Calculator + Memory\n\n**Goal:** See how an *agent* chooses and uses tools (and how memory works).\n\n### What to edit\n- In **Input — Agent Prompt**, change `chatInput`\n- Optional: change `sessionId` (same ID = same memory)\n\n### Tools connected\n- **Calculator** → agent uses it for any arithmetic\n- **Simple Memory** → keeps short chat history per `sessionId`\n\n### Try this\n1) `My name is Alberto. Remember it.`\n2) Run again: `What is my name?`\n3) Run again: `What is 17% tip on 46.50?`\n\n**Common mistake:** Doing math without the Calculator tool (the system message forces tool use).\n",
+        "height": 360,
+        "width": 820,
+        "color": 4
+      },
+      "id": "493eb574-10b5-4532-9d88-4ad285414ace",
+      "name": "NOTE — AI Agent Basics",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -740,
+        -260
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        0
+      ],
+      "id": "164aac0b-0401-471e-8ab3-ab4082dff553",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "57bfa86a-cef0-442d-9fae-d4969c96f29a",
+              "name": "chatInput",
+              "value": "={{ $json.chatInput || \"What is 17% tip on 46.50? Use the Calculator tool.\" }}",
+              "type": "string"
+            },
+            {
+              "id": "08a57204-ab7b-4667-8c54-650d57f1b7b5",
+              "name": "sessionId",
+              "value": "={{ $json.sessionId || \"demo\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -540,
+        0
+      ],
+      "id": "e406acb3-b681-4858-86ad-843b6ade31be",
+      "name": "Input — Agent Prompt"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a concise assistant.\n\nRules:\n- If the user asks for ANY arithmetic, ALWAYS use the Calculator tool.\n- Keep the final answer short (max 5 lines)."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -200,
+        0
+      ],
+      "id": "f5903776-c6bf-4de9-9617-fa2f97c085f8",
+      "name": "AI Agent — Calculator + Memory"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "66ab6268-9edd-40c0-b767-2ef6f27bb817",
+              "name": "answer",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        0
+      ],
+      "id": "995e7e73-7acb-4daf-b20c-1733205152a9",
+      "name": "Output — Answer"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        220
+      ],
+      "id": "19fd6ae3-039e-4225-98ef-a1039b467902",
+      "name": "OpenRouter Chat Model"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -420,
+        220
+      ],
+      "id": "82d2bcad-457e-4260-a636-ee8a357c91bc",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        0,
+        220
+      ],
+      "id": "48f1e6bc-d993-4142-aee2-ea2fa6342f12",
+      "name": "Calculator"
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Input — Agent Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input — Agent Prompt": {
+      "main": [
+        [
+          {
+            "node": "AI Agent — Calculator + Memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent — Calculator + Memory": {
+      "main": [
+        [
+          {
+            "node": "Output — Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent — Calculator + Memory",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent — Calculator + Memory",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent — Calculator + Memory",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6fee1cc4-ee6e-4fe3-95e5-24d6790c3982",
+  "meta": {
+    "instanceId": "66212587-232c-4bb7-bb4f-7a3a24dc71d6"
+  },
+  "id": "524d5cb0-bf00-44d0-b249-5951f2fb22cb",
+  "tags": []
+}

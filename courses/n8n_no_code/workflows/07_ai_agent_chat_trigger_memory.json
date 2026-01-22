@@ -1,0 +1,187 @@
+{
+  "name": "07 — AI Agent Chat (Chat Trigger + Memory)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## AI Agent Chat — Chat Trigger + Memory (+ Calculator)\n\n**Goal:** Show a real chat-style entry point, plus memory across turns.\n\n### How to use (2 minutes)\n1) Click **Chat** in the workflow UI.\n2) Send a few messages:\n   - `My name is Alex. Remember it.`\n   - `What is my name?`\n   - `Compute 19 * 27.`\n\n### What this teaches\n- **Chat Trigger**: the workflow starts from a chat UI (not pinned test data).\n- **Simple Memory**: the agent can remember info across turns *within the same chat session*.\n- **Calculator tool**: the agent should delegate arithmetic to a tool.\n\n### Common mistakes\n- If the chat response shows a full JSON object: ensure the last node outputs a field named **output** (or **text**).\n- If memory seems \"reset\": start a new chat session only when you want a clean slate.\n",
+        "height": 390,
+        "width": 880,
+        "color": 2
+      },
+      "id": "2bfc2cc3-edd2-4219-af30-efda48616201",
+      "name": "NOTE — AI Agent Chat",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -760,
+        -270
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "public": true,
+        "mode": "webhook",
+        "options": {
+          "responseMode": "lastNode"
+        }
+      },
+      "id": "fbf26200-a235-4cbe-956d-cf29de288b7c",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        -760,
+        0
+      ],
+      "webhookId": "9a590d36-2bba-42cf-812a-7a6a2ad712a1",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant inside an n8n AI Agent workflow. Be concise. If the user asks for arithmetic, use the Calculator tool. If the user asks you to remember something, store it in memory and confirm briefly. If you don't know, say so."
+        }
+      },
+      "id": "7b61e85f-da4a-4305-93ef-b4e64f91d42f",
+      "name": "AI Agent — Chat + Memory + Calculator",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -420,
+        0
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3e0f8bd8-b2d8-44bd-b942-3a6499485cec",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "74831a6c-92e6-45dd-91ae-52b55e3a0263",
+      "name": "Output — Chat Response",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -120,
+        0
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "71bbdd9c-a9e0-4b7c-8016-a894129cbec3",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "position": [
+        -500,
+        220
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10,
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "id": "ea9ba7ce-9992-4e3d-84e2-88005d873c01",
+      "name": "Simple Memory (10 messages)",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        -740,
+        220
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {},
+      "id": "813a6886-0a37-4350-b698-8a86faed552c",
+      "name": "Calculator",
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "position": [
+        -280,
+        220
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent — Chat + Memory + Calculator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent — Chat + Memory + Calculator": {
+      "main": [
+        [
+          {
+            "node": "Output — Chat Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent — Chat + Memory + Calculator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory (10 messages)": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent — Chat + Memory + Calculator",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent — Chat + Memory + Calculator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4ba1618a-12f3-4f03-9139-f3d6bbd8afa2",
+  "meta": {
+    "instanceId": "f2e87ab6-069b-4bc5-86cc-6c04f771285e"
+  },
+  "id": "f8a299e8-541d-4044-9435-fd0ee384d01f",
+  "tags": []
+}

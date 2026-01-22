@@ -1,0 +1,264 @@
+{
+  "name": "06 — AI Agent Tools (Wikipedia + Calculator)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## AI Agent Tools — Wikipedia + Calculator (+ Think)\n\n**Goal:** One agent, multiple tools. The agent chooses *which* tool to call.\n\n### What to edit\n- In **Input — Agent Prompt**, change `chatInput`\n- Optional: reuse the same `sessionId` to keep memory\n\n### Tools connected\n- **Wikipedia** → look up a fact (no API key)\n- **Calculator** → do any math\n- **Think** → encourages a quick internal plan before answering\n- **Simple Memory** → remembers context per `sessionId`\n\n### Try this\n`Using Wikipedia, tell me who Ada Lovelace was (2 bullets). Then give the year of her \"Notes\" and compute how many years ago that was from 2026.`\n\n**Common mistake:** Asking the agent to \"guess\" dates — always tell it to verify with Wikipedia first.\n",
+        "height": 380,
+        "width": 860,
+        "color": 2
+      },
+      "id": "bc50c4bf-346b-4264-a972-84c604b19b21",
+      "name": "NOTE — AI Agent Tools",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -760,
+        -270
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        0
+      ],
+      "id": "645982bb-b239-40da-b750-e4ea4b7bd117",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "49ebb8cf-ed4e-415a-8ef9-da1c5537894e",
+              "name": "chatInput",
+              "value": "={{ $json.chatInput || \"Using Wikipedia, tell me who Ada Lovelace was (2 bullets). Then give the year of her Notes and compute how many years ago that was from 2026.\" }}",
+              "type": "string"
+            },
+            {
+              "id": "f6a8bf6d-9e16-4428-96c6-ae2711268b28",
+              "name": "sessionId",
+              "value": "={{ $json.sessionId || \"demo\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -540,
+        0
+      ],
+      "id": "d42001ea-9329-417f-b11a-a7af1d353de8",
+      "name": "Input — Agent Prompt"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a concise assistant.\n\nRules:\n- For factual questions about people/places/dates: verify with Wikipedia.\n- For arithmetic: ALWAYS use Calculator.\n- Use Think briefly (1-2 sentences) to plan before calling tools.\n- Output: short bullets, then the final computed number."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -220,
+        0
+      ],
+      "id": "e814548a-c793-4eb4-a119-d66916088267",
+      "name": "AI Agent — Multi-Tool"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "066577cc-b01f-4ead-889a-e55b1e0fe6fc",
+              "name": "answer",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        0
+      ],
+      "id": "dc3115fd-e371-47ca-ad1e-19f14677a0bc",
+      "name": "Output — Answer"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        240
+      ],
+      "id": "9b22bfe1-58c6-4dd5-bde1-6bece6c83694",
+      "name": "OpenRouter Chat Model"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -460,
+        240
+      ],
+      "id": "b375d94e-3d7a-4cdc-9572-a51c655e6e5d",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        0,
+        240
+      ],
+      "id": "9c6fc6c1-754f-4b17-b88c-20ce0ea75e46",
+      "name": "Wikipedia"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        160,
+        240
+      ],
+      "id": "a95c9fa8-d461-4209-930f-50294519489a",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        -80,
+        240
+      ],
+      "id": "a30fed11-460c-4a46-a139-d4ffefb1ab7f",
+      "name": "Think"
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Input — Agent Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input — Agent Prompt": {
+      "main": [
+        [
+          {
+            "node": "AI Agent — Multi-Tool",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent — Multi-Tool": {
+      "main": [
+        [
+          {
+            "node": "Output — Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent — Multi-Tool",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent — Multi-Tool",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent — Multi-Tool",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent — Multi-Tool",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent — Multi-Tool",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "75255586-5627-46c9-be42-31f2a4fd02cd",
+  "meta": {
+    "instanceId": "f5aae0fa-0d15-4ba2-b2a7-efa19af205cb"
+  },
+  "id": "e185982d-3f5c-4596-ac4c-7124404dbfe2",
+  "tags": []
+}

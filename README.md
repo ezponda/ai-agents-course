@@ -22,6 +22,7 @@ The n8n course is available as a Jupyter Book:
 3. Core Concepts — Triggers, nodes, data flow, debugging
 4. Node Toolbox — Essential nodes for AI workflows
 5. Workflow Examples — Chaining, routing, parallelization
+6. AI Agent Examples — Build agents with tools and memory
 
 ## Build the Book Locally
 
@@ -71,7 +72,7 @@ Open `http://localhost:5678` in your browser.
 1. Open n8n (`http://localhost:5678`)
 2. Go to **Workflows** → **Add Workflow**
 3. Click **⋮** → **Import from File...**
-4. Select the `.json` workflow file from `courses/n8n_no_code/01_intro_patterns/workflows/`
+4. Select the `.json` workflow file from `courses/n8n_no_code/workflows/`
 5. Click **Save**
 
 ## Repository Structure
@@ -84,9 +85,7 @@ ai-agents-course/
 │       │   ├── _config.yml
 │       │   ├── _toc.yml
 │       │   └── *.ipynb        # Chapter notebooks
-│       ├── 01_intro_patterns/
-│       │   └── workflows/     # Example workflow JSONs
-│       └── images/
+│       └── workflows/         # Example workflow JSONs
 ├── .github/
 │   └── workflows/
 │       └── deploy-book.yml    # GitHub Pages deployment
