@@ -6,7 +6,7 @@ This file helps Claude Code maintain consistency when editing the student-facing
 
 **Build command:** `make build-n8n` (or `make clean-n8n && make build-n8n`)
 **Book source:** `courses/n8n_no_code/book/*.ipynb`
-**Workflow JSONs:** `courses/n8n_no_code/workflows/*.json`
+**Workflow JSONs:** `courses/n8n_no_code/book/_static/workflows/*.json`
 **Output:** `courses/n8n_no_code/book/_build/html/`
 
 ## Audience
@@ -40,12 +40,12 @@ These terms have specific meanings in n8n. Use them exactly:
 When telling students to import a workflow, always include a direct GitHub link:
 
 ```markdown
-**File:** [`01_prompt_chaining.json`](https://github.com/ezponda/ai-agents-course/blob/main/courses/n8n_no_code/workflows/01_prompt_chaining.json)
+**File:** [`01_prompt_chaining.json`](https://github.com/ezponda/ai-agents-course/blob/main/courses/n8n_no_code/book/_static/workflows/01_prompt_chaining.json)
 ```
 
 **Base URL pattern:**
 ```
-https://github.com/ezponda/ai-agents-course/blob/main/courses/n8n_no_code/workflows/{filename}.json
+https://github.com/ezponda/ai-agents-course/blob/main/courses/n8n_no_code/book/_static/workflows/{filename}.json
 ```
 
 ### 4. Field Names
@@ -101,26 +101,26 @@ For each workflow, provide both import and download options:
 ```markdown
 > **Import via URL** (copy and paste in n8n → Import from URL):
 > \```
-> https://raw.githubusercontent.com/ezponda/ai-agents-course/main/courses/n8n_no_code/workflows/01_prompt_chaining.json
+> https://raw.githubusercontent.com/ezponda/ai-agents-course/main/courses/n8n_no_code/book/_static/workflows/01_prompt_chaining.json
 > \```
 >
-> **Download:** [01_prompt_chaining.json](https://github.com/ezponda/ai-agents-course/raw/main/courses/n8n_no_code/workflows/01_prompt_chaining.json)
+> **Download:** {download}`01_prompt_chaining.json <_static/workflows/01_prompt_chaining.json>`
 ```
 
 **Raw URL pattern (for import):**
 ```
-https://raw.githubusercontent.com/ezponda/ai-agents-course/main/courses/n8n_no_code/workflows/{filename}.json
+https://raw.githubusercontent.com/ezponda/ai-agents-course/main/courses/n8n_no_code/book/_static/workflows/{filename}.json
 ```
 
-**Download URL pattern:**
+**Download syntax (MyST/Jupyter Book):**
 ```
-https://github.com/ezponda/ai-agents-course/raw/main/courses/n8n_no_code/workflows/{filename}.json
+{download}`filename.json <_static/workflows/filename.json>`
 ```
 
 ## Common Edits
 
 **Add a new workflow example:**
-1. Add JSON to `workflows/`
+1. Add JSON to `book/_static/workflows/`
 2. Add section in the relevant `.ipynb` with GitHub link
 3. Include node-by-node table with actual node names
 4. Include data flow diagram showing INPUT → OUTPUT
