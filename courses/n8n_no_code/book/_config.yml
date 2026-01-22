@@ -1,0 +1,33 @@
+# Book settings
+title: Agentic AI with n8n
+author: AI Agents Course
+logo: ""
+
+# Execution settings
+execute:
+  execute_notebooks: "off"
+
+# Parse settings - disable substitutions to avoid Jinja2 conflicts with n8n expressions like {{ $json.field }}
+parse:
+  myst_enable_extensions:
+    - colon_fence
+    - deflist
+  # Do NOT enable 'substitution' extension - it conflicts with n8n's {{ }} syntax
+
+# HTML settings
+html:
+  use_issues_button: false
+  use_repository_button: true
+  use_edit_page_button: false
+
+# Repository settings
+repository:
+  url: https://github.com/ezponda/ai-agents-course
+  branch: main
+  path_to_book: courses/n8n_no_code/book
+
+# Launch button settings (disabled)
+launch_buttons:
+  notebook_interface: "classic"
+  binderhub_url: ""
+  colab_url: ""

@@ -1,0 +1,4 @@
+# Jupyter Book dependencies
+# Pinned to 0.15.1 to avoid MyST/JupyterBook v2 build system differences
+# and Jinja2 substitution parsing issues with n8n expressions like {{ $json.field }}
+jupyter-book==0.15.1

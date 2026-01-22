@@ -59,7 +59,7 @@
     },
     {
       "parameters": {
-        "model": "openai/gpt-4.1",
+        "model": "openai/gpt-4o-mini",
         "options": {}
       },
       "id": "1fb669de-0d09-4478-b9c3-0708d44edc7b",

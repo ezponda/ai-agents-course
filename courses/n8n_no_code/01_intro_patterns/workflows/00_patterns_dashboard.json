@@ -1,0 +1,1276 @@
+{
+  "name": "AI Agents Patterns Dashboard (Prompt Chaining • Routing • Parallelization)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Prompt Chaining (Text-only) — with “Store” nodes (debug)\n**Goal:** Improve reliability by splitting one request into smaller prompts.\n\n**How to run:** Click **Run: Prompt Chaining** → *Execute node*\n\n**Pattern:** Outline → Improve → Draft\n\n**Why “Store Outline / Store Improved Outline”?**\n- Saves intermediate outputs so you can inspect results step-by-step\n- Great for teaching + debugging\n- Optional (you can remove them to shorten the flow)\n\n*(No tools, no loops — just multiple LLM calls.)*",
+        "height": 300,
+        "width": 760,
+        "color": 3
+      },
+      "id": "7b1aa774-9c6a-4f2f-b352-f3e8eec68e11",
+      "name": "NOTE — Prompt Chaining",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        200,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Routing (Choose a path)\n**Goal:** Send each request to the right specialist prompt.\n\n**How to run:** Click **Run: Ticket Routing** → *Execute node*\n\n**Pattern:** Classify → Switch → Specialist response\n\n**Teaching tip:** This is still **text-only** (no tools). Routing is about choosing **the next prompt**.\n\nExample routes: **refund** / **order_status** / **support**",
+        "height": 300,
+        "width": 760,
+        "color": 2
+      },
+      "id": "9d28916c-9fe1-4a60-ba17-b8ca75087a8b",
+      "name": "NOTE — Routing",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        200,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Parallelization (Do tasks at the same time) — with “Store” nodes (debug)\n**Goal:** Run independent analyses in parallel, then combine results.\n\n**How to run:** Click **Run: Parallelization** → *Execute node*\n\n**Pattern:** Split into branches → Merge → Improve\n\n**Why “Store Facts / Store Sentiment / Store Draft Reply”?**\n- Lets you inspect each branch output separately\n- Helps students see what “parallel” means\n\nBranches: Facts • Tone • Draft reply",
+        "height": 300,
+        "width": 760,
+        "color": 1
+      },
+      "id": "c3c6b2dc-8b82-497a-aae7-7918a3a69f69",
+      "name": "NOTE — Parallelization",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        200,
+        1260
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "1d28aea3-a356-4556-868d-5baf8c9cbbb8",
+      "name": "Run: Prompt Chaining",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        280,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4eef80cc-484e-451a-b1cc-f88aa7d9e1b5",
+              "name": "topic",
+              "type": "string",
+              "value": "Create a short internal memo: Why we should pilot an AI agent for customer support."
+            },
+            {
+              "id": "872d7964-a169-4e99-a45e-b35de195ee72",
+              "name": "audience",
+              "type": "string",
+              "value": "Operations and Customer Support leadership"
+            },
+            {
+              "id": "886b261a-5cc7-4bc7-aa21-c0653fe8b932",
+              "name": "constraints",
+              "type": "string",
+              "value": "Keep it under 400 words. Use clear, non-technical language. Include 3 bullet points with benefits and 1 with risks."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "69946b77-6b64-4749-adc1-b65b7c1c39c8",
+      "name": "Input — Writing Brief",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        500,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "38ac3511-9dfa-437a-9ceb-1f745e3a6378",
+      "name": "OpenRouter Chat Model (Prompt Chaining)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        400,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a writing assistant.\nCreate a clear outline for the memo.\n\nRules:\n- 5–7 sections\n- Include where the benefits bullets and risks bullet will go\n- Output ONLY the outline\n"
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Topic: {{ $json.topic }}\nAudience: {{ $json.audience }}\nConstraints: {{ $json.constraints }}\n\nReturn only the outline."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "8fa915ed-1ac8-4040-a3e4-1d84cf7819c9",
+      "name": "Step 1 — Create Outline",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        740,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1af2ecde-11ec-4093-a100-fa5c461024cb",
+              "name": "outline",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d2e3f1b1-2581-4a1c-95b3-e88e8371bc20",
+      "name": "Store Outline",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        980,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a strict editor.\nImprove the outline using this checklist:\n- Logical flow\n- Clear headings\n- Covers constraints (benefits + risks)\n- Non-technical wording\n\nOutput ONLY the improved outline (no commentary)."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Original outline:\n{{ $json.outline }}\n\nReturn only the improved outline."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "5730d06a-b2ca-49e2-993c-d3d9dd5c63b4",
+      "name": "Step 2 — Improve Outline",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "21ac4458-da43-4bba-be36-5b7527d41418",
+              "name": "improved_outline",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6092776b-c374-4f81-a5e7-87111b8dd3f1",
+      "name": "Store Improved Outline",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1460,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a business writer.\nWrite the memo based on the outline.\n\nRules:\n- Follow the outline order\n- Keep under 400 words\n- Use clear, non-technical language\n- Include exactly: 3 benefit bullets + 1 risk bullet\n\nOutput ONLY the memo text."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Outline:\n{{ $json.improved_outline }}\n\nWrite the memo now."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "a14ac311-653b-46b8-b5ae-07785ac90df5",
+      "name": "Step 3 — Draft Memo",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1700,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "85cf0a05-d3a0-471e-8b98-4af385819ee3",
+              "name": "final_memo",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "6770e49a-bf9c-4a83-89e1-590aa2417dce",
+      "name": "Output — Final Memo",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1940,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "8f1233e2-168d-4b14-bf2c-4349a0e2ecf3",
+      "name": "Run: Ticket Routing",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        280,
+        740
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "981c7f3b-20a1-4df6-8d45-198f77fe4542",
+              "name": "ticket_subject",
+              "type": "string",
+              "value": "Refund request — charged twice"
+            },
+            {
+              "id": "a0ca46ff-ee70-414f-8306-f6f34710420a",
+              "name": "ticket_body",
+              "type": "string",
+              "value": "Hi team,\nI was charged twice for order #A-10492.\nPlease refund the extra charge. I can provide a screenshot if needed.\nThanks,\nJamie"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c909b18e-5224-4d46-90c6-914c715fbfd2",
+      "name": "Input — Support Ticket",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        500,
+        740
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "1fb669de-0d09-4478-b9c3-0708d44edc7b",
+      "name": "OpenRouter Chat Model (Routing)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        400,
+        980
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You route customer support tickets.\n\nChoose exactly ONE route label, lowercase, no punctuation:\n- refund\n- order_status\n- support\n\nReturn ONLY the label."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Subject: {{ $json.ticket_subject }}\nBody:\n{{ $json.ticket_body }}\n\nRoute label:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "ff1c79c3-ba85-4320-b4b9-f1c519226768",
+      "name": "Router — Choose Route",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        740,
+        740
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de6be91c-012d-46b8-aa94-371be66fe131",
+              "name": "route",
+              "type": "string",
+              "value": "={{ $json.text.trim() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e17dec30-b2c1-4f0b-bb66-f3e62fd36753",
+      "name": "Store Route",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        980,
+        740
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "830f17a2-a566-4fc3-bdb0-d5256d1d926c",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "refund",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "refund"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "38a54328-245d-4348-873c-94b92e74552b",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "order_status",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "order_status"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b9f36552-f29f-4ee5-a813-a31d92ee7f41",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "support",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "support"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7e1e10ff-75a9-46cd-a582-2853dd262379",
+      "name": "Switch — Route",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1220,
+        740
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a customer support specialist for refunds.\nWrite a short, professional reply.\n\nRules:\n- Acknowledge the issue\n- Ask for any missing info (only if needed)\n- Explain next steps and expected timeline\n- Keep it under 120 words\n\nOutput ONLY the reply."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "d5c57277-b18a-477a-b9ce-34c6b1ee6342",
+      "name": "Refund Specialist — Draft Reply",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1500,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a customer support specialist for order status.\nWrite a short, professional reply.\n\nRules:\n- Confirm you are checking the order\n- Ask for order number if missing\n- Provide what you can and what you still need\n- Keep it under 120 words\n\nOutput ONLY the reply."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "630e3af7-a52b-49b8-9f87-6851bd12eef2",
+      "name": "Order Status Specialist — Draft Reply",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1500,
+        740
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a general customer support specialist.\nWrite a short, professional reply.\n\nRules:\n- Clarify the problem\n- Ask 1–2 targeted questions (only if needed)\n- Offer a next step\n- Keep it under 120 words\n\nOutput ONLY the reply."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "7a0b8fca-3fa7-469b-a807-081436543763",
+      "name": "Support Specialist — Draft Reply",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1500,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "39cd03a7-c799-430f-bc12-77d431b28335",
+              "name": "reply",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "id": "cdefd3e8-54bd-4114-96e0-5f942bcafbef",
+              "name": "route",
+              "type": "string",
+              "value": "refund"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "f28fc926-5159-441c-90bd-108e5f795b1b",
+      "name": "Output — Refund Reply",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1740,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0785a25a-deb8-42d4-8484-9bbe3512996b",
+              "name": "reply",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "id": "8a35f16f-5143-41ba-a06d-80632de81e50",
+              "name": "route",
+              "type": "string",
+              "value": "order_status"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "6e9345ba-8563-4302-9d41-2d93742c9d18",
+      "name": "Output — Order Status Reply",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1740,
+        740
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f4e3a801-7a83-4faf-a6c8-4c48a8e00b9b",
+              "name": "reply",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "id": "36b4d8ee-fd32-4001-b80d-0f35e12faed1",
+              "name": "route",
+              "type": "string",
+              "value": "support"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "f31cf084-e624-467e-ae2e-4a667b3df03f",
+      "name": "Output — Support Reply",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1740,
+        880
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "7b2fc618-c1ae-4087-842a-850c5e87e9c0",
+      "name": "Run: Parallelization",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        280,
+        1480
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "acbfdeae-6792-487f-8ae5-6d6c6110adc6",
+              "name": "email_subject",
+              "type": "string",
+              "value": "Can't access my account after password reset"
+            },
+            {
+              "id": "40511289-8791-4e5f-8a14-6e3fdb311afe",
+              "name": "email_body",
+              "type": "string",
+              "value": "Hello,\nI reset my password twice but I still can't log in. It says 'invalid token'.\nI'm trying to access my invoices before end of day.\nCan you help?\n— Sam"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "79e03661-0800-4733-bbf2-d1b67ac8e92b",
+      "name": "Input — Customer Email",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        500,
+        1480
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "ece7d72e-773a-48ff-94aa-5a7025df951e",
+      "name": "OpenRouter Chat Model (Parallelization)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        400,
+        1720
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Extract key facts from the email.\nReturn STRICT JSON with keys:\ncustomer_name, issue, deadline, requested_action, missing_info (array).\nReturn JSON only."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Subject: {{ $json.email_subject }}\nBody:\n{{ $json.email_body }}\n\nJSON:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "3aa6bf86-f125-425c-8720-df56f11947f0",
+      "name": "Branch A — Extract Facts",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        800,
+        1300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2fde2af2-6e98-4119-a1f1-38aed84a67d0",
+              "name": "facts_json",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "df635144-4995-4247-baf0-07b4c5f8205a",
+      "name": "Store Facts",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        1300
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Classify sentiment and urgency.\nReturn STRICT JSON with keys:\nsentiment (positive|neutral|negative), urgency (low|medium|high), risk_flags (array).\nReturn JSON only."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Subject: {{ $json.email_subject }}\nBody:\n{{ $json.email_body }}\n\nJSON:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "25579e42-375a-4ae4-a1c8-129e57f930e3",
+      "name": "Branch B — Sentiment & Urgency",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        800,
+        1480
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4054cf74-425a-4b01-9823-15e69488083b",
+              "name": "sentiment_json",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "e29b6ae2-bdbe-4a3d-8a6e-141b825215c5",
+      "name": "Store Sentiment",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        1480
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Draft a helpful customer support email reply.\nRules:\n- Friendly and concise\n- Ask for missing info only if needed\n- Offer 1–2 concrete next steps\n- Under 140 words\n\nOutput ONLY the reply text."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Subject: {{ $json.email_subject }}\nBody:\n{{ $json.email_body }}\n\nReply:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "23ab9b9e-d413-4e8f-acc9-b988fee03787",
+      "name": "Branch C — Draft Reply",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        800,
+        1660
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "81dfa0a9-419c-4c83-a8a1-b4cd240edc4d",
+              "name": "draft_reply",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "b69600ee-d9b4-4941-8941-84db1491acd7",
+      "name": "Store Draft Reply",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        1660
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "50d93af1-aa64-46ec-9d36-8982785a823e",
+      "name": "Merge A+B",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1300,
+        1400
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "31c9ae9f-a601-4cac-a9c1-c87c973a6786",
+      "name": "Merge (A+B)+C",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1500,
+        1560
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a senior support agent.\nYou will receive:\n- facts_json (extracted facts)\n- sentiment_json (sentiment & urgency)\n- draft_reply (initial draft)\n\nTask:\n1) Improve the draft to match urgency and include any critical missing info questions.\n2) Keep it under 160 words.\n3) Output ONLY the final reply text."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=facts_json:\n{{ $json.facts_json }}\n\nsentiment_json:\n{{ $json.sentiment_json }}\n\ndraft_reply:\n{{ $json.draft_reply }}\n\nFinal reply:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "d06ada39-f1f8-4127-a059-fa04267cd282",
+      "name": "Finalize — One Improved Reply",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1740,
+        1560
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b4a7fe08-b345-4587-9d83-12fad6605477",
+              "name": "final_reply",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "73afc530-17d1-403d-9aa1-fe7a1b563a06",
+      "name": "Output — Final Reply",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1980,
+        1560
+      ]
+    }
+  ],
+  "connections": {
+    "Run: Prompt Chaining": {
+      "main": [
+        [
+          {
+            "node": "Input — Writing Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input — Writing Brief": {
+      "main": [
+        [
+          {
+            "node": "Step 1 — Create Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 1 — Create Outline": {
+      "main": [
+        [
+          {
+            "node": "Store Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Outline": {
+      "main": [
+        [
+          {
+            "node": "Step 2 — Improve Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 2 — Improve Outline": {
+      "main": [
+        [
+          {
+            "node": "Store Improved Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Improved Outline": {
+      "main": [
+        [
+          {
+            "node": "Step 3 — Draft Memo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 3 — Draft Memo": {
+      "main": [
+        [
+          {
+            "node": "Output — Final Memo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model (Prompt Chaining)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Step 1 — Create Outline",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Step 2 — Improve Outline",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Step 3 — Draft Memo",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run: Ticket Routing": {
+      "main": [
+        [
+          {
+            "node": "Input — Support Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input — Support Ticket": {
+      "main": [
+        [
+          {
+            "node": "Router — Choose Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router — Choose Route": {
+      "main": [
+        [
+          {
+            "node": "Store Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Route": {
+      "main": [
+        [
+          {
+            "node": "Switch — Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch — Route": {
+      "main": [
+        [
+          {
+            "node": "Refund Specialist — Draft Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Order Status Specialist — Draft Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Support Specialist — Draft Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Refund Specialist — Draft Reply": {
+      "main": [
+        [
+          {
+            "node": "Output — Refund Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Order Status Specialist — Draft Reply": {
+      "main": [
+        [
+          {
+            "node": "Output — Order Status Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Support Specialist — Draft Reply": {
+      "main": [
+        [
+          {
+            "node": "Output — Support Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model (Routing)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Router — Choose Route",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Refund Specialist — Draft Reply",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Order Status Specialist — Draft Reply",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Support Specialist — Draft Reply",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run: Parallelization": {
+      "main": [
+        [
+          {
+            "node": "Input — Customer Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input — Customer Email": {
+      "main": [
+        [
+          {
+            "node": "Branch A — Extract Facts",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Branch B — Sentiment & Urgency",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Branch C — Draft Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Branch A — Extract Facts": {
+      "main": [
+        [
+          {
+            "node": "Store Facts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Branch B — Sentiment & Urgency": {
+      "main": [
+        [
+          {
+            "node": "Store Sentiment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Branch C — Draft Reply": {
+      "main": [
+        [
+          {
+            "node": "Store Draft Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Facts": {
+      "main": [
+        [
+          {
+            "node": "Merge A+B",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Sentiment": {
+      "main": [
+        [
+          {
+            "node": "Merge A+B",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge A+B": {
+      "main": [
+        [
+          {
+            "node": "Merge (A+B)+C",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Draft Reply": {
+      "main": [
+        [
+          {
+            "node": "Merge (A+B)+C",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge (A+B)+C": {
+      "main": [
+        [
+          {
+            "node": "Finalize — One Improved Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalize — One Improved Reply": {
+      "main": [
+        [
+          {
+            "node": "Output — Final Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model (Parallelization)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Branch A — Extract Facts",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Branch B — Sentiment & Urgency",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Branch C — Draft Reply",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Finalize — One Improved Reply",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "02bbae97-12bf-4ce4-9e5c-d1524c2df61d",
+  "meta": {
+    "instanceId": "f8e0840f-cf15-4e87-a9df-c332e92bd46a"
+  },
+  "id": "f0dfbf07-9af9-4c2c-8c81-d5ac604f8ba8",
+  "tags": []
+}
