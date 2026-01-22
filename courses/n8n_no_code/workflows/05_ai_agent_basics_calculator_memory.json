@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## AI Agent Basics — Calculator + Memory\n\n**Goal:** See how an *agent* chooses and uses tools (and how memory works).\n\n### What to edit\n- In **Input — Agent Prompt**, change `chatInput`\n- Optional: change `sessionId` (same ID = same memory)\n\n### Tools connected\n- **Calculator** → agent uses it for any arithmetic\n- **Simple Memory** → keeps short chat history per `sessionId`\n\n### Try this\n1) `My name is Alberto. Remember it.`\n2) Run again: `What is my name?`\n3) Run again: `What is 17% tip on 46.50?`\n\n**Common mistake:** Doing math without the Calculator tool (the system message forces tool use).\n",
+        "content": "## AI Agent Basics — Calculator + Memory\n\n**Goal:** See how an *agent* chooses and uses tools (and how memory works).\n\n### Credentials needed\n- **OpenRouter API key** (Settings → Credentials)\n\n### Cost safety\nKeep workflows in **Test mode** (not Activated) while learning.\n\n### What to edit\n- In **Input — Agent Prompt**, change `chatInput`\n- Optional: change `sessionId` (same ID = same memory)\n\n### Tools connected\n- **Calculator** → agent uses it for any arithmetic\n- **Simple Memory** → keeps short chat history per `sessionId`\n\n### Try this\n1. `What is 17% tip on 46.50? Use the Calculator tool.`\n2. `My name is Alberto. Remember it.` → then run again: `What is my name?`\n3. Business example: `A customer order is $127.50 with 8.25% tax. What's the total?`\n\n**Common mistake:** Doing math without the Calculator tool (the system message forces tool use).\n",
         "height": 360,
         "width": 820,
         "color": 4
