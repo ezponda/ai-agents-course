@@ -5,7 +5,7 @@ root: 00_introduction
 chapters:
   - file: 01_setup
   - file: 02_quick_start
-  - file: 02_core_concepts
+  - file: 03_core_concepts
   - file: 04_workflow_examples
   - file: 05_first_ai_agent
-  - file: 03_node_toolbox
+  - file: 06_node_toolbox
