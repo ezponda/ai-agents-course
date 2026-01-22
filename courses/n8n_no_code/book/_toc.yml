@@ -1,8 +1,11 @@
 # Table of contents
 format: jb-book
 root: 00_introduction
+defaults:
+  numbered: true
 
 chapters:
+  - file: 01a_what_is_an_agent
   - file: 01_setup
   - file: 02_quick_start
   - file: 03_core_concepts
