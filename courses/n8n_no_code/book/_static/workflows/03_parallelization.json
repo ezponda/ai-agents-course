@@ -73,14 +73,12 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "=Subject: {{ $json.email_subject }}\nBody:\n{{ $json.email_body }}\n\nJSON:",
         "messages": {
           "messageValues": [
             {
               "message": "=Extract key facts from the email.\nReturn STRICT JSON with keys:\ncustomer_name, issue, deadline, requested_action, missing_info (array).\nReturn JSON only."
-            },
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "=Subject: {{ $json.email_subject }}\nBody:\n{{ $json.email_body }}\n\nJSON:"
             }
           ]
         },
@@ -121,14 +119,12 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "=Subject: {{ $json.email_subject }}\nBody:\n{{ $json.email_body }}\n\nJSON:",
         "messages": {
           "messageValues": [
             {
               "message": "=Classify sentiment and urgency.\nReturn STRICT JSON with keys:\nsentiment (positive|neutral|negative), urgency (low|medium|high), risk_flags (array).\nReturn JSON only."
-            },
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "=Subject: {{ $json.email_subject }}\nBody:\n{{ $json.email_body }}\n\nJSON:"
             }
           ]
         },
@@ -169,14 +165,12 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "=Subject: {{ $json.email_subject }}\nBody:\n{{ $json.email_body }}\n\nReply:",
         "messages": {
           "messageValues": [
             {
               "message": "=Draft a helpful customer support email reply.\nRules:\n- Friendly and concise\n- Ask for missing info only if needed\n- Offer 1–2 concrete next steps\n- Under 140 words\n\nOutput ONLY the reply text."
-            },
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "=Subject: {{ $json.email_subject }}\nBody:\n{{ $json.email_body }}\n\nReply:"
             }
           ]
         },
@@ -247,14 +241,12 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "=facts_json:\n{{ $json.facts_json }}\n\nsentiment_json:\n{{ $json.sentiment_json }}\n\ndraft_reply:\n{{ $json.draft_reply }}\n\nFinal reply:",
         "messages": {
           "messageValues": [
             {
               "message": "=You are a senior support agent.\nYou will receive:\n- facts_json (extracted facts)\n- sentiment_json (sentiment & urgency)\n- draft_reply (initial draft)\n\nTask:\n1) Improve the draft to match urgency and include any critical missing info questions.\n2) Keep it under 160 words.\n3) Output ONLY the final reply text."
-            },
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "=facts_json:\n{{ $json.facts_json }}\n\nsentiment_json:\n{{ $json.sentiment_json }}\n\ndraft_reply:\n{{ $json.draft_reply }}\n\nFinal reply:"
             }
           ]
         },

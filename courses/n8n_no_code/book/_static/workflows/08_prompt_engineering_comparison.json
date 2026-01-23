@@ -68,14 +68,12 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
         "messages": {
           "messageValues": [
             {
               "message": "Classify this customer message:"
-            },
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "={{ $json.message }}"
             }
           ]
         },
@@ -102,14 +100,12 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
         "messages": {
           "messageValues": [
             {
               "message": "You are a customer support classifier for an e-commerce company.\n\nCategorize messages into exactly ONE category:\n- BILLING (payments, charges, refunds, invoices)\n- TECHNICAL (login issues, bugs, how-to questions)\n- FEEDBACK (compliments, complaints, suggestions)\n- GENERAL (everything else)\n\nRespond with ONLY the category name. No explanations."
-            },
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "={{ $json.message }}"
             }
           ]
         },
@@ -136,14 +132,12 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
         "messages": {
           "messageValues": [
             {
               "message": "You are a customer support classifier for an e-commerce company.\n\nCategorize messages into exactly ONE category:\n- BILLING (payments, charges, refunds, invoices)\n- TECHNICAL (login issues, bugs, how-to questions)\n- FEEDBACK (compliments, complaints, suggestions)\n- GENERAL (everything else)\n\nExamples:\n\nMessage: \"I was charged $50 but my order was only $30\"\nCategory: BILLING\n\nMessage: \"The app crashes when I try to checkout\"\nCategory: TECHNICAL\n\nMessage: \"I love your new website design!\"\nCategory: FEEDBACK\n\nMessage: \"What are your store hours?\"\nCategory: GENERAL\n\nMessage: \"I need a refund and the website won't load\"\nCategory: BILLING\n\nRespond with ONLY the category name."
-            },
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "={{ $json.message }}"
             }
           ]
         },
@@ -170,14 +164,12 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
         "messages": {
           "messageValues": [
             {
               "message": "You are a customer support classifier for an e-commerce company.\n\nCategorize messages into exactly ONE category:\n- BILLING (payments, charges, refunds, invoices)\n- TECHNICAL (login issues, bugs, how-to questions)\n- FEEDBACK (compliments, complaints, suggestions)\n- GENERAL (everything else)\n\nExamples:\n\nMessage: \"I was charged $50 but my order was only $30\"\nCategory: BILLING\n\nMessage: \"The app crashes when I try to checkout\"\nCategory: TECHNICAL\n\nMessage: \"I love your new website design!\"\nCategory: FEEDBACK\n\nMessage: \"What are your store hours?\"\nCategory: GENERAL\n\nMessage: \"I need a refund and the website won't load\"\nCategory: BILLING\n\nEdge cases:\n- If multiple issues, classify by PRIMARY concern (usually first)\n- If empty, gibberish, or unrelated: GENERAL [INVALID]\n- If uncertain between categories: pick most likely + [LOW CONFIDENCE]\n\nRespond with ONLY the category name (and optional flag)."
-            },
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "={{ $json.message }}"
             }
           ]
         },

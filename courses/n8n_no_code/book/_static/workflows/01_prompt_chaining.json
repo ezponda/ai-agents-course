@@ -79,14 +79,12 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "=Topic: {{ $json.topic }}\nAudience: {{ $json.audience }}\nConstraints: {{ $json.constraints }}\n\nReturn only the outline.",
         "messages": {
           "messageValues": [
             {
               "message": "=You are a writing assistant.\nCreate a clear outline for the memo.\n\nRules:\n- 5–7 sections\n- Include where the benefits bullets and risks bullet will go\n- Output ONLY the outline\n"
-            },
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "=Topic: {{ $json.topic }}\nAudience: {{ $json.audience }}\nConstraints: {{ $json.constraints }}\n\nReturn only the outline."
             }
           ]
         },
@@ -126,14 +124,12 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "=Original outline:\n{{ $json.outline }}\n\nReturn only the improved outline.",
         "messages": {
           "messageValues": [
             {
               "message": "=You are a strict editor.\nImprove the outline using this checklist:\n- Logical flow\n- Clear headings\n- Covers constraints (benefits + risks)\n- Non-technical wording\n\nOutput ONLY the improved outline (no commentary)."
-            },
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "=Original outline:\n{{ $json.outline }}\n\nReturn only the improved outline."
             }
           ]
         },
@@ -173,14 +169,12 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "=Outline:\n{{ $json.improved_outline }}\n\nWrite the memo now.",
         "messages": {
           "messageValues": [
             {
               "message": "=You are a business writer.\nWrite the memo based on the outline.\n\nRules:\n- Follow the outline order\n- Keep under 400 words\n- Use clear, non-technical language\n- Include exactly: 3 benefit bullets + 1 risk bullet\n\nOutput ONLY the memo text."
-            },
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "=Outline:\n{{ $json.improved_outline }}\n\nWrite the memo now."
             }
           ]
         },

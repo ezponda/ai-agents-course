@@ -73,14 +73,12 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "=Subject: {{ $json.ticket_subject }}\nBody:\n{{ $json.ticket_body }}\n\nRoute label:",
         "messages": {
           "messageValues": [
             {
               "message": "=You route customer support tickets.\n\nChoose exactly ONE route label, lowercase, no punctuation:\n- refund\n- order_status\n- support\n\nReturn ONLY the label."
-            },
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "=Subject: {{ $json.ticket_subject }}\nBody:\n{{ $json.ticket_body }}\n\nRoute label:"
             }
           ]
         },
@@ -206,14 +204,12 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:",
         "messages": {
           "messageValues": [
             {
               "message": "=You are a customer support specialist for refunds.\nWrite a short, professional reply.\n\nRules:\n- Acknowledge the issue\n- Ask for any missing info (only if needed)\n- Explain next steps and expected timeline\n- Keep it under 120 words\n\nOutput ONLY the reply."
-            },
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:"
             }
           ]
         },
@@ -230,14 +226,12 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:",
         "messages": {
           "messageValues": [
             {
               "message": "=You are a customer support specialist for order status.\nWrite a short, professional reply.\n\nRules:\n- Confirm you are checking the order\n- Ask for order number if missing\n- Provide what you can and what you still need\n- Keep it under 120 words\n\nOutput ONLY the reply."
-            },
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:"
             }
           ]
         },
@@ -254,14 +248,12 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:",
         "messages": {
           "messageValues": [
             {
               "message": "=You are a general customer support specialist.\nWrite a short, professional reply.\n\nRules:\n- Clarify the problem\n- Ask 1–2 targeted questions (only if needed)\n- Offer a next step\n- Keep it under 120 words\n\nOutput ONLY the reply."
-            },
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:"
             }
           ]
         },
