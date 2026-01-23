@@ -5,6 +5,10 @@
 [![LangGraph](https://img.shields.io/badge/LangGraph-agent%20framework-1C3C3C)](https://langchain-ai.github.io/langgraph/)
 [![Level](https://img.shields.io/badge/Level-Beginner-brightgreen)](/)
 
+## 📚 Course
+
+**[View the n8n Course →](https://ezponda.github.io/ai-agents-course/)**
+
 Learn to build AI agents using n8n and LangGraph. No prior experience required.
 
 ## Course Materials
@@ -14,7 +18,7 @@ Learn to build AI agents using n8n and LangGraph. No prior experience required.
 The n8n course is available as a Jupyter Book:
 
 - **Book location:** `courses/n8n_no_code/book/`
-- **GitHub Pages:** (deployed automatically on push to main)
+- **Live site:** [ezponda.github.io/ai-agents-course](https://ezponda.github.io/ai-agents-course/)
 
 **Chapters:**
 1. Introduction — What is n8n
