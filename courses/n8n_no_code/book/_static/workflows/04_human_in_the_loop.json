@@ -1,0 +1,313 @@
+{
+  "name": "04 — Human-in-the-Loop (Approval before Send)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/04_workflow_examples.html#pattern-4-human-in-the-loop)\n## Human-in-the-Loop (Approval Gate)\n**Goal:** AI drafts a response, but a human must approve before sending.\n\n**How to run:**\n1. Click **Run: Human Approval**\n2. Workflow pauses at the Wait node\n3. Click **Test Workflow** again to simulate approval\n\n**Pattern:** Draft → Wait for Approval → Send\n\n*(Critical for production: never send AI outputs without review.)*",
+        "height": 280,
+        "width": 700,
+        "color": 4
+      },
+      "id": "sticky-main",
+      "name": "NOTE — Human-in-the-Loop",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1080,
+        -520
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⏸️ APPROVAL GATE\nWorkflow pauses here.\n\nIn production, you would:\n- Send draft to Slack/Email\n- Wait for human click\n- Resume on approval\n\nFor testing: click **Test Workflow** again to resume.",
+        "height": 200,
+        "width": 300,
+        "color": 6
+      },
+      "id": "sticky-wait",
+      "name": "NOTE — Wait Explanation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        260,
+        -460
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "trigger",
+      "name": "Run: Human Approval",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1000,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "input-subject",
+              "name": "ticket_subject",
+              "type": "string",
+              "value": "Urgent: Need refund for duplicate charge"
+            },
+            {
+              "id": "input-body",
+              "name": "ticket_body",
+              "type": "string",
+              "value": "Hi,\nI was charged twice for order #12345. The second charge of $89.99 appeared yesterday. Please refund ASAP as this is causing overdraft fees.\nThanks,\nMaria"
+            },
+            {
+              "id": "input-customer",
+              "name": "customer_email",
+              "type": "string",
+              "value": "maria@example.com"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "input",
+      "name": "Input — Support Ticket",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -780,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "model",
+      "name": "OpenRouter Chat Model (Human-in-the-Loop)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a customer support agent.\nDraft a professional email reply.\n\nRules:\n- Acknowledge the issue with empathy\n- Confirm specific details (order #, amount)\n- Explain the refund process and timeline\n- Apologize for the inconvenience\n- Keep under 150 words\n\nOutput ONLY the email body (no subject line)."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Subject: {{ $json.ticket_subject }}\nBody:\n{{ $json.ticket_body }}\nCustomer: {{ $json.customer_email }}\n\nDraft the reply:"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "draft",
+      "name": "Step 1 — Draft Response",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -520,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "store-draft",
+              "name": "draft_response",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "id": "store-customer",
+              "name": "customer_email",
+              "type": "string",
+              "value": "={{ $node['Input — Support Ticket'].json.customer_email }}"
+            },
+            {
+              "id": "store-subject",
+              "name": "ticket_subject",
+              "type": "string",
+              "value": "={{ $node['Input — Support Ticket'].json.ticket_subject }}"
+            },
+            {
+              "id": "store-status",
+              "name": "status",
+              "type": "string",
+              "value": "pending_approval"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "store-draft",
+      "name": "Store Draft + Status",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -260,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "options": {
+          "webhookSuffix": "={{ $execution.id }}"
+        }
+      },
+      "id": "wait",
+      "name": "Wait — Human Approval",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        -200
+      ],
+      "webhookId": "approval-gate"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "approved-response",
+              "name": "final_response",
+              "type": "string",
+              "value": "={{ $node['Store Draft + Status'].json.draft_response }}"
+            },
+            {
+              "id": "approved-to",
+              "name": "send_to",
+              "type": "string",
+              "value": "={{ $node['Store Draft + Status'].json.customer_email }}"
+            },
+            {
+              "id": "approved-subject",
+              "name": "subject",
+              "type": "string",
+              "value": "=Re: {{ $node['Store Draft + Status'].json.ticket_subject }}"
+            },
+            {
+              "id": "approved-status",
+              "name": "status",
+              "type": "string",
+              "value": "approved_and_sent"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "output",
+      "name": "Output — Approved Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📧 SEND EMAIL\nIn production, connect this to:\n- **Gmail** / **Outlook** node\n- **Slack** notification\n- **Database** update\n\nThe email only sends AFTER human approval.",
+        "height": 160,
+        "width": 280,
+        "color": 5
+      },
+      "id": "sticky-send",
+      "name": "NOTE — Send Action",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        520,
+        -460
+      ]
+    }
+  ],
+  "connections": {
+    "Run: Human Approval": {
+      "main": [
+        [
+          {
+            "node": "Input — Support Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input — Support Ticket": {
+      "main": [
+        [
+          {
+            "node": "Step 1 — Draft Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 1 — Draft Response": {
+      "main": [
+        [
+          {
+            "node": "Store Draft + Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Draft + Status": {
+      "main": [
+        [
+          {
+            "node": "Wait — Human Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait — Human Approval": {
+      "main": [
+        [
+          {
+            "node": "Output — Approved Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model (Human-in-the-Loop)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Step 1 — Draft Response",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
