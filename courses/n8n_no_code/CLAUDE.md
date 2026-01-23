@@ -174,16 +174,70 @@ For each workflow example in the notebooks, add a collapsible dropdown showing t
 └─────────────────┘            └─────────────────┘
 ```
 
+### 11. Build from Scratch Dropdowns
+
+Each workflow example should include a step-by-step tutorial dropdown that allows students to build the workflow manually instead of importing.
+
+**MyST syntax:**
+```markdown
+::::{dropdown} 🛠️ Build this workflow from scratch (step-by-step)
+:color: secondary
+
+### Step 1: Create a new workflow
+...
+
+### Step 2: Add the trigger and input
+...
+
+::::
+```
+
+**Requirements:**
+- Place dropdown immediately after the Import/Download block (before "Meet the Node" or explanation sections)
+- Color: `secondary` (grey)
+- Use `🛠️` emoji in title
+- Include step-by-step instructions with exact node configurations
+- **Field values must match the workflow JSON exactly** (verify before documenting)
+- **System messages/prompts must match the JSON exactly** (copy from JSON, not paraphrase)
+- Use tables for field configurations when there are multiple fields
+- Include connection instructions between nodes
+
+**Example field table:**
+```markdown
+| Name | Value |
+|------|-------|
+| `ticket_subject` | `Refund request — charged twice` |
+| `ticket_body` | `Hi team,\nI was charged twice...` |
+```
+
+**Example system message:**
+```markdown
+- System:
+  \```
+  You are a customer support specialist for refunds.
+  Write a short, professional reply.
+
+  Rules:
+  - Acknowledge the issue
+  - Ask for any missing info (only if needed)
+  - Keep it under 120 words
+
+  Output ONLY the reply.
+  \```
+```
+
 ## Common Edits
 
 **Add a new workflow example:**
 1. Add JSON to `book/_static/workflows/`
 2. **Add Sticky Note with course documentation link** (see section 9)
 3. Add section in the relevant `.ipynb` with GitHub link
-4. Include node-by-node table with actual node names
-5. Include data flow diagram showing INPUT → OUTPUT
-6. **Add dropdown with detailed data transformation** (see section 10)
-7. Run `make build-n8n` to verify
+4. **Add "Build from scratch" dropdown** (see section 11) — verify all values match JSON
+5. Include node-by-node table with actual node names
+6. Include data flow diagram showing INPUT → OUTPUT
+7. **Add dropdown with detailed data transformation** (see section 10)
+8. Run `make build-n8n` to verify
+9. Run `python3 courses/n8n_no_code/check_references.py` to verify prompts match
 
 **Fix a broken link:**
 1. Search: `grep -r "old-url" courses/n8n_no_code/book/`
