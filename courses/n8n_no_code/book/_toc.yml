@@ -18,3 +18,4 @@ parts:
     numbered: false
     chapters:
       - file: appendix_prompt_engineering
+      - file: appendix_prompt_engineering_agents
