@@ -21,6 +21,12 @@ html:
   use_repository_button: true
   use_edit_page_button: false
 
+# Sphinx configuration
+sphinx:
+  config:
+    html_js_files:
+      - js/force-download.js
+
 # Repository settings
 repository:
   url: https://github.com/ezponda/ai-agents-course
