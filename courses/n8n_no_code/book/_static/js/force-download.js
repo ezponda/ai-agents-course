@@ -3,26 +3,32 @@
  * - Force download for .ipynb files (GitHub Pages serves as text/plain)
  * - Add HTML and Markdown download options
  */
-document.addEventListener('DOMContentLoaded', function() {
+(function() {
+    // Prevent running twice
+    if (window._forceDownloadInitialized) return;
+    window._forceDownloadInitialized = true;
 
-    // Add HTML and Markdown download options to dropdown
-    addDownloadOptions();
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add HTML and Markdown download options to dropdown
+        addDownloadOptions();
 
-    // Force download for .ipynb files
-    document.addEventListener('click', function(e) {
-        const link = e.target.closest('a[href$=".ipynb"]');
-        if (!link) return;
+        // Force download for .ipynb files
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a[href$=".ipynb"]');
+            if (!link) return;
 
-        const isDownloadLink = link.closest('.dropdown-menu') ||
-                               link.classList.contains('download') ||
-                               link.closest('.sd-card-body');
+            const isDownloadLink = link.closest('.dropdown-menu') ||
+                                   link.classList.contains('download') ||
+                                   link.closest('.sd-card-body');
 
-        if (!isDownloadLink) return;
+            if (!isDownloadLink) return;
 
-        e.preventDefault();
-        forceDownload(link.href, link.href.split('/').pop());
+            e.preventDefault();
+            e.stopPropagation();
+            forceDownload(link.href, link.href.split('/').pop());
+        }, true);
     });
-});
+})();
 
 /**
  * Add HTML and Markdown download options to the dropdown
