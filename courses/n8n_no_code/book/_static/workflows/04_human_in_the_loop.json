@@ -142,6 +142,12 @@
               "name": "status",
               "type": "string",
               "value": "pending_approval"
+            },
+            {
+              "id": "store-drafted-at",
+              "name": "drafted_at",
+              "type": "string",
+              "value": "={{ $now.format('yyyy-MM-dd HH:mm') }}"
             }
           ]
         },
