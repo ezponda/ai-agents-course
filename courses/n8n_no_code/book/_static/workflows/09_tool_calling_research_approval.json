@@ -1,0 +1,340 @@
+{
+  "name": "09 — Research Agent with Approval",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/06_tool_calling.html)\n## Research Agent with Approval\n**Goal:** Agent researches a topic using read-only tools, then drafts an email that requires human approval before \"sending\".\n\n### Key Concepts\n- **Read-only tools** (Wikipedia, Calculator): Agent uses freely\n- **Write action** (send email): Blocked until human approves\n- **Approval gate**: Wait node pauses the workflow\n\n### How to run\n1. Click **Execute Workflow**\n2. Watch the agent research the topic\n3. Review the email draft in \"Format Email Draft\"\n4. Click **Wait — Approval** → copy **Test URL** → open in browser\n5. Workflow completes with approved status\n\n### Try different topics\n- `When was the Eiffel Tower built and how tall is it in feet?`\n- `Who founded Microsoft? Calculate how many years ago.`\n- `What is the population of Tokyo?`",
+        "height": 380,
+        "width": 700,
+        "color": 4
+      },
+      "id": "sticky-main",
+      "name": "NOTE — Research Agent",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1080,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⏸️ APPROVAL GATE\nWorkflow pauses here.\n\n**To test:**\n1. Click this node\n2. Copy the **Test URL**\n3. Open URL in browser\n\n**In production:**\nSend draft + approval link via Slack/Email.",
+        "height": 180,
+        "width": 280,
+        "color": 6
+      },
+      "id": "sticky-wait",
+      "name": "NOTE — Wait",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        460,
+        -420
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "trigger",
+      "name": "Run: Research",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1000,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "topic",
+              "name": "topic",
+              "type": "string",
+              "value": "When was the Eiffel Tower built and how tall is it in feet?"
+            },
+            {
+              "id": "recipient",
+              "name": "recipient",
+              "type": "string",
+              "value": "team@example.com"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "input",
+      "name": "Input — Research Topic",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -780,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Research this topic and provide a brief summary (3-4 sentences):\n\n{{ $json.topic }}\n\nUse Wikipedia for facts. Use Calculator for any unit conversions or math.",
+        "options": {
+          "systemMessage": "You are a research assistant. Your job is to find accurate information.\n\nRules:\n- Use Wikipedia to look up facts. Do NOT guess.\n- Use Calculator for any math or conversions.\n- Keep your summary brief: 3-4 sentences maximum.\n- If you can't find information, say so clearly."
+        }
+      },
+      "id": "agent",
+      "name": "Research Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -500,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "model",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -620,
+        140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "wikipedia",
+      "name": "Wikipedia",
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "calculator",
+      "name": "Calculator",
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        -300,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "to",
+              "name": "to",
+              "type": "string",
+              "value": "={{ $node['Input — Research Topic'].json.recipient }}"
+            },
+            {
+              "id": "subject",
+              "name": "subject",
+              "type": "string",
+              "value": "=Research Summary: {{ $node['Input — Research Topic'].json.topic.substring(0, 50) }}..."
+            },
+            {
+              "id": "body",
+              "name": "body",
+              "type": "string",
+              "value": "={{ $json.output }}"
+            },
+            {
+              "id": "drafted_at",
+              "name": "drafted_at",
+              "type": "string",
+              "value": "={{ $now.format('yyyy-MM-dd HH:mm') }}"
+            },
+            {
+              "id": "status",
+              "name": "status",
+              "type": "string",
+              "value": "pending_approval"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format",
+      "name": "Format Email Draft",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -140,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "options": {
+          "webhookSuffix": "={{ $execution.id }}"
+        }
+      },
+      "id": "wait",
+      "name": "Wait — Approval",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        -100
+      ],
+      "webhookId": "research-approval"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "email_to",
+              "name": "email_to",
+              "type": "string",
+              "value": "={{ $node['Format Email Draft'].json.to }}"
+            },
+            {
+              "id": "email_subject",
+              "name": "email_subject",
+              "type": "string",
+              "value": "={{ $node['Format Email Draft'].json.subject }}"
+            },
+            {
+              "id": "email_body",
+              "name": "email_body",
+              "type": "string",
+              "value": "={{ $node['Format Email Draft'].json.body }}"
+            },
+            {
+              "id": "status",
+              "name": "status",
+              "type": "string",
+              "value": "approved"
+            },
+            {
+              "id": "approved_at",
+              "name": "approved_at",
+              "type": "string",
+              "value": "={{ $now.format('yyyy-MM-dd HH:mm') }}"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "output",
+      "name": "Output — Approved",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        760,
+        -100
+      ]
+    }
+  ],
+  "connections": {
+    "Run: Research": {
+      "main": [
+        [
+          {
+            "node": "Input — Research Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input — Research Topic": {
+      "main": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Email Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Email Draft": {
+      "main": [
+        [
+          {
+            "node": "Wait — Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait — Approval": {
+      "main": [
+        [
+          {
+            "node": "Output — Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

@@ -13,9 +13,10 @@ parts:
       - file: 03_core_concepts
       - file: 04_workflow_examples
       - file: 05_first_ai_agent
-      - file: 06_node_toolbox
+      - file: 06_tool_calling
   - caption: Appendices
     numbered: false
     chapters:
+      - file: appendix_node_toolbox
       - file: appendix_prompt_engineering
       - file: appendix_prompt_engineering_agents
