@@ -34,5 +34,8 @@ yarn-error.log
 # Local env / tools
 .claude/
 
+# Video tips (local only)
+courses/n8n_no_code/tips_videos/
+
 # Pages output (optional)
 site/
