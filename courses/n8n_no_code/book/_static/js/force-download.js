@@ -31,6 +31,9 @@ function addDownloadOptions() {
     const dropdown = document.querySelector('.dropdown-download-buttons .dropdown-menu');
     if (!dropdown) return;
 
+    // Prevent duplicate additions
+    if (dropdown.querySelector('.download-html-btn')) return;
+
     const pageName = document.querySelector('h1')?.textContent?.trim() || 'page';
     const baseFilename = window.location.pathname.split('/').pop().replace('.html', '') || 'page';
 
