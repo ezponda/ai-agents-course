@@ -26,6 +26,9 @@ sphinx:
   config:
     html_js_files:
       - js/force-download.js
+      - js/reading-progress.js
+    html_css_files:
+      - css/reading-progress.css
 
 # Repository settings
 repository:

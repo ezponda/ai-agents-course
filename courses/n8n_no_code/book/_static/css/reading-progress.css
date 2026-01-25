@@ -1,0 +1,19 @@
+/* Reading progress bar */
+#reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7);
+    z-index: 9999;
+    transition: width 0.1s ease-out;
+    border-radius: 0 2px 2px 0;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+/* Glow effect on hover/active */
+#reading-progress:hover {
+    height: 4px;
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.7);
+}
