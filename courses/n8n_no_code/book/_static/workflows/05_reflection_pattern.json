@@ -1,0 +1,730 @@
+{
+  "name": "05 — Reflection Pattern (2 Approaches)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/05_reflection_pattern.html)\n# Reflection Pattern — Two Approaches\n\n**Goal:** Understand the Generate → Critique → Refine loop that powers self-improvement.\n\nThis workflow shows **2 ways** to implement the reflection pattern:\n\n| Version | How it works | When to use |\n|---------|--------------|-------------|\n| **V1: Loop** | Repeats until criteria met (max 5) | When you need control over the loop |\n| **V2: Agent** | AI decides when to stop | When you want simplicity |\n\n**Challenge:** Write a product description with these constraints:\n- Exactly 3 sentences\n- 25–30 words total\n- Contains \"sound\" exactly twice\n- Does NOT contain \"music\" or \"audio\"\n\n**Run both versions** and compare how many iterations each needs!",
+        "height": 380,
+        "width": 820,
+        "color": 4
+      },
+      "id": "sticky-main",
+      "name": "NOTE — Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1180,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## VERSION 1: Loop with Exit Condition\n**Repeats until criteria met** (max 5 iterations).\n\nFlow: Generate → Validate → If pass → Output, else → Refine → back to Generate\n\n✅ Stops when good enough\n✅ Prevents infinite loops (max 5)\n✅ Full control over the process",
+        "height": 180,
+        "width": 600,
+        "color": 5
+      },
+      "id": "sticky-v1",
+      "name": "NOTE — V1 Loop",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1180,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## VERSION 2: AI Agent\n**Agent decides when to stop** using a Validator tool.\n\nThe agent calls the Validator tool after each draft.\nWhen all constraints pass, it returns the final answer.\n\n✅ Simplest to build\n✅ AI adapts strategy\n❌ Less predictable (may take more iterations)",
+        "height": 180,
+        "width": 600,
+        "color": 6
+      },
+      "id": "sticky-v2",
+      "name": "NOTE — V2 Agent",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1180,
+        620
+      ]
+    },
+
+    {
+      "parameters": {},
+      "id": "trigger-v1",
+      "name": "Run: V1 Loop",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1100,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "product",
+              "name": "product",
+              "type": "string",
+              "value": "Wireless Bluetooth Headphones"
+            },
+            {
+              "id": "constraints",
+              "name": "constraints",
+              "type": "string",
+              "value": "- Exactly 3 sentences\n- 25–30 words total\n- Contains the word \"sound\" exactly twice\n- Does NOT contain the words \"music\" or \"audio\""
+            },
+            {
+              "id": "iteration",
+              "name": "iteration",
+              "type": "number",
+              "value": 0
+            },
+            {
+              "id": "draft",
+              "name": "draft",
+              "type": "string",
+              "value": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "input-v1",
+      "name": "Input — Product (V1)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -880,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "model-v1",
+      "name": "OpenRouter (V1)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -540,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Product: {{ $node['Input — Product (V1)'].json.product }}\n\nConstraints:\n{{ $json.constraints }}\n\n{{ $json.draft ? 'Previous draft:\\n' + $json.draft + '\\n\\nImprove the draft to fix the issues.' : 'Write the product description:' }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a product copywriter.\n\nWrite a product description that meets ALL the constraints exactly.\nCount words carefully. Output ONLY the description."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "generate-v1",
+      "name": "Generate/Refine (V1)",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -660,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "draft",
+              "name": "draft",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "id": "constraints",
+              "name": "constraints",
+              "type": "string",
+              "value": "={{ $node['Input — Product (V1)'].json.constraints }}"
+            },
+            {
+              "id": "iteration",
+              "name": "iteration",
+              "type": "number",
+              "value": "={{ ($node['Input — Product (V1)'].json.iteration || 0) + 1 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "store-draft-v1",
+      "name": "Store Draft (V1)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -440,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Draft:\n{{ $json.draft }}\n\nConstraints:\n{{ $json.constraints }}\n\nValidation report:",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a strict validator.\n\nCheck the draft against EACH constraint:\n1. Count sentences (must be exactly 3)\n2. Count words (must be 25–30)\n3. Count occurrences of \"sound\" (must be exactly 2)\n4. Check for forbidden words \"music\" or \"audio\" (must have 0)\n\nReturn a JSON object:\n{\n  \"sentences\": <number>,\n  \"words\": <number>,\n  \"sound_count\": <number>,\n  \"has_forbidden\": <true/false>,\n  \"all_pass\": <true/false>,\n  \"issues\": [\"list of issues if any\"]\n}\n\nReturn ONLY the JSON."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "validate-v1",
+      "name": "Validate (V1)",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -220,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "draft",
+              "name": "draft",
+              "type": "string",
+              "value": "={{ $node['Store Draft (V1)'].json.draft }}"
+            },
+            {
+              "id": "constraints",
+              "name": "constraints",
+              "type": "string",
+              "value": "={{ $node['Store Draft (V1)'].json.constraints }}"
+            },
+            {
+              "id": "iteration",
+              "name": "iteration",
+              "type": "number",
+              "value": "={{ $node['Store Draft (V1)'].json.iteration }}"
+            },
+            {
+              "id": "validation_json",
+              "name": "validation_json",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "id": "all_pass",
+              "name": "all_pass",
+              "type": "boolean",
+              "value": "={{ $json.text.includes('\"all_pass\": true') || $json.text.includes('\"all_pass\":true') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "parse-validation-v1",
+      "name": "Parse Validation (V1)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "pass",
+              "leftValue": "={{ $json.all_pass }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-pass-v1",
+      "name": "If Pass?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        220,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "final_description",
+              "name": "final_description",
+              "type": "string",
+              "value": "={{ $json.draft }}"
+            },
+            {
+              "id": "iterations",
+              "name": "iterations",
+              "type": "number",
+              "value": "={{ $json.iteration }}"
+            },
+            {
+              "id": "approach",
+              "name": "approach",
+              "type": "string",
+              "value": "V1: Loop with Exit Condition"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "output-v1",
+      "name": "Output (V1)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        540,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "max-iter",
+              "leftValue": "={{ $json.iteration }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-max-v1",
+      "name": "If < Max?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "final_description",
+              "name": "final_description",
+              "type": "string",
+              "value": "={{ $json.draft }}"
+            },
+            {
+              "id": "iterations",
+              "name": "iterations",
+              "type": "number",
+              "value": "={{ $json.iteration }}"
+            },
+            {
+              "id": "approach",
+              "name": "approach",
+              "type": "string",
+              "value": "V1: Loop (max iterations reached)"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "output-max-v1",
+      "name": "Output Max (V1)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        680,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "draft",
+              "name": "draft",
+              "type": "string",
+              "value": "={{ $json.draft }}"
+            },
+            {
+              "id": "constraints",
+              "name": "constraints",
+              "type": "string",
+              "value": "={{ $json.constraints }}"
+            },
+            {
+              "id": "iteration",
+              "name": "iteration",
+              "type": "number",
+              "value": "={{ $json.iteration }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "prepare-refine-v1",
+      "name": "Prepare Refine (V1)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        680,
+        160
+      ]
+    },
+
+    {
+      "parameters": {},
+      "id": "trigger-v2",
+      "name": "Run: V2 Agent",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1100,
+        840
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "product",
+              "name": "product",
+              "type": "string",
+              "value": "Wireless Bluetooth Headphones"
+            },
+            {
+              "id": "constraints",
+              "name": "constraints",
+              "type": "string",
+              "value": "- Exactly 3 sentences\n- 25–30 words total\n- Contains the word \"sound\" exactly twice\n- Does NOT contain the words \"music\" or \"audio\""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "input-v2",
+      "name": "Input — Product (V2)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -880,
+        840
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "model-v2",
+      "name": "OpenRouter (V2)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        1080
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Product: {{ $json.product }}\n\nConstraints:\n{{ $json.constraints }}\n\nWrite a product description that meets ALL constraints. After writing, use the Validator tool to check it. Keep refining until all constraints pass.",
+        "options": {
+          "systemMessage": "You are a product copywriter who writes precise descriptions.\n\nProcess:\n1. Write a draft description\n2. Use the Validator tool to check ALL constraints\n3. If any constraint fails, revise and validate again\n4. Repeat until all_pass is true\n5. Return the final description\n\nRules:\n- Count words carefully\n- Call the Validator tool at most 5 times\n- When all_pass is true, return ONLY the final description"
+        }
+      },
+      "id": "agent-v2",
+      "name": "Reflection Agent (V2)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -580,
+        840
+      ]
+    },
+    {
+      "parameters": {
+        "name": "Validator",
+        "description": "Validates a product description against constraints. Input: the description text. Returns JSON with validation results including all_pass (true/false).",
+        "language": "python",
+        "pythonCode": "import re\n\n# Get the description from the agent's input\ndescription = _input.first().json.get('query', '') or _input.first().json.get('input', '')\n\n# Count sentences (split by . ! ?)\nsentences = [s for s in re.split(r'[.!?]+', description) if s.strip()]\nsentence_count = len(sentences)\n\n# Count words\nwords = [w for w in description.split() if w]\nword_count = len(words)\n\n# Count \"sound\" occurrences (case insensitive)\nsound_matches = re.findall(r'\\\\bsound\\\\b', description.lower())\nsound_count = len(sound_matches)\n\n# Check for forbidden words\nhas_forbidden = bool(re.search(r'\\\\b(music|audio)\\\\b', description, re.IGNORECASE))\n\n# Check all constraints\nissues = []\nif sentence_count != 3:\n    issues.append(f'Sentences: {sentence_count} (need exactly 3)')\nif word_count < 25 or word_count > 30:\n    issues.append(f'Words: {word_count} (need 25-30)')\nif sound_count != 2:\n    issues.append(f'\"sound\" count: {sound_count} (need exactly 2)')\nif has_forbidden:\n    issues.append('Contains forbidden word: \"music\" or \"audio\"')\n\nall_pass = len(issues) == 0\n\nreturn [{\n    'json': {\n        'sentences': sentence_count,\n        'words': word_count,\n        'sound_count': sound_count,\n        'has_forbidden': has_forbidden,\n        'all_pass': all_pass,\n        'issues': issues\n    }\n}]"
+      },
+      "id": "validator-tool-v2",
+      "name": "Validator Tool (Python)",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        1080
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "final_description",
+              "name": "final_description",
+              "type": "string",
+              "value": "={{ $json.output }}"
+            },
+            {
+              "id": "approach",
+              "name": "approach",
+              "type": "string",
+              "value": "V2: AI Agent with Validator Tool"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "output-v2",
+      "name": "Output (V2)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -260,
+        840
+      ]
+    }
+  ],
+  "connections": {
+    "Run: V1 Loop": {
+      "main": [
+        [
+          {
+            "node": "Input — Product (V1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input — Product (V1)": {
+      "main": [
+        [
+          {
+            "node": "Generate/Refine (V1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate/Refine (V1)": {
+      "main": [
+        [
+          {
+            "node": "Store Draft (V1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Draft (V1)": {
+      "main": [
+        [
+          {
+            "node": "Validate (V1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate (V1)": {
+      "main": [
+        [
+          {
+            "node": "Parse Validation (V1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Validation (V1)": {
+      "main": [
+        [
+          {
+            "node": "If Pass?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Pass?": {
+      "main": [
+        [
+          {
+            "node": "Output (V1)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If < Max?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If < Max?": {
+      "main": [
+        [
+          {
+            "node": "Prepare Refine (V1)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Output Max (V1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Refine (V1)": {
+      "main": [
+        [
+          {
+            "node": "Generate/Refine (V1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter (V1)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate/Refine (V1)",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Validate (V1)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+
+    "Run: V2 Agent": {
+      "main": [
+        [
+          {
+            "node": "Input — Product (V2)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input — Product (V2)": {
+      "main": [
+        [
+          {
+            "node": "Reflection Agent (V2)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reflection Agent (V2)": {
+      "main": [
+        [
+          {
+            "node": "Output (V2)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter (V2)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Reflection Agent (V2)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validator Tool (Python)": {
+      "ai_tool": [
+        [
+          {
+            "node": "Reflection Agent (V2)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
