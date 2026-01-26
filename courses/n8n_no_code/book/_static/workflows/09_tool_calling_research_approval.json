@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/06_tool_calling.html)\n## Research Agent with Approval\n**Goal:** Agent researches a topic using read-only tools, then drafts an email that requires human approval before \"sending\".\n\n### Key Concepts\n- **Read-only tools** (Wikipedia, Calculator): Agent uses freely\n- **Write action** (send email): Blocked until human approves\n- **Approval gate**: Wait node pauses the workflow\n\n### How to run\n1. Click **Execute Workflow**\n2. Watch the agent research the topic\n3. Review the email draft in \"Format Email Draft\"\n4. Click **Wait — Approval** → copy **Test URL** → open in browser\n5. Workflow completes with approved status\n\n### Try different topics\n- `When was the Eiffel Tower built and how tall is it in feet?`\n- `Who founded Microsoft? Calculate how many years ago.`\n- `What is the population of Tokyo?`",
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/06_tool_calling.html)\n## Research Agent with Approval\n**Goal:** Agent researches using read-only tools, then workflow formats an email draft that requires human approval.\n\n### Key Concepts\n- **Read-only tools** (Wikipedia, Calculator): Agent uses freely\n- **Approval gate**: Wait node pauses before any action\n- **Production pattern**: After approval, connect Gmail/Slack to send\n\n### How to run\n1. Click **Execute Workflow**\n2. Watch the agent research the topic\n3. Review the email draft in \"Format Email Draft\"\n4. Click **Wait — Approval** → copy **Test URL** → open in browser\n5. Workflow completes with approved status\n\n### Try different topics\n- `When was the Eiffel Tower built and how tall is it in feet?`\n- `Who founded Microsoft? Calculate how many years ago.`\n- `What is the population of Tokyo?`",
         "height": 380,
         "width": 700,
         "color": 4
@@ -78,7 +78,7 @@
         "promptType": "define",
         "text": "=Research this topic and provide a brief summary (3-4 sentences):\n\n{{ $json.topic }}\n\nUse Wikipedia for facts. Use Calculator for any unit conversions or math.",
         "options": {
-          "systemMessage": "You are a research assistant. Your job is to find accurate information.\n\nRules:\n- Use Wikipedia to look up facts. Do NOT guess.\n- Use Calculator for any math or conversions.\n- Keep your summary brief: 3-4 sentences maximum.\n- If you can't find information, say so clearly."
+          "systemMessage": "You are a research assistant. Your job is to find accurate information.\n\nRules:\n- Use Wikipedia to look up facts. Do NOT guess.\n- Use Calculator for any math or conversions.\n- Call each tool at most twice. If you still can't find the answer, explain what you tried.\n- Keep your summary brief: 3-4 sentences maximum.\n- If you can't find information, say so clearly."
         }
       },
       "id": "agent",
