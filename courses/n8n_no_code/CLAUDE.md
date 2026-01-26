@@ -226,7 +226,22 @@ Each workflow example should include a step-by-step tutorial dropdown that allow
   \```
 ```
 
+### 12. Course Structure Table (Introduction)
+
+The intro page (`00_introduction.ipynb`) has a "Course Structure" table that must stay in sync with `_toc.yml`.
+
+When adding, removing, or renaming chapters:
+1. Update `_toc.yml`
+2. Update the table in `00_introduction.ipynb` (cell with "## Course Structure")
+
+The table provides "What you'll do" descriptions that the TOC sidebar doesn't have, so keep both.
+
 ## Common Edits
+
+**Add a new chapter:**
+1. Create the `.ipynb` file
+2. Add to `_toc.yml`
+3. Update the Course Structure table in `00_introduction.ipynb`
 
 **Add a new workflow example:**
 1. Add JSON to `book/_static/workflows/`
