@@ -21,6 +21,7 @@ parts:
     numbered: false
     chapters:
       - file: appendix_node_toolbox
+      - file: appendix_ai_nodes
       - file: appendix_prompt_engineering
       - file: appendix_prompt_engineering_agents
       - file: appendix_resources
