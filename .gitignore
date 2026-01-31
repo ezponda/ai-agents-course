@@ -37,5 +37,8 @@ yarn-error.log
 # Video tips (local only)
 courses/n8n_no_code/tips_videos/
 
+# Research reports (local only)
+courses/n8n_no_code/reports/
+
 # Pages output (optional)
 site/
