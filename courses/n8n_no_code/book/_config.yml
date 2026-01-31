@@ -1,6 +1,6 @@
 # Book settings
 title: Agentic AI with n8n
-author: Alberto Ezpondaburu
+author: ""
 copyright: ""
 logo: ""
 
@@ -21,6 +21,11 @@ html:
   use_repository_button: true
   use_edit_page_button: false
   extra_footer: |
+    <div style="margin-top: 10px;">
+      By Alberto Ezpondaburu
+      <a href="https://www.linkedin.com/in/alberto-ezpondaburu-merino-305394ab/" target="_blank" style="margin-left: 10px; color: inherit;"><i class="fab fa-linkedin fa-lg"></i></a>
+      <a href="https://github.com/ezponda" target="_blank" style="margin-left: 8px; color: inherit;"><i class="fab fa-github fa-lg"></i></a>
+    </div>
     <script data-goatcounter="https://ai-agents-course.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 
 # Sphinx configuration
