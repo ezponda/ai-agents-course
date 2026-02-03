@@ -1,0 +1,164 @@
+{
+  "name": "11 — Ask Your Data (Spotify)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_2_ask_your_data.html)\n## Project 2: Ask Your Data (Spotify)\n\n**Goal:** Ask natural-language questions about a Spotify dataset — the agent writes and runs Python code to answer them.\n\n### Credentials needed\n- **OpenRouter API key** (Settings → Credentials)\n\n### How to use\n1. Click **Chat** in the workflow UI.\n2. Ask any question about the dataset, e.g. \"Which song has the most streams?\"\n3. The agent writes Python/pandas code, executes it, and returns the answer.\n\n### Dataset\n~953 top Spotify songs of 2023 with 24 columns (track info, platform metrics, audio features).\n\n### What this teaches\n- **System prompt engineering**: schema, sample data, and rules make or break the agent.\n- **Code Tool**: the agent generates and executes Python code autonomously.\n- **Handling edge cases**: the agent should say \"I can't answer that\" when the data doesn't support the question.",
+        "height": 380,
+        "width": 780,
+        "color": 4
+      },
+      "id": "e1a2b3c4-d5e6-f7a8-b9c0-d1e2f3a4b5c6",
+      "name": "NOTE — Ask Your Data",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -880,
+        -520
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "public": true,
+        "mode": "webhook",
+        "options": {
+          "responseMode": "lastNode"
+        }
+      },
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        -880,
+        80
+      ],
+      "webhookId": "c7d8e9f0-1234-5678-9abc-def012345678",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a data analyst. You answer questions about a Spotify dataset by writing Python code.\n\n## Dataset\nThe CSV is loaded from this URL:\n```\nhttps://raw.githubusercontent.com/zero-to-mastery/file-io/main/spotify-2023.csv\n```\n\nAlways start your code with:\n```python\nimport pandas as pd\ndf = pd.read_csv('https://raw.githubusercontent.com/zero-to-mastery/file-io/main/spotify-2023.csv', encoding='latin-1')\n```\n\n## Schema (24 columns)\n| Column | Type | Description |\n|--------|------|-------------|\n| track_name | str | Song title |\n| artist(s)_name | str | Artist name(s), comma-separated |\n| artist_count | int | Number of contributing artists |\n| released_year | int | Release year |\n| released_month | int | Release month (1-12) |\n| released_day | int | Release day (1-31) |\n| in_spotify_playlists | int | Number of Spotify playlists the song appears in |\n| in_spotify_charts | int | Presence in Spotify charts |\n| streams | str | Total streams (WARNING: this is a string, not a number) |\n| in_apple_playlists | int | Number of Apple Music playlists |\n| in_apple_charts | int | Presence in Apple Music charts |\n| in_deezer_playlists | str | Number of Deezer playlists (may contain commas) |\n| in_deezer_charts | int | Presence in Deezer charts |\n| in_shazam_charts | str | Presence in Shazam charts (may be empty) |\n| bpm | int | Beats per minute |\n| key | str | Musical key (C, C#, D, ..., B) — may be empty |\n| mode | str | Major or Minor |\n| danceability_% | int | How danceable (0-100) |\n| valence_% | int | How positive/happy (0-100) |\n| energy_% | int | How energetic (0-100) |\n| acousticness_% | int | How acoustic (0-100) |\n| instrumentalness_% | int | How instrumental (0-100) |\n| liveness_% | int | Presence of live audience (0-100) |\n| speechiness_% | int | Amount of spoken words (0-100) |\n\n## Sample data (first 5 rows)\n| track_name | artist(s)_name | artist_count | released_year | streams | bpm | key | mode | danceability_% |\n|---|---|---|---|---|---|---|---|---|\n| Seven (feat. Latto) (Explicit Ver.) | Latto, Jung Kook | 2 | 2023 | 141381703 | 125 | B | Major | 80 |\n| LALA | Myke Towers | 1 | 2023 | 133716286 | 92 | C# | Major | 71 |\n| vampire | Olivia Rodrigo | 1 | 2023 | 140003974 | 138 | F | Major | 51 |\n| Cruel Summer | Taylor Swift | 1 | 2019 | 800840817 | 170 | A | Major | 55 |\n| WHERE SHE GOES | Bad Bunny | 1 | 2023 | 303236322 | 144 | A | Minor | 65 |\n\n## Rules\n1. The `streams` column is stored as a string. Always convert it: `pd.to_numeric(df['streams'], errors='coerce')`\n2. Column names have special characters — use exact names: `artist(s)_name`, `danceability_%`, etc.\n3. When the question CANNOT be answered with the available columns, say so clearly. For example, there is no genre column and no song duration column.\n4. Always print your final answer as a readable string — not raw DataFrames. Use `print()` to return the result.\n5. Keep code simple and correct. Use pandas for all analysis.\n6. If the user asks for a chart or plot, use matplotlib and save to a file, but note that the output is text-only."
+        }
+      },
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "name": "Data Analyst Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -560,
+        80
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
+      "name": "Output",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -240,
+        80
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "e5f6a7b8-c9d0-1234-efab-345678901234",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "position": [
+        -640,
+        300
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "name": "python_code",
+        "description": "Execute Python code to analyze the Spotify dataset. The code should use pandas to query, filter, aggregate, or compute statistics on the data. Always print the final result.",
+        "language": "python",
+        "code": "# The agent replaces this code.\n# This is just the default placeholder.\nprint('Ready')"
+      },
+      "id": "f6a7b8c9-d0e1-2345-fabc-456789012345",
+      "name": "Python Code Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "position": [
+        -440,
+        300
+      ],
+      "typeVersion": 2
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Data Analyst Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Analyst Agent": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Data Analyst Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Python Code Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Data Analyst Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

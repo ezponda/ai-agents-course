@@ -218,6 +218,9 @@ NOTEBOOK_WORKFLOW_MAP = {
         "going_live_webhook.json",
         "going_live_error.json",
     ],
+    "project_2_ask_your_data.ipynb": [
+        "11_ask_your_data.json",
+    ],
 }
 
 

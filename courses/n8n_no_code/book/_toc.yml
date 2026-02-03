@@ -26,6 +26,7 @@ parts:
     numbered: false
     chapters:
       - file: project_1_recipe_assistant
+      - file: project_2_ask_your_data
   - caption: Appendices
     numbered: false
     chapters:
