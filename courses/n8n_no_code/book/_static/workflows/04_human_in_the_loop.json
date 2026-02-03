@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/04_workflow_examples.html#pattern-4-human-in-the-loop)\n## Human-in-the-Loop (Approval Gate)\n**Goal:** AI drafts a response, but a human must approve before sending.\n\n**How to run:**\n1. Click **Run: Human Approval**\n2. Workflow pauses at the Wait node\n3. Click the Wait node → copy **Test URL** → open in browser to resume\n\n**Pattern:** Draft → Wait for Approval → Send\n\n*(Critical for production: never send AI outputs without review.)*",
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/04d_human_in_the_loop.html)\n## Human-in-the-Loop (Approval Gate)\n**Goal:** AI drafts a response, but a human must approve before sending.\n\n**How to run:**\n1. Click **Run: Human Approval**\n2. Workflow pauses at the Wait node\n3. Click the Wait node → copy **Test URL** → open in browser to resume\n\n**Pattern:** Draft → Wait for Approval → Send\n\n*(Critical for production: never send AI outputs without review.)*",
         "height": 280,
         "width": 700,
         "color": 4

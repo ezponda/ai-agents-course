@@ -12,6 +12,11 @@ parts:
       - file: 02_quick_start
       - file: 03_core_concepts
       - file: 04_workflow_examples
+        sections:
+          - file: 04a_prompt_chaining
+          - file: 04b_routing
+          - file: 04c_parallelization
+          - file: 04d_human_in_the_loop
       - file: 05_reflection_pattern
       - file: 06_first_ai_agent
       - file: 07_tool_calling

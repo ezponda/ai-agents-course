@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/04_workflow_examples.html#pattern-3-parallelization)\n## Parallelization (Do tasks at the same time)\n**Goal:** Run independent analyses in parallel, then combine results.\n\n**How to run:** Click **Run: Parallelization**.\n\n**Pattern:** Split → Analyze in parallel → Merge → Finalize",
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/04c_parallelization.html)\n## Parallelization (Do tasks at the same time)\n**Goal:** Run independent analyses in parallel, then combine results.\n\n**How to run:** Click **Run: Parallelization**.\n\n**Pattern:** Split → Analyze in parallel → Merge → Finalize",
         "height": 240,
         "width": 760,
         "color": 1

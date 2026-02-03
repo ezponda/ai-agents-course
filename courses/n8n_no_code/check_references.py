@@ -197,11 +197,10 @@ def normalize_prompt(text: str) -> str:
 
 # Map of notebooks → workflow files they document
 NOTEBOOK_WORKFLOW_MAP = {
-    "04_workflow_examples.ipynb": [
-        "01_prompt_chaining.json",
-        "02_routing.json",
-        "03_parallelization.json",
-    ],
+    "04a_prompt_chaining.ipynb": ["01_prompt_chaining.json"],
+    "04b_routing.ipynb": ["02_routing.json"],
+    "04c_parallelization.ipynb": ["03_parallelization.json"],
+    "04d_human_in_the_loop.ipynb": ["04_human_in_the_loop.json"],
     "06_first_ai_agent.ipynb": [
         "05_ai_agent_basics_calculator_memory.json",
         "06_ai_agent_tools_wikipedia_calculator.json",
@@ -294,7 +293,11 @@ def list_referenced_vs_available():
 # Check 5 — TOC ↔ intro table sync
 # ---------------------------------------------------------------------------
 def _parse_toc() -> dict[str, list[str]]:
-    """Return {section_caption: [file_stem, ...]} from _toc.yml."""
+    """Return {section_caption: [file_stem, ...]} from _toc.yml.
+
+    Only collects chapter-level files (indented ≤ 6 spaces), not section
+    sub-pages which appear in the sidebar automatically.
+    """
     toc_path = BOOK_DIR / "_toc.yml"
     sections: dict[str, list[str]] = {}
     current_caption: str | None = None
@@ -305,9 +308,13 @@ def _parse_toc() -> dict[str, list[str]]:
                 current_caption = cap_match.group(1).strip()
                 sections[current_caption] = []
                 continue
-            file_match = re.match(r"\s*-\s*file:\s*(.+)", line)
+            # Only match chapter-level files (≤ 6 leading spaces), skip
+            # deeper "sections:" entries which are sub-pages.
+            file_match = re.match(r"(\s*)-\s*file:\s*(.+)", line)
             if file_match and current_caption is not None:
-                sections[current_caption].append(file_match.group(1).strip())
+                indent = len(file_match.group(1))
+                if indent <= 6:
+                    sections[current_caption].append(file_match.group(2).strip())
     return sections
 
 

@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/04_workflow_examples.html#pattern-1-prompt-chaining)\n## Prompt Chaining (Text-only)\n**Goal:** Improve reliability by splitting one request into smaller prompts.\n\n**How to run:** Click **Run: Prompt Chaining**.\n\n**Pattern:** Simplify → Adapt for Kids → Shopping List\n\n*(No tools, no loops — just multiple LLM calls.)*",
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/04a_prompt_chaining.html)\n## Prompt Chaining (Text-only)\n**Goal:** Improve reliability by splitting one request into smaller prompts.\n\n**How to run:** Click **Run: Prompt Chaining**.\n\n**Pattern:** Simplify → Adapt for Kids → Shopping List\n\n*(No tools, no loops — just multiple LLM calls.)*",
         "height": 240,
         "width": 700,
         "color": 3

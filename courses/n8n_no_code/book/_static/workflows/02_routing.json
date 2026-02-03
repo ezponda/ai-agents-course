@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/04_workflow_examples.html#pattern-2-routing)\n## Routing (Choose a path)\n**Goal:** Send each request to the right specialist prompt.\n\n**How to run:** Click **Run: Ticket Routing**.\n\n**Pattern:** Classify → Switch → Specialist response\n\n*(Still text-only — routing is about choosing the next step.)*",
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/04b_routing.html)\n## Routing (Choose a path)\n**Goal:** Send each request to the right specialist prompt.\n\n**How to run:** Click **Run: Ticket Routing**.\n\n**Pattern:** Classify → Switch → Specialist response\n\n*(Still text-only — routing is about choosing the next step.)*",
         "height": 240,
         "width": 700,
         "color": 2

@@ -157,7 +157,7 @@ Every workflow JSON must include a Sticky Note with:
 ```json
 {
   "parameters": {
-    "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/04_workflow_examples.html#pattern-1-prompt-chaining)\n## Pattern Title\n**Goal:** ...",
+    "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/04a_prompt_chaining.html)\n## Pattern Title\n**Goal:** ...",
     "height": 240,
     "width": 700
   },
@@ -166,10 +166,10 @@ Every workflow JSON must include a Sticky Note with:
 ```
 
 **Link patterns:**
-- Workflow Examples: `https://ezponda.github.io/ai-agents-course/04_workflow_examples.html#pattern-X-name`
+- Workflow Examples: `https://ezponda.github.io/ai-agents-course/04{a,b,c,d}_{pattern_name}.html`
 - AI Agent Examples: `https://ezponda.github.io/ai-agents-course/05_first_ai_agent.html#example-X-name`
 
-**Anchor format:** Header text in lowercase, spaces → hyphens (e.g., `## Pattern 1: Prompt Chaining` → `#pattern-1-prompt-chaining`)
+**Anchor format:** Each workflow pattern has its own page (e.g., `04a_prompt_chaining.html`), so anchors are rarely needed. For other pages: header text in lowercase, spaces → hyphens.
 
 ### 12. Data Flow Dropdowns
 
