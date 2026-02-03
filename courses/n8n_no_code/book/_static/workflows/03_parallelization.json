@@ -99,9 +99,9 @@
           "assignments": [
             {
               "id": "2fde2af2-6e98-4119-a1f1-38aed84a67d0",
-              "name": "facts_json",
-              "type": "string",
-              "value": "={{ $json.text }}"
+              "name": "facts",
+              "type": "object",
+              "value": "={{ JSON.parse($json.text) }}"
             }
           ]
         },
@@ -145,9 +145,9 @@
           "assignments": [
             {
               "id": "4054cf74-425a-4b01-9823-15e69488083b",
-              "name": "sentiment_json",
-              "type": "string",
-              "value": "={{ $json.text }}"
+              "name": "sentiment",
+              "type": "object",
+              "value": "={{ JSON.parse($json.text) }}"
             }
           ]
         },
@@ -242,11 +242,11 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=facts_json:\n{{ $json.facts_json }}\n\nsentiment_json:\n{{ $json.sentiment_json }}\n\ndraft_reply:\n{{ $json.draft_reply }}\n\nFinal reply:",
+        "text": "=Customer: {{ $json.facts.customer_name }}\nIssue: {{ $json.facts.issue }}\nDeadline: {{ $json.facts.deadline }}\nRequested action: {{ $json.facts.requested_action }}\n\nSentiment: {{ $json.sentiment.sentiment }}\nUrgency: {{ $json.sentiment.urgency }}\nRisk flags: {{ $json.sentiment.risk_flags.join(', ') }}\n\nDraft reply:\n{{ $json.draft_reply }}\n\nFinal reply:",
         "messages": {
           "messageValues": [
             {
-              "message": "=You are a senior support agent.\nYou will receive:\n- facts_json (extracted facts)\n- sentiment_json (sentiment & urgency)\n- draft_reply (initial draft)\n\nTask:\n1) Improve the draft to match urgency and include any critical missing info questions.\n2) Keep it under 160 words.\n3) Output ONLY the final reply text."
+              "message": "=You are a senior support agent.\nYou will receive:\n- Parsed customer facts (name, issue, deadline, requested action)\n- Parsed sentiment analysis (sentiment, urgency, risk flags)\n- A draft reply\n\nTask:\n1) Improve the draft to match urgency and include any critical missing info questions.\n2) Keep it under 160 words.\n3) Output ONLY the final reply text."
             }
           ]
         },

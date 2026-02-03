@@ -101,7 +101,7 @@
               "id": "de6be91c-012d-46b8-aa94-371be66fe131",
               "name": "route",
               "type": "string",
-              "value": "={{ $json.text.trim() }}"
+              "value": "={{ $json.text.trim().toLowerCase() }}"
             }
           ]
         },
@@ -191,7 +191,9 @@
             }
           ]
         },
-        "options": {}
+        "options": {
+          "fallbackOutput": "extra"
+        }
       },
       "id": "7e1e10ff-75a9-46cd-a582-2853dd262379",
       "name": "Switch — Route",
@@ -416,6 +418,13 @@
         [
           {
             "node": "Order Status Specialist — Draft Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Support Specialist — Draft Reply",
             "type": "main",
             "index": 0
           }

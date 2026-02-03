@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/04_workflow_examples.html#pattern-1-prompt-chaining)\n## Prompt Chaining (Text-only)\n**Goal:** Improve reliability by splitting one request into smaller prompts.\n\n**How to run:** Click **Run: Prompt Chaining**.\n\n**Pattern:** Outline → Improve → Draft\n\n*(No tools, no loops — just multiple LLM calls.)*",
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/04_workflow_examples.html#pattern-1-prompt-chaining)\n## Prompt Chaining (Text-only)\n**Goal:** Improve reliability by splitting one request into smaller prompts.\n\n**How to run:** Click **Run: Prompt Chaining**.\n\n**Pattern:** Simplify → Adapt for Kids → Shopping List\n\n*(No tools, no loops — just multiple LLM calls.)*",
         "height": 240,
         "width": 700,
         "color": 3
@@ -34,28 +34,22 @@
           "assignments": [
             {
               "id": "4eef80cc-484e-451a-b1cc-f88aa7d9e1b5",
-              "name": "topic",
+              "name": "recipe_name",
               "type": "string",
-              "value": "Create a short internal memo: Why we should pilot an AI agent for customer support."
+              "value": "Classic Beef Lasagna"
             },
             {
               "id": "872d7964-a169-4e99-a45e-b35de195ee72",
-              "name": "audience",
+              "name": "recipe",
               "type": "string",
-              "value": "Operations and Customer Support leadership"
-            },
-            {
-              "id": "886b261a-5cc7-4bc7-aa21-c0653fe8b932",
-              "name": "constraints",
-              "type": "string",
-              "value": "Keep it under 400 words. Use clear, non-technical language. Include 3 bullet points with benefits and 1 with risks."
+              "value": "Ingredients:\n- 500g ground beef\n- 1 onion, finely diced\n- 3 cloves garlic, minced\n- 800g canned crushed tomatoes\n- 2 tbsp tomato paste\n- 1 tsp dried oregano\n- 1 tsp dried basil\n- Salt and pepper to taste\n- 250g lasagna sheets\n- 500g ricotta cheese\n- 1 egg\n- 300g shredded mozzarella\n- 50g grated parmesan\n- Fresh basil for garnish\n\nInstructions:\n1. Brown the ground beef in a large skillet over medium-high heat. Drain excess fat.\n2. Sauté the onion and garlic until translucent. Add crushed tomatoes, tomato paste, oregano, basil, salt, and pepper. Simmer for 20 minutes.\n3. Mix ricotta, egg, and half the parmesan in a bowl.\n4. Preheat oven to 375°F (190°C).\n5. Layer in a 9x13 baking dish: sauce, lasagna sheets, ricotta mixture, mozzarella. Repeat 3 times.\n6. Top with remaining sauce and mozzarella.\n7. Cover with foil and bake 25 minutes. Remove foil, bake 15 more minutes until golden.\n8. Let rest 10 minutes before serving. Garnish with fresh basil."
             }
           ]
         },
         "options": {}
       },
       "id": "69946b77-6b64-4749-adc1-b65b7c1c39c8",
-      "name": "Input — Writing Brief",
+      "name": "Input — Recipe",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
@@ -80,18 +74,18 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Topic: {{ $json.topic }}\nAudience: {{ $json.audience }}\nConstraints: {{ $json.constraints }}\n\nReturn only the outline.",
+        "text": "=Recipe: {{ $json.recipe_name }}\n\n{{ $json.recipe }}\n\nSimplify this recipe for a beginner cook.",
         "messages": {
           "messageValues": [
             {
-              "message": "=You are a writing assistant.\nCreate a clear outline for the memo.\n\nRules:\n- 5–7 sections\n- Include where the benefits bullets and risks bullet will go\n- Output ONLY the outline\n"
+              "message": "=You are a cooking instructor for beginners.\nSimplify the recipe into clear, easy-to-follow steps.\n\nRules:\n- Use simple language (no cooking jargon)\n- Explain any technique briefly (e.g., \"sauté\" → \"cook in a pan, stirring often\")\n- Keep all original ingredients\n- Number every step clearly\n- Output ONLY the simplified recipe\n"
             }
           ]
         },
         "batching": {}
       },
       "id": "8fa915ed-1ac8-4040-a3e4-1d84cf7819c9",
-      "name": "Step 1 — Create Outline",
+      "name": "Step 1 — Simplify Recipe",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
@@ -105,7 +99,7 @@
           "assignments": [
             {
               "id": "1af2ecde-11ec-4093-a100-fa5c461024cb",
-              "name": "outline",
+              "name": "simplified_recipe",
               "type": "string",
               "value": "={{ $json.text }}"
             }
@@ -114,7 +108,7 @@
         "options": {}
       },
       "id": "d2e3f1b1-2581-4a1c-95b3-e88e8371bc20",
-      "name": "Store Outline",
+      "name": "Store Simplified Recipe",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
@@ -125,18 +119,18 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Original outline:\n{{ $json.outline }}\n\nReturn only the improved outline.",
+        "text": "=Simplified recipe:\n{{ $json.simplified_recipe }}\n\nAdapt this for kids.",
         "messages": {
           "messageValues": [
             {
-              "message": "=You are a strict editor.\nImprove the outline using this checklist:\n- Logical flow\n- Clear headings\n- Covers constraints (benefits + risks)\n- Non-technical wording\n\nOutput ONLY the improved outline (no commentary)."
+              "message": "=You are a family cooking expert.\nAdapt the simplified recipe so it is fun and safe for kids aged 5–10 to help make.\n\nRules:\n- Suggest milder alternatives for strong flavors (e.g., less garlic, skip pepper)\n- Add fun names for steps (e.g., \"Squish the cheese mix!\")\n- Flag any step that needs adult help (hot oven, sharp knives)\n- Adjust portions for a family with kids\n- Output ONLY the kid-friendly recipe"
             }
           ]
         },
         "batching": {}
       },
       "id": "5730d06a-b2ca-49e2-993c-d3d9dd5c63b4",
-      "name": "Step 2 — Improve Outline",
+      "name": "Step 2 — Adapt for Kids",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
@@ -150,7 +144,7 @@
           "assignments": [
             {
               "id": "21ac4458-da43-4bba-be36-5b7527d41418",
-              "name": "improved_outline",
+              "name": "kid_friendly_recipe",
               "type": "string",
               "value": "={{ $json.text }}"
             }
@@ -159,7 +153,7 @@
         "options": {}
       },
       "id": "6092776b-c374-4f81-a5e7-87111b8dd3f1",
-      "name": "Store Improved Outline",
+      "name": "Store Kid-Friendly Recipe",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
@@ -170,18 +164,18 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Outline:\n{{ $json.improved_outline }}\n\nWrite the memo now.",
+        "text": "=Recipe:\n{{ $json.kid_friendly_recipe }}\n\nCreate a shopping list.",
         "messages": {
           "messageValues": [
             {
-              "message": "=You are a business writer.\nWrite the memo based on the outline.\n\nRules:\n- Follow the outline order\n- Keep under 400 words\n- Use clear, non-technical language\n- Include exactly: 3 benefit bullets + 1 risk bullet\n\nOutput ONLY the memo text."
+              "message": "=You are a helpful shopping assistant.\nCreate a shopping list from the recipe.\n\nRules:\n- Group items by store section (Produce, Dairy, Meat, Pantry)\n- Include quantities\n- Skip items most kitchens already have (salt, pepper, olive oil)\n- Add a \"Check at home first\" section for common pantry items\n- Output ONLY the shopping list"
             }
           ]
         },
         "batching": {}
       },
       "id": "a14ac311-653b-46b8-b5ae-07785ac90df5",
-      "name": "Step 3 — Draft Memo",
+      "name": "Step 3 — Shopping List",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
@@ -195,7 +189,7 @@
           "assignments": [
             {
               "id": "85cf0a05-d3a0-471e-8b98-4af385819ee3",
-              "name": "final_memo",
+              "name": "shopping_list",
               "type": "string",
               "value": "={{ $json.text }}"
             }
@@ -205,7 +199,7 @@
         "options": {}
       },
       "id": "6770e49a-bf9c-4a83-89e1-590aa2417dce",
-      "name": "Output — Final Memo",
+      "name": "Output — Shopping List",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
@@ -219,73 +213,73 @@
       "main": [
         [
           {
-            "node": "Input — Writing Brief",
+            "node": "Input — Recipe",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Input — Writing Brief": {
+    "Input — Recipe": {
       "main": [
         [
           {
-            "node": "Step 1 — Create Outline",
+            "node": "Step 1 — Simplify Recipe",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Step 1 — Create Outline": {
+    "Step 1 — Simplify Recipe": {
       "main": [
         [
           {
-            "node": "Store Outline",
+            "node": "Store Simplified Recipe",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Store Outline": {
+    "Store Simplified Recipe": {
       "main": [
         [
           {
-            "node": "Step 2 — Improve Outline",
+            "node": "Step 2 — Adapt for Kids",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Step 2 — Improve Outline": {
+    "Step 2 — Adapt for Kids": {
       "main": [
         [
           {
-            "node": "Store Improved Outline",
+            "node": "Store Kid-Friendly Recipe",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Store Improved Outline": {
+    "Store Kid-Friendly Recipe": {
       "main": [
         [
           {
-            "node": "Step 3 — Draft Memo",
+            "node": "Step 3 — Shopping List",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Step 3 — Draft Memo": {
+    "Step 3 — Shopping List": {
       "main": [
         [
           {
-            "node": "Output — Final Memo",
+            "node": "Output — Shopping List",
             "type": "main",
             "index": 0
           }
@@ -296,17 +290,17 @@
       "ai_languageModel": [
         [
           {
-            "node": "Step 1 — Create Outline",
+            "node": "Step 1 — Simplify Recipe",
             "type": "ai_languageModel",
             "index": 0
           },
           {
-            "node": "Step 2 — Improve Outline",
+            "node": "Step 2 — Adapt for Kids",
             "type": "ai_languageModel",
             "index": 0
           },
           {
-            "node": "Step 3 — Draft Memo",
+            "node": "Step 3 — Shopping List",
             "type": "ai_languageModel",
             "index": 0
           }
