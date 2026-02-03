@@ -17,12 +17,16 @@ parts:
       - file: 07_tool_calling
       - file: 08_guardrails_safety
       - file: 09_rag
-      - file: 10_recipe_assistant
+  - caption: Projects
+    numbered: false
+    chapters:
+      - file: project_1_recipe_assistant
   - caption: Appendices
     numbered: false
     chapters:
-      - file: appendix_node_toolbox
-      - file: appendix_ai_nodes
-      - file: appendix_prompt_engineering
-      - file: appendix_prompt_engineering_agents
-      - file: appendix_resources
+      - file: appendix_a_node_toolbox
+      - file: appendix_b_going_live
+      - file: appendix_c_ai_nodes
+      - file: appendix_d_prompt_engineering
+      - file: appendix_e_prompt_engineering_agents
+      - file: appendix_f_resources

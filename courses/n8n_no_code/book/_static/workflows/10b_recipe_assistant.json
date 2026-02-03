@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/10_recipe_assistant.html#workflow-2-recipe-assistant-orchestrator)\n## Recipe Assistant (Orchestrator Agent)\n**Goal:** An agent that searches for real recipes online and delegates shopping list creation to a sub-workflow.\n\n**Tools:**\n- **Recipe Search** (HTTP Request) — searches TheMealDB API\n- **Shopping List Generator** (Call n8n Workflow) — invokes the Shopping List Agent sub-workflow\n\n**How to run:** Click **Run: Recipe Assistant** and edit the request in the Input node.",
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_1_recipe_assistant.html#workflow-2-recipe-assistant-orchestrator)\n## Recipe Assistant (Orchestrator Agent)\n**Goal:** An agent that searches for real recipes online and delegates shopping list creation to a sub-workflow.\n\n**Tools:**\n- **Recipe Search** (HTTP Request) — searches TheMealDB API\n- **Shopping List Generator** (Call n8n Workflow) — invokes the Shopping List Agent sub-workflow\n\n**How to run:** Click **Run: Recipe Assistant** and edit the request in the Input node.",
         "height": 260,
         "width": 700,
         "color": 4

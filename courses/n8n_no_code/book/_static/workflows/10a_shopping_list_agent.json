@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/10_recipe_assistant.html#workflow-1-shopping-list-agent-sub-workflow)\n## Shopping List Agent (Sub-Workflow)\n**Goal:** Generate a shopping list with cost estimates from a recipe.\n\n**How it works:** This is a sub-workflow called by the Recipe Assistant agent. It receives `recipe_text` and returns a shopping list grouped by store section with estimated costs.\n\n**To test independently:** Click **Test workflow** and provide a recipe in the input.",
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_1_recipe_assistant.html#workflow-1-shopping-list-agent-sub-workflow)\n## Shopping List Agent (Sub-Workflow)\n**Goal:** Generate a shopping list with cost estimates from a recipe.\n\n**How it works:** This is a sub-workflow called by the Recipe Assistant agent. It receives `recipe_text` and returns a shopping list grouped by store section with estimated costs.\n\n**To test independently:** Click **Test workflow** and provide a recipe in the input.",
         "height": 240,
         "width": 700,
         "color": 3

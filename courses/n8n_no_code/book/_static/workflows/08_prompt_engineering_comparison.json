@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/appendix_prompt_engineering.html)\n## Prompt Engineering Comparison\n**Goal:** See how different prompt techniques improve AI responses.\n\n**How to use:**\n1. Click the Manual Trigger\n2. Run the workflow\n3. Compare the 4 outputs side by side\n\n**Try these test messages:**\n- \"I was charged twice for my order\"\n- \"How do I reset my password?\"\n- \"Your product is amazing!\"\n- \"asdfghjkl\" (gibberish)",
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/appendix_d_prompt_engineering.html)\n## Prompt Engineering Comparison\n**Goal:** See how different prompt techniques improve AI responses.\n\n**How to use:**\n1. Click the Manual Trigger\n2. Run the workflow\n3. Compare the 4 outputs side by side\n\n**Try these test messages:**\n- \"I was charged twice for my order\"\n- \"How do I reset my password?\"\n- \"Your product is amazing!\"\n- \"asdfghjkl\" (gibberish)",
         "height": 320,
         "width": 420,
         "color": 3

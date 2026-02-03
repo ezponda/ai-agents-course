@@ -58,11 +58,33 @@ https://github.com/ezponda/ai-agents-course/blob/main/courses/n8n_no_code/book/_
 - Check that documentation links work (n8n docs change frequently)
 - Manual Trigger docs: `https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.manualworkflowtrigger/`
 
-### 6. If You Rename or Delete a Workflow
+### 6. File Naming Conventions
+
+| Category | Pattern | Example |
+|----------|---------|---------|
+| Course chapters | `NN_name.ipynb` | `01_setup.ipynb` |
+| Projects | `project_N_name.ipynb` | `project_1_recipe_assistant.ipynb` |
+| Appendices | `appendix_X_name.ipynb` (X = A–Z) | `appendix_a_node_toolbox.ipynb` |
+
+Titles inside the notebook must match: `# Project 1: Recipe Assistant`, `# Appendix A: Node Toolbox`.
+
+The verification script (check 6) enforces sequential letters/numbers.
+
+### 7. If You Rename or Delete a Workflow JSON
 Search all `.ipynb` files for references and update them:
 ```bash
 grep -r "filename.json" courses/n8n_no_code/book/
 ```
+
+### 8. If You Rename or Delete a Notebook
+Update **all five** places:
+1. `_toc.yml` — `file:` entry (stem without `.ipynb`)
+2. `check_references.py` — `NOTEBOOK_WORKFLOW_MAP` key (if present)
+3. Workflow JSON sticky notes — `ezponda.github.io/ai-agents-course/{stem}.html` URLs
+4. Cross-references in other notebooks — Jupyter Book `[text](file_stem)` links
+5. Course Structure table in `00_introduction.ipynb` (if title/position changed)
+
+Then run `python3 courses/n8n_no_code/check_references.py` — it catches broken sticky-note URLs (check 9) and TOC/intro mismatches (check 5).
 
 ## Verification Script
 
@@ -75,9 +97,15 @@ python3 courses/n8n_no_code/check_references.py
 1. All JSON workflow references in notebooks exist
 2. All workflow JSON files are valid
 3. Documented prompts match actual workflow prompts (warns if mismatch)
-4. Reports unreferenced workflows
+4. Reports unreferenced / missing workflows
+5. `_toc.yml` ↔ Course Structure table in `00_introduction.ipynb`
+6. Title naming conventions (Appendix A–Z, Project 1–N sequential)
+7. Workflow-documenting notebooks have import URL, download, build-from-scratch
+8. `{download}` directives point to existing files
+9. Sticky notes in workflow JSONs have valid `ezponda.github.io` URLs
+10. (Optional, `--check-urls`) HEAD-request all external URLs
 
-### 7. Documenting Prompts
+### 9. Documenting Prompts
 
 When adding a new workflow example, always document the actual prompts used:
 
@@ -95,7 +123,7 @@ Rules:
 
 **Important:** Copy prompts exactly from the workflow JSON. The verification script checks for consistency.
 
-### 8. Import URL + Download Pattern
+### 10. Import URL + Download Pattern
 
 For each workflow, provide both import and download options:
 
@@ -118,7 +146,7 @@ https://raw.githubusercontent.com/ezponda/ai-agents-course/main/courses/n8n_no_c
 {download}`filename.json <_static/workflows/filename.json>`
 ```
 
-### 9. Workflow JSON Sticky Notes
+### 11. Workflow JSON Sticky Notes
 
 Every workflow JSON must include a Sticky Note with:
 1. **Course documentation link** at the top (first line)
@@ -143,7 +171,7 @@ Every workflow JSON must include a Sticky Note with:
 
 **Anchor format:** Header text in lowercase, spaces → hyphens (e.g., `## Pattern 1: Prompt Chaining` → `#pattern-1-prompt-chaining`)
 
-### 10. Data Flow Dropdowns
+### 12. Data Flow Dropdowns
 
 For each workflow example in the notebooks, add a collapsible dropdown showing the detailed data transformation at each step.
 
@@ -175,7 +203,7 @@ For each workflow example in the notebooks, add a collapsible dropdown showing t
 └─────────────────┘            └─────────────────┘
 ```
 
-### 11. Build from Scratch Dropdowns
+### 13. Build from Scratch Dropdowns
 
 Each workflow example should include a step-by-step tutorial dropdown that allows students to build the workflow manually instead of importing.
 
@@ -227,7 +255,7 @@ Each workflow example should include a step-by-step tutorial dropdown that allow
   \```
 ```
 
-### 12. Course Structure Table (Introduction)
+### 14. Course Structure Table (Introduction)
 
 The intro page (`00_introduction.ipynb`) has a "Course Structure" table that must stay in sync with `_toc.yml`.
 
