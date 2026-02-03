@@ -52,6 +52,7 @@ https://github.com/ezponda/ai-agents-course/blob/main/courses/n8n_no_code/book/_
 - Basic LLM Chain outputs to `text`
 - AI Agent outputs to `output`
 - Always verify field names in the actual workflow JSON before documenting
+- **Keep notebooks and workflow JSONs in sync.** If you change a prompt or field value in a notebook, update the corresponding workflow JSON too (and vice versa).
 
 ### 5. Links
 - Check that documentation links work (n8n docs change frequently)
@@ -258,6 +259,16 @@ The table provides "What you'll do" descriptions that the TOC sidebar doesn't ha
 1. Search: `grep -r "old-url" courses/n8n_no_code/book/`
 2. Replace in all files
 3. Rebuild and verify
+
+## TODO List (Local)
+
+There is a `TODO.md` file at the repo root. It is in `.gitignore` and never pushed.
+
+**On every commit:** Read `TODO.md` and show a short reminder of pending tasks (the `- [ ]` lines) so the user doesn't forget them. Keep it brief — just list the bold labels.
+
+**When the user adds a task:** Add it to the `## Pending` section of `TODO.md`.
+
+**When a task is done:** Move it to `## Completed` with the date, changing `- [ ]` to `- [x]`.
 
 ## Style Notes
 

@@ -42,3 +42,6 @@ courses/n8n_no_code/reports/
 
 # Pages output (optional)
 site/
+
+# Local TODO (not pushed)
+TODO.md

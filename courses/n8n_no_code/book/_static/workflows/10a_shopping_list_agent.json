@@ -1,0 +1,143 @@
+{
+  "name": "10a — Shopping List Agent (Sub-Workflow)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/10_recipe_assistant.html#workflow-1-shopping-list-agent-sub-workflow)\n## Shopping List Agent (Sub-Workflow)\n**Goal:** Generate a shopping list with cost estimates from a recipe.\n\n**How it works:** This is a sub-workflow called by the Recipe Assistant agent. It receives `recipe_text` and returns a shopping list grouped by store section with estimated costs.\n\n**To test independently:** Click **Test workflow** and provide a recipe in the input.",
+        "height": 240,
+        "width": 700,
+        "color": 3
+      },
+      "id": "a1b2c3d4-1111-4aaa-bbbb-100000000001",
+      "name": "NOTE — Shopping List Agent",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        -520
+      ]
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "recipe_text",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-1111-4aaa-bbbb-100000000002",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -600,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.recipe_text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a shopping assistant.\nFrom the recipe provided, create:\n1. A shopping list grouped by store section (Produce, Meat, Dairy, Pantry)\n2. Estimated price per item (typical US grocery prices)\n3. A grand total\n4. 2-3 budget tips\n\nRules:\n- Include exact quantities from the recipe\n- Skip items most kitchens already have (salt, pepper, oil)\n- Output ONLY the shopping list and cost breakdown"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "a1b2c3d4-1111-4aaa-bbbb-100000000003",
+      "name": "Shopping & Cost LLM",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -340,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "a1b2c3d4-1111-4aaa-bbbb-100000000004",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -340,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1b2c3d4-1111-4aaa-bbbb-100000000005",
+              "name": "shopping_list_with_cost",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-1111-4aaa-bbbb-100000000006",
+      "name": "Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -80,
+        -200
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Shopping & Cost LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shopping & Cost LLM": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Shopping & Cost LLM",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

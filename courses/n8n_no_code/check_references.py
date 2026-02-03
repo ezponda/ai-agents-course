@@ -23,8 +23,8 @@ WORKFLOWS_DIR = SCRIPT_DIR / "book" / "_static" / "workflows"
 
 def find_json_references(content: str) -> list[str]:
     """Extract .json filenames from content."""
-    # Match patterns like: 01_prompt_chaining.json or `05_ai_agent.json`
-    pattern = r'[\`\[\(]?(\d{2}_[a-zA-Z0-9_]+\.json)[\`\]\)]?'
+    # Match patterns like: 01_prompt_chaining.json, `05_ai_agent.json`, or 10a_shopping_list.json
+    pattern = r'[\`\[\(]?(\d{2}[a-z]?_[a-zA-Z0-9_]+\.json)[\`\]\)]?'
     return list(set(re.findall(pattern, content)))
 
 def check_notebooks():
@@ -178,6 +178,10 @@ def check_prompt_consistency():
         ],
         "appendix_prompt_engineering.ipynb": [
             "08_prompt_engineering_comparison.json"
+        ],
+        "10_recipe_assistant.ipynb": [
+            "10a_shopping_list_agent.json",
+            "10b_recipe_assistant.json"
         ]
     }
 

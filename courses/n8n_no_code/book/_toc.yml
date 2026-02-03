@@ -17,6 +17,7 @@ parts:
       - file: 07_tool_calling
       - file: 08_guardrails_safety
       - file: 09_rag
+      - file: 10_recipe_assistant
   - caption: Appendices
     numbered: false
     chapters:
