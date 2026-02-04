@@ -203,7 +203,7 @@ NOTEBOOK_WORKFLOW_MAP = {
     "04d_human_in_the_loop.ipynb": ["04_human_in_the_loop.json"],
     "06_first_ai_agent.ipynb": [
         "05_ai_agent_basics_calculator_memory.json",
-        "06_ai_agent_tools_wikipedia_calculator.json",
+        "06_ai_agent_tools_serpapi_calculator.json",
         "07_ai_agent_chat_trigger_memory.json",
     ],
     "appendix_d_prompt_engineering.ipynb": [

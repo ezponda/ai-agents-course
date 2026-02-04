@@ -1,10 +1,10 @@
 {
-  "name": "06 — AI Agent Tools (Wikipedia + Calculator)",
+  "name": "06 — AI Agent Tools (SerpAPI + Calculator + Think)",
   "nodes": [
     {
       "parameters": {
-        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/06_first_ai_agent.html#example-2-multi-tool-agent-wikipedia-calculator-think)\n## AI Agent Tools — Wikipedia + Calculator (+ Think)\n\n**Goal:** One agent, multiple tools. The agent chooses *which* tool to call.\n\n### Credentials needed\n- **OpenRouter API key** (Settings → Credentials)\n- Wikipedia and Calculator need **no credentials**\n\n### Cost safety\nKeep workflows in **Test mode** (not Activated) while learning.\n\n### What to edit\n- In **Input — Agent Prompt**, change `chatInput`\n- Optional: reuse the same `sessionId` to keep memory\n\n### Tools connected\n- **Wikipedia** → look up a fact (no API key)\n- **Calculator** → do any math\n- **Think** → encourages a quick internal plan before answering\n- **Simple Memory** → remembers context per `sessionId`\n\n### Try this\n1. `Using Wikipedia, who is the CEO of OpenAI? When did they take the role?`\n2. `Look up the population of Tokyo and calculate what 2.5% of it would be.`\n3. Business example: `Research when GDPR was enacted and calculate how many years it's been in effect as of 2026.`\n\n**Common mistake:** Asking the agent to \"guess\" dates — always tell it to verify with Wikipedia first.\n",
-        "height": 400,
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/06_first_ai_agent.html#example-2-multi-tool-agent-serpapi-calculator-think)\n## AI Agent Tools — SerpAPI + Calculator (+ Think)\n\n**Goal:** One agent, multiple tools. The agent chooses *which* tool to call.\n\n### Credentials needed\n- **OpenRouter API key** (Settings → Credentials)\n- **SerpAPI key** (Settings → Credentials) — free tier at [serpapi.com](https://serpapi.com)\n- Calculator and Think need **no credentials**\n\n### Cost safety\nKeep workflows in **Test mode** (not Activated) while learning.\n\n### What to edit\n- In **Input — Agent Prompt**, change `chatInput`\n- Optional: reuse the same `sessionId` to keep memory\n\n### Tools connected\n- **SerpAPI (Google Search)** → search for salary data, job market info\n- **Calculator** → do any math\n- **Think** → encourages a quick internal plan before answering\n- **Simple Memory** → remembers context per `sessionId`\n\n### Try this\n1. `Search for the average data scientist salary in Spain. Then calculate the monthly net salary after 24% income tax.`\n2. `What is the average software engineer salary in Berlin? Calculate the monthly net after 30% tax.`\n3. `Compare junior vs senior data analyst salaries in London.`\n\n**Common mistake:** Not adding SerpAPI credentials — the tool will fail without an API key.\n",
+        "height": 420,
         "width": 860,
         "color": 2
       },
@@ -13,7 +13,7 @@
       "type": "n8n-nodes-base.stickyNote",
       "position": [
         -760,
-        -370
+        -390
       ],
       "typeVersion": 1
     },
@@ -35,7 +35,7 @@
             {
               "id": "49ebb8cf-ed4e-415a-8ef9-da1c5537894e",
               "name": "chatInput",
-              "value": "={{ $json.chatInput || \"Using Wikipedia, tell me who Ada Lovelace was (2 bullets). Then give the year of her Notes and compute how many years ago that was from 2026.\" }}",
+              "value": "={{ $json.chatInput || \"Search for the average data scientist salary in Spain. Then calculate the monthly net salary after 24% income tax.\" }}",
               "type": "string"
             },
             {
@@ -62,7 +62,7 @@
         "promptType": "define",
         "text": "={{ $json.chatInput }}",
         "options": {
-          "systemMessage": "You are a concise assistant.\n\nRules:\n- For factual questions about people/places/dates: verify with Wikipedia.\n- For arithmetic: ALWAYS use Calculator.\n- Use Think briefly (1-2 sentences) to plan before calling tools.\n- Output: short bullets, then the final computed number."
+          "systemMessage": "You are a salary research assistant.\n\nRules:\n- To find salary data, job market info, or company details: use the Google Search tool.\n- For arithmetic (tax calculations, salary comparisons): ALWAYS use Calculator.\n- Use Think briefly (1-2 sentences) to plan before calling tools.\n- Output: short bullets with sources, then the final computed number."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -72,7 +72,7 @@
         0
       ],
       "id": "e814548a-c793-4eb4-a119-d66916088267",
-      "name": "AI Agent — Multi-Tool"
+      "name": "AI Agent — Salary Research"
     },
     {
       "parameters": {
@@ -128,14 +128,14 @@
     },
     {
       "parameters": {},
-      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
       "typeVersion": 1,
       "position": [
         0,
         240
       ],
       "id": "9c6fc6c1-754f-4b17-b88c-20ce0ea75e46",
-      "name": "Wikipedia"
+      "name": "SerpAPI"
     },
     {
       "parameters": {},
@@ -176,14 +176,14 @@
       "main": [
         [
           {
-            "node": "AI Agent — Multi-Tool",
+            "node": "AI Agent — Salary Research",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "AI Agent — Multi-Tool": {
+    "AI Agent — Salary Research": {
       "main": [
         [
           {
@@ -198,7 +198,7 @@
       "ai_languageModel": [
         [
           {
-            "node": "AI Agent — Multi-Tool",
+            "node": "AI Agent — Salary Research",
             "type": "ai_languageModel",
             "index": 0
           }
@@ -209,18 +209,18 @@
       "ai_memory": [
         [
           {
-            "node": "AI Agent — Multi-Tool",
+            "node": "AI Agent — Salary Research",
             "type": "ai_memory",
             "index": 0
           }
         ]
       ]
     },
-    "Wikipedia": {
+    "SerpAPI": {
       "ai_tool": [
         [
           {
-            "node": "AI Agent — Multi-Tool",
+            "node": "AI Agent — Salary Research",
             "type": "ai_tool",
             "index": 0
           }
@@ -231,7 +231,7 @@
       "ai_tool": [
         [
           {
-            "node": "AI Agent — Multi-Tool",
+            "node": "AI Agent — Salary Research",
             "type": "ai_tool",
             "index": 0
           }
@@ -242,7 +242,7 @@
       "ai_tool": [
         [
           {
-            "node": "AI Agent — Multi-Tool",
+            "node": "AI Agent — Salary Research",
             "type": "ai_tool",
             "index": 0
           }

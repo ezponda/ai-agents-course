@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/06_first_ai_agent.html#example-1-calculator-memory)\n## AI Agent Basics — Calculator + Memory\n\n**Goal:** See how an *agent* chooses and uses tools (and how memory works).\n\n### Credentials needed\n- **OpenRouter API key** (Settings → Credentials)\n\n### Cost safety\nKeep workflows in **Test mode** (not Activated) while learning.\n\n### What to edit\n- In **Input — Agent Prompt**, change `chatInput`\n- Optional: change `sessionId` (same ID = same memory)\n\n### Tools connected\n- **Calculator** → agent uses it for any arithmetic\n- **Simple Memory** → keeps short chat history per `sessionId`\n\n### Try this\n1. `What is 17% tip on 46.50? Use the Calculator tool.`\n2. `My name is Alberto. Remember it.` → then run again: `What is my name?`\n3. Business example: `A customer order is $127.50 with 8.25% tax. What's the total?`\n\n**Common mistake:** Doing math without the Calculator tool (the system message forces tool use).\n",
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/06_first_ai_agent.html#example-1-calculator-memory)\n## AI Agent Basics — Calculator + Memory\n\n**Goal:** See how an *agent* chooses and uses tools (and how memory works).\n\n### Credentials needed\n- **OpenRouter API key** (Settings → Credentials)\n\n### Cost safety\nKeep workflows in **Test mode** (not Activated) while learning.\n\n### What to edit\n- In **Input — Agent Prompt**, change `chatInput`\n- Optional: change `sessionId` (same ID = same memory)\n\n### Tools connected\n- **Calculator** → agent uses it for any arithmetic\n- **Simple Memory** → keeps short chat history per `sessionId`\n\n### Try this\n1. `A junior data analyst in Madrid earns €24,000/year. What's the monthly net salary after 15% tax?`\n2. `My name is Alberto. Remember it.` → then run again: `What is my name?`\n3. `A junior developer earns €28,000/year gross. After 19% income tax, what's the monthly take-home pay?`\n\n**Common mistake:** Doing math without the Calculator tool (the system message forces tool use).\n",
         "height": 380,
         "width": 820,
         "color": 4
@@ -35,7 +35,7 @@
             {
               "id": "57bfa86a-cef0-442d-9fae-d4969c96f29a",
               "name": "chatInput",
-              "value": "={{ $json.chatInput || \"What is 17% tip on 46.50? Use the Calculator tool.\" }}",
+              "value": "={{ $json.chatInput || \"A junior data analyst in Madrid earns €24,000/year. What's the monthly net salary after 15% tax?\" }}",
               "type": "string"
             },
             {
@@ -62,7 +62,7 @@
         "promptType": "define",
         "text": "={{ $json.chatInput }}",
         "options": {
-          "systemMessage": "You are a concise assistant.\n\nRules:\n- If the user asks for ANY arithmetic, ALWAYS use the Calculator tool.\n- Keep the final answer short (max 5 lines)."
+          "systemMessage": "You are a salary and career advisor.\n\nRules:\n- For ANY arithmetic (tax, net salary, comparisons), ALWAYS use the Calculator tool.\n- Keep the final answer short (max 5 lines).\n- Format salary figures with currency symbols."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
