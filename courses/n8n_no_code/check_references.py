@@ -12,7 +12,8 @@ Checks:
  7. Workflow-documenting notebooks have import URL, download, build-from-scratch
  8. {download} directives point to existing files
  9. Sticky notes in workflow JSONs have valid ezponda.github.io URLs
-10. (Optional, --check-urls) HEAD-request all external URLs
+10. Deprecated $node['...'] syntax in workflow JSONs
+11. (Optional, --check-urls) HEAD-request all external URLs
 
 Usage:
     python3 courses/n8n_no_code/check_references.py              # checks 1-9
@@ -696,7 +697,39 @@ def check_sticky_notes():
 
 
 # ---------------------------------------------------------------------------
-# Check 10 — external URL check (opt-in)
+# Check 10 — deprecated $node['...'] syntax
+# ---------------------------------------------------------------------------
+def check_deprecated_syntax():
+    """Check for deprecated $node['...'] expressions in workflow JSONs.
+
+    Modern syntax is $('Node Name').first().json.field
+    """
+    issues: list[str] = []
+
+    if not WORKFLOWS_DIR.exists():
+        return issues
+
+    pattern = re.compile(r"\$node\['[^']+'\]")
+
+    for json_path in sorted(WORKFLOWS_DIR.glob("*.json")):
+        if "_archive" in str(json_path):
+            continue
+        try:
+            content = json_path.read_text(encoding="utf-8")
+            matches = pattern.findall(content)
+            if matches:
+                issues.append(
+                    f"{json_path.name}: uses deprecated $node['...'] syntax "
+                    f"({len(matches)} occurrence(s)) — use $('Node').first() instead"
+                )
+        except Exception:
+            pass
+
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# Check 11 — external URL check (opt-in)
 # ---------------------------------------------------------------------------
 def check_external_urls():
     """HEAD-request all external URLs found in notebooks."""
@@ -915,10 +948,22 @@ def main():
         print("  OK: All workflow sticky notes have valid course URLs")
 
     # ------------------------------------------------------------------
-    # Check 10 (opt-in)
+    # Check 10
+    # ------------------------------------------------------------------
+    print("\n[10] Checking for deprecated $node['...'] syntax...")
+    issues = check_deprecated_syntax()
+    all_issues.extend(issues)
+    if issues:
+        for issue in issues:
+            print(f"  ERROR: {issue}")
+    else:
+        print("  OK: No deprecated $node['...'] syntax found")
+
+    # ------------------------------------------------------------------
+    # Check 11 (opt-in)
     # ------------------------------------------------------------------
     if args.check_urls:
-        print("\n[10] Checking external URLs (this may be slow)...")
+        print("\n[11] Checking external URLs (this may be slow)...")
         issues, warnings = check_external_urls()
         all_issues.extend(issues)
         if issues:
@@ -930,7 +975,7 @@ def main():
         if not issues and not warnings:
             print("  OK: All external URLs are reachable")
     else:
-        print("\n[10] External URL check skipped (use --check-urls to enable)")
+        print("\n[11] External URL check skipped (use --check-urls to enable)")
 
     # ------------------------------------------------------------------
     # Final result
