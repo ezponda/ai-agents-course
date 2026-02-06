@@ -288,13 +288,17 @@ The table provides "What you'll do" descriptions that the TOC sidebar doesn't ha
 2. Replace in all files
 3. Rebuild and verify
 
-## TODO List (Local)
+## ⚠️ TODO List — MANDATORY on every commit ⚠️
 
 There is a `TODO.md` file at the repo root. It is in `.gitignore` and never pushed.
 
-**On every commit:** Read `TODO.md` and show a short reminder of pending tasks (the `- [ ]` lines) so the user doesn't forget them. Keep it brief — just list the bold labels.
+**CRITICAL — EVERY TIME you create a git commit, you MUST:**
+1. Read `TODO.md`
+2. Show the user the pending tasks grouped by urgency (🔴 URGENTE, 🟡 MEDIO, 🟢 POCO URGENTE)
+3. List just the **bold labels** of each `- [ ]` item
+4. This is NON-NEGOTIABLE — never skip this step, even if it seems redundant
 
-**When the user adds a task:** Add it to the `## Pending` section of `TODO.md`.
+**When the user adds a task:** Add it to the appropriate urgency section in `TODO.md`.
 
 **When a task is done:** Move it to `## Completed` with the date, changing `- [ ]` to `- [x]`.
 

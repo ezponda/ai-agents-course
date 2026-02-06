@@ -1,0 +1,13 @@
+id,customer_name,subject,body
+E01,Carlos López,Información sobre precios,"Hola, estamos interesados en contratar vuestro plan Enterprise para un equipo de 50 personas. ¿Podríais enviarnos una propuesta con precios?"
+E02,Sarah Miller,Cannot access dashboard,"Hi, I've been trying to log into the platform since this morning but I keep getting a 500 error. I need access urgently for a client presentation today."
+E03,María García,Factura duplicada,"Buenos días, he revisado mis cargos del mes pasado y veo que me habéis cobrado dos veces la suscripción de enero. Necesito que me hagáis un reembolso lo antes posible."
+E04,Jean Dupont,Problème de connexion,"Bonjour, je n'arrive plus à me connecter à mon compte depuis hier. Le système me dit que mon mot de passe est incorrect mais je suis sûr qu'il est bon."
+E05,,Error al exportar datos,"Llevo varios días intentando exportar el informe mensual en PDF y siempre falla a mitad del proceso. He probado con Chrome y Firefox y el resultado es el mismo."
+E06,Tomás Ruiz,Solicitud de demo,"Hola, soy el responsable de IT de una empresa de logística. Nos gustaría agendar una demo para ver cómo funciona vuestra plataforma de automatización."
+E07,Anna Schmidt,Subscription cancellation and refund,"Hello, I would like to cancel my annual subscription immediately. I was charged last week for a renewal I did not authorize. Please process the refund as soon as possible."
+E08,Pedro Navarro,Cambiar método de pago,"Hola, necesito actualizar la tarjeta de crédito asociada a mi cuenta porque la anterior ha caducado. ¿Cómo puedo hacerlo?"
+E09,Lisa Chen,Re: Partnership opportunity,"Hi there, we are a SaaS company based in Singapore and we are interested in exploring a reseller partnership for the APAC region. Could we schedule a call to discuss?"
+E10,Roberto Vega,asdf,"jkl"
+E11,Laura Martín,Varias cosas,"Hola, por un lado quiero saber si tenéis algún descuento para startups y por otro lado tengo un problema: el módulo de reporting no carga desde ayer."
+E12,Kenji Tanaka,バグ報告,"プラットフォームでレポートを作成しようとすると、エラーメッセージが表示されます。この問題を修正していただけますか？"
