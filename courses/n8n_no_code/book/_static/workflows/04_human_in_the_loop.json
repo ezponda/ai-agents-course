@@ -129,13 +129,13 @@
               "id": "store-customer",
               "name": "customer_email",
               "type": "string",
-              "value": "={{ $node['Input — Support Ticket'].json.customer_email }}"
+              "value": "={{ $('Input — Support Ticket').first().json.customer_email }}"
             },
             {
               "id": "store-subject",
               "name": "ticket_subject",
               "type": "string",
-              "value": "={{ $node['Input — Support Ticket'].json.ticket_subject }}"
+              "value": "={{ $('Input — Support Ticket').first().json.ticket_subject }}"
             },
             {
               "id": "store-status",
@@ -187,19 +187,19 @@
               "id": "approved-response",
               "name": "final_response",
               "type": "string",
-              "value": "={{ $node['Store Draft + Status'].json.draft_response }}"
+              "value": "={{ $('Store Draft + Status').first().json.draft_response }}"
             },
             {
               "id": "approved-to",
               "name": "send_to",
               "type": "string",
-              "value": "={{ $node['Store Draft + Status'].json.customer_email }}"
+              "value": "={{ $('Store Draft + Status').first().json.customer_email }}"
             },
             {
               "id": "approved-subject",
               "name": "subject",
               "type": "string",
-              "value": "=Re: {{ $node['Store Draft + Status'].json.ticket_subject }}"
+              "value": "=Re: {{ $('Store Draft + Status').first().json.ticket_subject }}"
             },
             {
               "id": "approved-status",

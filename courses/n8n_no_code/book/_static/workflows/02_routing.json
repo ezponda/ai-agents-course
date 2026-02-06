@@ -207,7 +207,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:",
+        "text": "=Subject: {{ $('Input — Support Ticket').first().json.ticket_subject }}\nBody:\n{{ $('Input — Support Ticket').first().json.ticket_body }}\n\nWrite the reply:",
         "messages": {
           "messageValues": [
             {
@@ -229,7 +229,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:",
+        "text": "=Subject: {{ $('Input — Support Ticket').first().json.ticket_subject }}\nBody:\n{{ $('Input — Support Ticket').first().json.ticket_body }}\n\nWrite the reply:",
         "messages": {
           "messageValues": [
             {
@@ -251,7 +251,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:",
+        "text": "=Subject: {{ $('Input — Support Ticket').first().json.ticket_subject }}\nBody:\n{{ $('Input — Support Ticket').first().json.ticket_body }}\n\nWrite the reply:",
         "messages": {
           "messageValues": [
             {

@@ -134,13 +134,13 @@
               "id": "to",
               "name": "to",
               "type": "string",
-              "value": "={{ $node['Input — Research Topic'].json.recipient }}"
+              "value": "={{ $('Input — Research Topic').first().json.recipient }}"
             },
             {
               "id": "subject",
               "name": "subject",
               "type": "string",
-              "value": "=Research Summary: {{ $node['Input — Research Topic'].json.topic.substring(0, 50) }}..."
+              "value": "=Research Summary: {{ $('Input — Research Topic').first().json.topic.substring(0, 50) }}..."
             },
             {
               "id": "body",
@@ -198,19 +198,19 @@
               "id": "email_to",
               "name": "email_to",
               "type": "string",
-              "value": "={{ $node['Format Email Draft'].json.to }}"
+              "value": "={{ $('Format Email Draft').first().json.to }}"
             },
             {
               "id": "email_subject",
               "name": "email_subject",
               "type": "string",
-              "value": "={{ $node['Format Email Draft'].json.subject }}"
+              "value": "={{ $('Format Email Draft').first().json.subject }}"
             },
             {
               "id": "email_body",
               "name": "email_body",
               "type": "string",
-              "value": "={{ $node['Format Email Draft'].json.body }}"
+              "value": "={{ $('Format Email Draft').first().json.body }}"
             },
             {
               "id": "status",
