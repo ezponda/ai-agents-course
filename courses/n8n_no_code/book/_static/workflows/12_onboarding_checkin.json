@@ -1,0 +1,470 @@
+{
+  "name": "12 — Onboarding Check-in",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_3_onboarding_checkin.html)\n## Smart Onboarding Check-in\n**Goal:** Classify employee check-in responses using AI and route to the right follow-up.\n\n**Credentials:** OpenRouter API key.\n\n**How to run:** Click **Test workflow**, fill in the form, and check the output of each branch.",
+        "height": 260,
+        "width": 700,
+        "color": 4
+      },
+      "id": "12000000-0000-0000-0000-000000000001",
+      "name": "NOTE — Onboarding Check-in",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        -540
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "Onboarding Check-in",
+        "formDescription": "Weekly check-in survey for new employees.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Full name",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Department",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  { "option": "Engineering" },
+                  { "option": "Marketing" },
+                  { "option": "Sales" },
+                  { "option": "Support" },
+                  { "option": "Operations" }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Onboarding week",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  { "option": "Week 1" },
+                  { "option": "Week 2" },
+                  { "option": "Week 3" },
+                  { "option": "Week 4+" }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "How is your onboarding going?",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  { "option": "Great" },
+                  { "option": "Good" },
+                  { "option": "Okay" },
+                  { "option": "Bad" }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Tell us more (optional)",
+              "fieldType": "textarea",
+              "requiredField": false
+            },
+            {
+              "fieldLabel": "Manager email",
+              "fieldType": "text",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "12000000-0000-0000-0000-000000000002",
+      "name": "Onboarding Check-in",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -800,
+        -200
+      ],
+      "webhookId": "12000000-0000-0000-0000-f00000000001"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Rating: {{ $json['How is your onboarding going?'] }}\nComment: {{ $json['Tell us more (optional)'] }}",
+        "options": {
+          "systemMessage": "You classify employee onboarding check-in responses.\n\nInput: a rating (Great / Good / Okay / Bad) and an optional free-text comment.\n\nRules:\n1. If there is no comment, classify based on the rating:\n   - Great or Good → on_track\n   - Okay → needs_help\n   - Bad → at_risk\n\n2. If there IS a comment, read it carefully. Override the rating if:\n   - The comment describes real problems despite a positive rating → needs_help or at_risk\n   - The comment mentions harassment, safety, or serious discomfort → always at_risk\n\nOutput ONLY one word: on_track, needs_help, or at_risk\nNo explanation. No other text. Just the classification word."
+        }
+      },
+      "id": "12000000-0000-0000-0000-000000000003",
+      "name": "Classify Response",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -440,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "12000000-0000-0000-0000-000000000004",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "12000000-0000-0000-0000-a00000000001",
+              "name": "classification",
+              "type": "string",
+              "value": "={{ $json.output.trim().toLowerCase() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "12000000-0000-0000-0000-000000000005",
+      "name": "Clean Classification",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -100,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "12000000-0000-0000-0000-b00000000001",
+                    "leftValue": "={{ $json.classification }}",
+                    "rightValue": "on_track",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "on_track"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "12000000-0000-0000-0000-b00000000002",
+                    "leftValue": "={{ $json.classification }}",
+                    "rightValue": "needs_help",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "needs_help"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "12000000-0000-0000-0000-b00000000003",
+                    "leftValue": "={{ $json.classification }}",
+                    "rightValue": "at_risk",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "at_risk"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "12000000-0000-0000-0000-000000000006",
+      "name": "Route by Classification",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        160,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "12000000-0000-0000-0000-c00000000001",
+              "name": "to",
+              "type": "string",
+              "value": "={{ $('Onboarding Check-in').item.json['Email'] }}"
+            },
+            {
+              "id": "12000000-0000-0000-0000-c00000000002",
+              "name": "subject",
+              "type": "string",
+              "value": "Your onboarding check-in — looking great!"
+            },
+            {
+              "id": "12000000-0000-0000-0000-c00000000003",
+              "name": "body",
+              "type": "string",
+              "value": "=Hi {{ $('Onboarding Check-in').item.json['Full name'] }},\n\nGreat to hear your onboarding is going well! Keep up the great work, and don't hesitate to reach out if you need anything.\n\nBest,\nThe People Team"
+            },
+            {
+              "id": "12000000-0000-0000-0000-c00000000004",
+              "name": "classification",
+              "type": "string",
+              "value": "on_track"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "12000000-0000-0000-0000-000000000007",
+      "name": "Output — On Track",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        -380
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "12000000-0000-0000-0000-c00000000011",
+              "name": "to",
+              "type": "string",
+              "value": "={{ $('Onboarding Check-in').item.json['Email'] }}"
+            },
+            {
+              "id": "12000000-0000-0000-0000-c00000000012",
+              "name": "subject",
+              "type": "string",
+              "value": "Your onboarding check-in — we want to help"
+            },
+            {
+              "id": "12000000-0000-0000-0000-c00000000013",
+              "name": "body",
+              "type": "string",
+              "value": "=Hi {{ $('Onboarding Check-in').item.json['Full name'] }},\n\nThanks for your honest feedback. We want to make sure you have everything you need to succeed. Someone from our team will reach out shortly.\n\nBest,\nThe People Team"
+            },
+            {
+              "id": "12000000-0000-0000-0000-c00000000014",
+              "name": "classification",
+              "type": "string",
+              "value": "needs_help"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "12000000-0000-0000-0000-000000000008",
+      "name": "Output — Needs Help",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "12000000-0000-0000-0000-c00000000021",
+              "name": "to",
+              "type": "string",
+              "value": "={{ $('Onboarding Check-in').item.json['Email'] }}"
+            },
+            {
+              "id": "12000000-0000-0000-0000-c00000000022",
+              "name": "subject",
+              "type": "string",
+              "value": "Your onboarding check-in — we're here for you"
+            },
+            {
+              "id": "12000000-0000-0000-0000-c00000000023",
+              "name": "body",
+              "type": "string",
+              "value": "=Hi {{ $('Onboarding Check-in').item.json['Full name'] }},\n\nThank you for sharing. Your feedback matters, and your manager has been notified. Someone will reach out to you within 24 hours.\n\nBest,\nThe People Team"
+            },
+            {
+              "id": "12000000-0000-0000-0000-c00000000024",
+              "name": "manager_to",
+              "type": "string",
+              "value": "={{ $('Onboarding Check-in').item.json['Manager email'] }}"
+            },
+            {
+              "id": "12000000-0000-0000-0000-c00000000025",
+              "name": "manager_subject",
+              "type": "string",
+              "value": "=Onboarding alert: {{ $('Onboarding Check-in').item.json['Full name'] }}"
+            },
+            {
+              "id": "12000000-0000-0000-0000-c00000000026",
+              "name": "manager_body",
+              "type": "string",
+              "value": "=Hi,\n\n{{ $('Onboarding Check-in').item.json['Full name'] }} ({{ $('Onboarding Check-in').item.json['Department'] }}, {{ $('Onboarding Check-in').item.json['Onboarding week'] }}) was flagged as at_risk in their onboarding check-in.\n\nRating: {{ $('Onboarding Check-in').item.json['How is your onboarding going?'] }}\nComment: {{ $('Onboarding Check-in').item.json['Tell us more (optional)'] }}\n\nPlease follow up within 24 hours."
+            },
+            {
+              "id": "12000000-0000-0000-0000-c00000000027",
+              "name": "classification",
+              "type": "string",
+              "value": "at_risk"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "12000000-0000-0000-0000-000000000009",
+      "name": "Output — At Risk",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        -20
+      ]
+    }
+  ],
+  "connections": {
+    "Onboarding Check-in": {
+      "main": [
+        [
+          {
+            "node": "Classify Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Response": {
+      "main": [
+        [
+          {
+            "node": "Clean Classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Classification": {
+      "main": [
+        [
+          {
+            "node": "Route by Classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Classification": {
+      "main": [
+        [
+          {
+            "node": "Output — On Track",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Output — Needs Help",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Output — At Risk",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Output — At Risk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Classify Response",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
