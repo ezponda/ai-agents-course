@@ -19,7 +19,7 @@
     },
     {
       "parameters": {
-        "content": "## VERSION 1: Loop with Exit Condition\n**Repeats until criteria met** (max 5 iterations).\n\nFlow: Generate → Validate → If pass → Output, else → Refine → back to Generate\n\n✅ Stops when good enough\n✅ Prevents infinite loops (max 5)\n✅ Full control over the process",
+        "content": "## VERSION 1: Loop with Exit Condition\n**Repeats until criteria met** (max 5 iterations).\n\nFlow: Generate → Validate → Parse → If Done? → Output or loop back\n\nThe If Done? node checks: all_pass OR iteration ≥ 5\n\n✅ Stops when good enough\n✅ Prevents infinite loops (max 5)\n✅ Full control over the process",
         "height": 180,
         "width": 600,
         "color": 5
@@ -228,6 +228,12 @@
               "name": "all_pass",
               "type": "boolean",
               "value": "={{ /\"all_pass\"\\s*:\\s*true/.test($json.text) }}"
+            },
+            {
+              "id": "done",
+              "name": "done",
+              "type": "boolean",
+              "value": "={{ /\"all_pass\"\\s*:\\s*true/.test($json.text) || $('Store Draft (V1)').first().json.iteration >= 5 }}"
             }
           ]
         },
@@ -252,8 +258,8 @@
           },
           "conditions": [
             {
-              "id": "pass",
-              "leftValue": "={{ $json.all_pass }}",
+              "id": "done",
+              "leftValue": "={{ $json.done }}",
               "rightValue": true,
               "operator": {
                 "type": "boolean",
@@ -265,8 +271,8 @@
         },
         "options": {}
       },
-      "id": "if-pass-v1",
-      "name": "If Pass?",
+      "id": "if-done-v1",
+      "name": "If Done?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
@@ -294,7 +300,7 @@
               "id": "approach",
               "name": "approach",
               "type": "string",
-              "value": "V1: Loop with Exit Condition"
+              "value": "={{ $json.all_pass ? 'V1: Loop with Exit Condition' : 'V1: Loop (max iterations reached)' }}"
             }
           ]
         },
@@ -308,74 +314,6 @@
       "position": [
         540,
         60
-      ]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict"
-          },
-          "conditions": [
-            {
-              "id": "max-iter",
-              "leftValue": "={{ $json.iteration }}",
-              "rightValue": 5,
-              "operator": {
-                "type": "number",
-                "operation": "lt"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "id": "if-max-v1",
-      "name": "If < Max?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        440,
-        260
-      ]
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "final_description",
-              "name": "final_description",
-              "type": "string",
-              "value": "={{ $json.draft }}"
-            },
-            {
-              "id": "iterations",
-              "name": "iterations",
-              "type": "number",
-              "value": "={{ $json.iteration }}"
-            },
-            {
-              "id": "approach",
-              "name": "approach",
-              "type": "string",
-              "value": "V1: Loop (max iterations reached)"
-            }
-          ]
-        },
-        "keepOnlySet": true,
-        "options": {}
-      },
-      "id": "output-max-v1",
-      "name": "Output Max (V1)",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        680,
-        360
       ]
     },
     {
@@ -490,7 +428,7 @@
         "name": "Validator",
         "description": "Validates a product description against constraints. Input: the description text. Returns JSON with validation results including all_pass (true/false).",
         "language": "python",
-        "pythonCode": "import re\n\n# Get the description from the agent's input\ndescription = _input.first().json.get('query', '') or _input.first().json.get('input', '')\n\n# Count sentences (split by . ! ?)\nsentences = [s for s in re.split(r'[.!?]+', description) if s.strip()]\nsentence_count = len(sentences)\n\n# Count words\nwords = [w for w in description.split() if w]\nword_count = len(words)\n\n# Count \"sound\" occurrences (case insensitive)\nsound_matches = re.findall(r'\\\\bsound\\\\b', description.lower())\nsound_count = len(sound_matches)\n\n# Check for forbidden words\nhas_forbidden = bool(re.search(r'\\\\b(music|audio)\\\\b', description, re.IGNORECASE))\n\n# Check all constraints\nissues = []\nif sentence_count != 3:\n    issues.append(f'Sentences: {sentence_count} (need exactly 3)')\nif word_count < 25 or word_count > 30:\n    issues.append(f'Words: {word_count} (need 25-30)')\nif sound_count != 2:\n    issues.append(f'\"sound\" count: {sound_count} (need exactly 2)')\nif has_forbidden:\n    issues.append('Contains forbidden word: \"music\" or \"audio\"')\n\nall_pass = len(issues) == 0\n\nreturn [{\n    'json': {\n        'sentences': sentence_count,\n        'words': word_count,\n        'sound_count': sound_count,\n        'has_forbidden': has_forbidden,\n        'all_pass': all_pass,\n        'issues': issues\n    }\n}]"
+        "pythonCode": "import re\n\n# Get the description from the agent's input\ndescription = _input.first().json.get('query', '') or _input.first().json.get('input', '')\n\n# Count sentences (split by . ! ?)\nsentences = [s for s in re.split(r'[.!?]+', description) if s.strip()]\nsentence_count = len(sentences)\n\n# Count words\nwords = [w for w in description.split() if w]\nword_count = len(words)\n\n# Count \"sound\" occurrences (case insensitive)\nsound_matches = re.findall(r'\\bsound\\b', description.lower())\nsound_count = len(sound_matches)\n\n# Check for forbidden words\nhas_forbidden = bool(re.search(r'\\b(music|audio)\\b', description, re.IGNORECASE))\n\n# Check all constraints\nissues = []\nif sentence_count != 3:\n    issues.append(f'Sentences: {sentence_count} (need exactly 3)')\nif word_count < 25 or word_count > 30:\n    issues.append(f'Words: {word_count} (need 25-30)')\nif sound_count != 2:\n    issues.append(f'\"sound\" count: {sound_count} (need exactly 2)')\nif has_forbidden:\n    issues.append('Contains forbidden word: \"music\" or \"audio\"')\n\nall_pass = len(issues) == 0\n\nreturn [{\n    'json': {\n        'sentences': sentence_count,\n        'words': word_count,\n        'sound_count': sound_count,\n        'has_forbidden': has_forbidden,\n        'all_pass': all_pass,\n        'issues': issues\n    }\n}]"
       },
       "id": "validator-tool-v2",
       "name": "Validator Tool (Python)",
@@ -592,14 +530,14 @@
       "main": [
         [
           {
-            "node": "If Pass?",
+            "node": "If Done?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If Pass?": {
+    "If Done?": {
       "main": [
         [
           {
@@ -610,25 +548,7 @@
         ],
         [
           {
-            "node": "If < Max?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If < Max?": {
-      "main": [
-        [
-          {
             "node": "Prepare Refine (V1)",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Output Max (V1)",
             "type": "main",
             "index": 0
           }
