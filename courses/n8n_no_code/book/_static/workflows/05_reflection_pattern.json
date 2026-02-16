@@ -158,7 +158,7 @@
               "id": "iteration",
               "name": "iteration",
               "type": "number",
-              "value": "={{ ($('Parse Validation (V1)').all().length > 0 ? $('Parse Validation (V1)').first().json.iteration : 0) + 1 }}"
+              "value": "={{ $if($('Parse Validation (V1)').isExecuted, $('Parse Validation (V1)').first().json.iteration, 0) + 1 }}"
             }
           ]
         },
