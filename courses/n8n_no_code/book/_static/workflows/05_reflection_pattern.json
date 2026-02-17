@@ -411,7 +411,8 @@
         "promptType": "define",
         "text": "=Product: {{ $json.product }}\n\nConstraints:\n{{ $json.constraints }}\n\nWrite a product description that meets ALL constraints. After writing, use the Validator tool to check it. Keep refining until all constraints pass.",
         "options": {
-          "systemMessage": "You are a product copywriter who writes precise descriptions.\n\nProcess:\n1. Write a draft description\n2. Use the Validator tool to check ALL constraints\n3. If any constraint fails, revise and validate again\n4. Repeat until all_pass is true\n5. Return the final description\n\nRules:\n- Count words carefully\n- Call the Validator tool at most 5 times\n- When all_pass is true, return ONLY the final description"
+          "systemMessage": "You are a product copywriter who writes precise descriptions.\n\nProcess:\n1. Write a draft description\n2. Use the Validator tool to check it (send ONLY the description text)\n3. Read the issues list in the Validator response to see what failed\n4. Revise the draft to fix those specific issues\n5. Validate again — repeat until all_pass is true\n6. Return ONLY the final description\n\nRules:\n- Do NOT count words yourself — rely on the Validator tool\n- Send ONLY the description to the Validator (no extra text like \"Here is my draft:\")\n- Call the Validator at most 5 times\n- When all_pass is true, return ONLY the final description",
+          "maxIterations": 10
         }
       },
       "id": "agent-v2",
@@ -426,12 +427,12 @@
     {
       "parameters": {
         "name": "Validator",
-        "description": "Validates a product description against constraints. Input: the description text. Returns JSON with validation results including all_pass (true/false).",
-        "language": "python",
-        "pythonCode": "import re\n\n# Get the description from the agent's input\ndescription = _input.first().json.get('query', '') or _input.first().json.get('input', '')\n\n# Count sentences (split by . ! ?)\nsentences = [s for s in re.split(r'[.!?]+', description) if s.strip()]\nsentence_count = len(sentences)\n\n# Count words\nwords = [w for w in description.split() if w]\nword_count = len(words)\n\n# Count \"sound\" occurrences (case insensitive)\nsound_matches = re.findall(r'\\bsound\\b', description.lower())\nsound_count = len(sound_matches)\n\n# Check for forbidden words\nhas_forbidden = bool(re.search(r'\\b(music|audio)\\b', description, re.IGNORECASE))\n\n# Check all constraints\nissues = []\nif sentence_count != 3:\n    issues.append(f'Sentences: {sentence_count} (need exactly 3)')\nif word_count < 25 or word_count > 30:\n    issues.append(f'Words: {word_count} (need 25-30)')\nif sound_count != 2:\n    issues.append(f'\"sound\" count: {sound_count} (need exactly 2)')\nif has_forbidden:\n    issues.append('Contains forbidden word: \"music\" or \"audio\"')\n\nall_pass = len(issues) == 0\n\nreturn [{\n    'json': {\n        'sentences': sentence_count,\n        'words': word_count,\n        'sound_count': sound_count,\n        'has_forbidden': has_forbidden,\n        'all_pass': all_pass,\n        'issues': issues\n    }\n}]"
+        "description": "Validates a product description against constraints. Input: the description text only (no extra text). Returns JSON with: sentences (count), words (count), sound_count, has_forbidden, all_pass (true/false), and issues (list of specific problems to fix).",
+        "language": "javaScript",
+        "jsCode": "// Get the raw input from the agent\nconst item = $input.first().json;\n\n// Try common field names (varies by n8n version)\nlet description = '';\nfor (const key of ['query', 'input', 'chatInput', 'action_input']) {\n  if (item[key]) {\n    description = String(item[key]).trim();\n    break;\n  }\n}\n\n// Fallback: use the first non-empty string value\nif (!description) {\n  for (const [k, v] of Object.entries(item)) {\n    if (typeof v === 'string' && v.trim()) {\n      description = v.trim();\n      break;\n    }\n  }\n}\n\n// Count sentences (split by . ! ?)\nconst sentences = description.split(/[.!?]+/).filter(s => s.trim());\nconst sentenceCount = sentences.length;\n\n// Count words\nconst words = description.split(/\\s+/).filter(w => w);\nconst wordCount = words.length;\n\n// Count \"sound\" occurrences (case insensitive, whole word)\nconst soundMatches = description.toLowerCase().match(/\\bsound\\b/g) || [];\nconst soundCount = soundMatches.length;\n\n// Check for forbidden words\nconst hasForbidden = /\\b(music|audio)\\b/i.test(description);\n\n// Build issues list\nconst issues = [];\nif (sentenceCount !== 3) issues.push(`Sentences: ${sentenceCount} (need exactly 3)`);\nif (wordCount < 25 || wordCount > 30) issues.push(`Words: ${wordCount} (need 25-30)`);\nif (soundCount !== 2) issues.push(`\\\"sound\\\" count: ${soundCount} (need exactly 2)`);\nif (hasForbidden) issues.push('Contains forbidden word: \\\"music\\\" or \\\"audio\\\"');\n\nconst allPass = issues.length === 0;\n\n// Agent tools must return a string, not [{json: ...}]\nreturn JSON.stringify({\n  input_received: description.slice(0, 200),\n  sentences: sentenceCount,\n  words: wordCount,\n  sound_count: soundCount,\n  has_forbidden: hasForbidden,\n  all_pass: allPass,\n  issues: allPass ? ['All constraints passed!'] : issues\n});"
       },
       "id": "validator-tool-v2",
-      "name": "Validator Tool (Python)",
+      "name": "Validator Tool",
       "type": "@n8n/n8n-nodes-langchain.toolCode",
       "typeVersion": 1,
       "position": [
@@ -627,7 +628,7 @@
         ]
       ]
     },
-    "Validator Tool (Python)": {
+    "Validator Tool": {
       "ai_tool": [
         [
           {
