@@ -211,8 +211,7 @@ NOTEBOOK_WORKFLOW_MAP = {
         "08_prompt_engineering_comparison.json",
     ],
     "project_1_recipe_assistant.ipynb": [
-        "10a_shopping_list_agent.json",
-        "10b_recipe_assistant.json",
+        "10_recipe_assistant.json",
     ],
     "appendix_b_going_live.ipynb": [
         "going_live_schedule.json",
