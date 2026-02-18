@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_1_recipe_assistant.html)\n## Recipe Assistant\n**Goal:** Chat with an AI that searches real recipes online, review them via a form, and optionally generate a shopping list with price estimates.\n\n**Tools:** Recipe Search (TheMealDB API) + Google Search (SerpAPI fallback)\n**Memory:** Conversation history so you can ask follow-up questions.\n**Approval:** A form lets you review the recipe and choose whether to generate a shopping list.\n\n**How to run:** Click **Chat** in the bottom-right corner and type your request. Then open the form URL shown in the Wait node.",
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_1_recipe_assistant.html)\n## Recipe Assistant\n**Goal:** Chat with an AI that searches real recipes online, review them via a form, and optionally generate a shopping list with real price estimates.\n\n**Tools:** Recipe Search (TheMealDB API) + Google Search (SerpAPI fallback) + Price Search (SerpAPI)\n**Memory:** Conversation history so you can ask follow-up questions.\n**Approval:** A form lets you review the recipe and choose whether to generate a shopping list.\n\n**How to run:** Click **Chat** in the bottom-right corner and type your request. Then open the form URL shown in the Wait node.",
         "height": 340,
         "width": 700,
         "color": 4
@@ -110,19 +110,14 @@
       "parameters": {
         "promptType": "define",
         "text": "={{ $('Recipe Search Agent').first().json.output }}",
-        "messages": {
-          "messageValues": [
-            {
-              "message": "You are a shopping assistant.\nFrom the recipe provided, create a complete shopping list.\n\nFormat:\n## Shopping List\n\n### Produce\n- [quantity] [item] — ~$[price]\n\n### Meat / Fish\n- [quantity] [item] — ~$[price]\n\n### Dairy\n- [quantity] [item] — ~$[price]\n\n### Pantry\n- [quantity] [item] — ~$[price]\n\n---\n**Estimated Total: ~$[total]**\n\nBudget Tips:\n- [tip 1]\n- [tip 2]\n\nRules:\n- Include exact quantities from the recipe\n- Skip items most kitchens already have (salt, pepper, cooking oil)\n- Use realistic US grocery store prices (2024 averages)\n- Group items by store section\n- Output ONLY the shopping list — no recipe repetition"
-            }
-          ]
-        },
-        "batching": {}
+        "options": {
+          "systemMessage": "You are a shopping assistant that creates shopping lists with real prices.\n\nFrom the recipe provided, create a complete shopping list with current US grocery prices.\n\nSteps:\n1. Extract the ingredient list from the recipe\n2. Search for current grocery prices — batch multiple ingredients into ONE search query (e.g. \"grocery store prices chicken breast tomatoes onions 2025\")\n3. Use at most 2 searches total to conserve API usage\n4. For any ingredient you cannot find a price for, estimate based on your knowledge and mark it with ≈\n\nFormat:\n## Shopping List\n\n### Produce\n- [quantity] [item] — ~$[price]\n\n### Meat / Fish\n- [quantity] [item] — ~$[price]\n\n### Dairy\n- [quantity] [item] — ~$[price]\n\n### Pantry\n- [quantity] [item] — ~$[price]\n\n---\n**Estimated Total: ~$[total]**\n\nBudget Tips:\n- [tip 1]\n- [tip 2]\n\nRules:\n- Include exact quantities from the recipe\n- Skip items most kitchens already have (salt, pepper, cooking oil)\n- Group items by store section\n- Mark searched prices with $ and estimated prices with ≈$\n- Output ONLY the shopping list — no recipe repetition"
+        }
       },
       "id": "a0000001-0001-4000-8000-000000000009",
-      "name": "Shopping List LLM",
-      "type": "@n8n/n8n-nodes-langchain.chainLlm",
-      "typeVersion": 1.7,
+      "name": "Shopping List Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
       "position": [440, -350]
     },
     {
@@ -133,7 +128,7 @@
               "id": "a0000001-0001-4000-8000-000000000010",
               "name": "output",
               "type": "string",
-              "value": "={{ $('Recipe Search Agent').first().json.output + '\\n\\n---\\n\\n' + $json.text }}"
+              "value": "={{ $('Recipe Search Agent').first().json.output + '\\n\\n---\\n\\n' + $json.output }}"
             }
           ]
         },
@@ -228,6 +223,14 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [440, -150]
+    },
+    {
+      "parameters": {},
+      "id": "a0000001-0001-4000-8000-000000000020",
+      "name": "Price Search",
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [600, -150]
     }
   ],
   "connections": {
@@ -268,7 +271,7 @@
       "main": [
         [
           {
-            "node": "Shopping List LLM",
+            "node": "Shopping List Agent",
             "type": "main",
             "index": 0
           }
@@ -282,7 +285,7 @@
         ]
       ]
     },
-    "Shopping List LLM": {
+    "Shopping List Agent": {
       "main": [
         [
           {
@@ -341,8 +344,19 @@
       "ai_languageModel": [
         [
           {
-            "node": "Shopping List LLM",
+            "node": "Shopping List Agent",
             "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Price Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Shopping List Agent",
+            "type": "ai_tool",
             "index": 0
           }
         ]
