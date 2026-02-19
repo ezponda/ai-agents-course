@@ -1,0 +1,126 @@
+{
+  "name": "13 — Deploy to Production",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_4_deploy_to_production.html)\n## Deploy to Production\n**Goal:** A minimal chat-based AI workflow that you deploy to a server, making it accessible from anywhere.\n\n**How it works:** Opens a chat interface where users type questions. The LLM answers and the response appears in the chat.\n\n**Test locally:** Click the **Chat** button in the bottom-right corner of the n8n editor.\n\n**Test in production:** After deploying and activating, open `https://your-domain/webhook/chat-production` in any browser.",
+        "height": 300,
+        "width": 700,
+        "color": 4
+      },
+      "id": "d0000001-0001-4000-8000-000000000001",
+      "name": "NOTE — Deploy to Production",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-200, -460]
+    },
+    {
+      "parameters": {
+        "public": true,
+        "mode": "webhook",
+        "options": {
+          "responseMode": "lastNode"
+        }
+      },
+      "id": "d0000001-0001-4000-8000-000000000002",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [-100, -100],
+      "webhookId": "d0000001-0001-4000-8000-00000000cc01"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a helpful assistant. Answer the user's question in 2-3 sentences. Be concise and accurate."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "d0000001-0001-4000-8000-000000000003",
+      "name": "Answer Question",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [160, -100]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "d0000001-0001-4000-8000-000000000004",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [60, 100]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d0000001-0001-4000-8000-000000000006",
+              "name": "output",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d0000001-0001-4000-8000-000000000005",
+      "name": "Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [420, -100]
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Answer Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer Question": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer Question",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

@@ -28,6 +28,7 @@ parts:
       - file: project_1_recipe_assistant
       - file: project_2_ask_your_data
       - file: project_3_onboarding_checkin
+      - file: project_4_deploy_to_production
   - caption: Appendices
     numbered: false
     chapters:
