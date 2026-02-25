@@ -221,6 +221,9 @@ NOTEBOOK_WORKFLOW_MAP = {
     "project_2_ask_your_data.ipynb": [
         "11_ask_your_data.json",
     ],
+    "09_rag.ipynb": [
+        "14_rag_faq_bot.json",
+    ],
 }
 
 

@@ -1,5 +1,11 @@
 # Build from Scratch: First AI Agent (progresivo)
 
+## Objetivo del video
+
+> "En este video vamos a construir nuestro primer AI Agent desde cero. Hasta ahora habiamos usado Basic LLM Chain — le das un prompt, te devuelve una respuesta, y ya esta. Un Agent es diferente: puede USAR HERRAMIENTAS. Le puedes dar una calculadora, un buscador de Google, una base de datos — y el decide cuando usar cada una. Vamos a empezar con lo mas simple y ir añadiendo capacidades paso a paso."
+
+**Que vamos a construir:** un asistente de investigacion de salarios que puede buscar datos reales en Google, hacer calculos de impuestos, y recordar la conversacion. Empezamos con una calculadora y acabamos con un chat completo.
+
 Construimos UN workflow y lo vamos ampliando en 3 fases:
 
 | Fase | Qué construimos | Qué concepto nuevo |
@@ -36,10 +42,10 @@ Construimos UN workflow y lo vamos ampliando en 3 fases:
 2. Añadir **Edit Fields** → renombrar a `Input — Agent Prompt`
 3. Dos campos String:
 
-| Name | Value |
-|------|-------|
+| Name        | Value          |
+| ----------- | -------------- |
 | `chatInput` | (copiar abajo) |
-| `sessionId` | `demo` |
+| `sessionId` | `demo`         |
 
 Valor de `chatInput`:
 ```
@@ -65,7 +71,11 @@ Rules:
 - Format salary figures with currency symbols.
 ```
 
+> "El nodo AI Agent tiene dos partes de texto: el **Prompt** y el **System Message**. El Prompt es lo que pregunta el usuario — aqui viene de `chatInput`. El System Message son las instrucciones fijas que el agent siempre sigue: quien es, que reglas tiene, cuando usar cada herramienta. Es como el briefing que le das al empleado antes de que empiece a trabajar."
+
 > "La regla mas importante: 'ALWAYS use the Calculator tool'. Sin esto, el LLM intenta hacer las cuentas de cabeza y se equivoca. Con esta regla, siempre usa la calculadora."
+
+> **Tip:** En Options del AI Agent tambien hay un campo **Max Iterations** (por defecto 10). Si un agent se queda en bucle llamando tools sin parar, bajarlo a 5 lo frena. De momento dejadlo como esta.
 
 ### Paso 4: Conectar sub-nodos (lineas de puntos)
 
@@ -114,9 +124,20 @@ Manual Trigger → Input — Agent Prompt → AI Agent → Output — Answer
 ### Demo
 
 1. **Ejecutar el workflow** (Execute Workflow)
-2. Click en el AI Agent → expandir execution details → ver que llamo al Calculator con `24000 * (1 - 0.15) / 12`
+2. Click en el nodo **AI Agent** para ver el resultado
 
-> "No se lo invento. Uso la herramienta."
+### Como inspeccionar el loop del Agent
+
+> "Ahora viene lo mas interesante: ver QUE hizo el agent por dentro."
+
+1. **Doble click** en el nodo **AI Agent** para abrirlo
+2. Arriba a la derecha, click en la pestaña **Logs** (al lado de Output)
+3. Ahi ves cada paso del loop: las llamadas al LLM y las llamadas a tools
+   - Ejemplo: llamo a **Calculator** con `24000 * (1 - 0.15) / 12` → recibio `1700` → genero la respuesta
+
+> "Esto es clave para debugging. Si el agent da una respuesta rara, abrid los Logs y vereis exactamente que hizo: que herramienta llamo, con que input, y que devolvio."
+
+> **Ojo:** Si en los Logs veis que NO llamo al Calculator (a veces pasa con modelos pequenos), el LLM calculo de cabeza. Puede acertar en cuentas simples pero fallara en cosas mas complicadas. Si pasa, reforzar el system message o probar con un modelo mas capaz.
 
 3. Cambiar `chatInput` a:
 ```
