@@ -1,0 +1,460 @@
+{
+  "name": "04 — Human-in-the-Loop (Approve/Reject + Timeout + Email)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Human-in-the-Loop — Approve/Reject + Timeout + Emails\n**Goal:** AI drafts a support reply, approver gets an email with approve/reject links, customer gets the email if approved.\n\n**Changes from base:**\n1. Approve/Reject via query params (?decision=approve or reject)\n2. Timeout — auto-escalate if no response within time limit\n3. Notify Approver — email with clickable approve/reject links\n4. Send Email — send approved response to customer\n\n**How to test:**\n1. Execute the workflow — Notify Approver runs + Wait pauses\n2. Open the approve/reject link from the email (or copy Test URL from Wait node)\n3. Or wait for timeout",
+        "height": 320,
+        "width": 760,
+        "color": 5
+      },
+      "id": "ee000001-0001-4000-e000-000000000001",
+      "name": "NOTE — HITL Interactive",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-760, -600]
+    },
+    {
+      "parameters": {},
+      "id": "ee000001-0001-4000-e000-000000000002",
+      "name": "Run: Human Approval",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-760, -200]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ee000001-assign-0001",
+              "name": "ticket_subject",
+              "type": "string",
+              "value": "Urgent: Need refund for duplicate charge"
+            },
+            {
+              "id": "ee000001-assign-0002",
+              "name": "ticket_body",
+              "type": "string",
+              "value": "Hi,\nI was charged twice for order #12345. The second charge of $89.99 appeared yesterday. Please refund ASAP as this is causing overdraft fees.\nThanks,\nMaria"
+            },
+            {
+              "id": "ee000001-assign-0003",
+              "name": "customer_email",
+              "type": "string",
+              "value": "maria@example.com"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ee000001-0001-4000-e000-000000000003",
+      "name": "Input — Support Ticket",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-520, -200]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "ee000001-0001-4000-e000-000000000004",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [-400, 40]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Subject: {{ $json.ticket_subject }}\nBody:\n{{ $json.ticket_body }}\nCustomer: {{ $json.customer_email }}\n\nDraft the reply:",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a customer support agent.\nDraft a professional email reply.\n\nRules:\n- Acknowledge the issue with empathy\n- Confirm specific details (order #, amount)\n- Explain the refund process and timeline\n- Apologize for the inconvenience\n- Keep under 150 words\n\nOutput ONLY the email body (no subject line)."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "ee000001-0001-4000-e000-000000000005",
+      "name": "Step 1 — Draft Response",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [-280, -200]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ee000001-assign-0004",
+              "name": "draft_response",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "id": "ee000001-assign-0005",
+              "name": "customer_email",
+              "type": "string",
+              "value": "={{ $node['Input — Support Ticket'].json.customer_email }}"
+            },
+            {
+              "id": "ee000001-assign-0006",
+              "name": "ticket_subject",
+              "type": "string",
+              "value": "={{ $node['Input — Support Ticket'].json.ticket_subject }}"
+            },
+            {
+              "id": "ee000001-assign-0007",
+              "name": "status",
+              "type": "string",
+              "value": "pending_approval"
+            },
+            {
+              "id": "ee000001-assign-0008",
+              "name": "drafted_at",
+              "type": "string",
+              "value": "={{ $now.format('yyyy-MM-dd HH:mm') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ee000001-0001-4000-e000-000000000006",
+      "name": "Store Draft + Status",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-40, -200]
+    },
+    {
+      "parameters": {
+        "fromEmail": "workflow@yourcompany.com",
+        "toEmail": "reviewer@yourcompany.com",
+        "subject": "=Review needed: {{ $json.ticket_subject }}",
+        "emailFormat": "html",
+        "html": "=<h3>Support ticket needs your review</h3><p><b>Subject:</b> {{ $json.ticket_subject }}</p><p><b>Customer:</b> {{ $json.customer_email }}</p><p><b>Draft response:</b></p><blockquote style=\"border-left:3px solid #ccc;padding-left:12px;color:#555\">{{ $json.draft_response }}</blockquote><hr><p style=\"font-size:16px\"><a href=\"http://localhost:5678/webhook-test-waiting/{{ $execution.id }}?decision=approve\" style=\"color:green;font-weight:bold\">APPROVE</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href=\"http://localhost:5678/webhook-test-waiting/{{ $execution.id }}?decision=reject\" style=\"color:red;font-weight:bold\">REJECT</a></p><p style=\"color:#999;font-size:12px\">If you don't respond, this ticket will be auto-escalated after the timeout.</p>"
+      },
+      "id": "ee000001-0001-4000-e000-000000000014",
+      "name": "Notify Approver",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [200, -420]
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "options": {
+          "webhookSuffix": "={{ $execution.id }}",
+          "limitWaitTime": true,
+          "limitType": "afterTimeInterval",
+          "limitAmount": 1,
+          "limitUnit": "minutes"
+        }
+      },
+      "id": "ee000001-0001-4000-e000-000000000007",
+      "name": "Wait — Human Approval",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [200, -200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.query?.decision }}",
+              "rightValue": "approve",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ee000001-0001-4000-e000-000000000008",
+      "name": "Check Decision",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [440, -200]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ee000001-assign-0009",
+              "name": "final_response",
+              "type": "string",
+              "value": "={{ $node['Store Draft + Status'].json.draft_response }}"
+            },
+            {
+              "id": "ee000001-assign-0010",
+              "name": "send_to",
+              "type": "string",
+              "value": "={{ $node['Store Draft + Status'].json.customer_email }}"
+            },
+            {
+              "id": "ee000001-assign-0011",
+              "name": "subject",
+              "type": "string",
+              "value": "=Re: {{ $node['Store Draft + Status'].json.ticket_subject }}"
+            },
+            {
+              "id": "ee000001-assign-0012",
+              "name": "status",
+              "type": "string",
+              "value": "approved"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ee000001-0001-4000-e000-000000000009",
+      "name": "Output — Approved",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [680, -340]
+    },
+    {
+      "parameters": {
+        "fromEmail": "support@yourcompany.com",
+        "toEmail": "={{ $json.send_to }}",
+        "subject": "={{ $json.subject }}",
+        "text": "={{ $json.final_response }}"
+      },
+      "id": "ee000001-0001-4000-e000-000000000010",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [920, -340]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.query?.decision }}",
+              "rightValue": "reject",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ee000001-0001-4000-e000-000000000011",
+      "name": "Check Rejected",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [680, -60]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ee000001-assign-0013",
+              "name": "status",
+              "type": "string",
+              "value": "rejected"
+            },
+            {
+              "id": "ee000001-assign-0014",
+              "name": "ticket_subject",
+              "type": "string",
+              "value": "={{ $node['Store Draft + Status'].json.ticket_subject }}"
+            },
+            {
+              "id": "ee000001-assign-0015",
+              "name": "reason",
+              "type": "string",
+              "value": "Response rejected by reviewer — ticket returned to queue"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "ee000001-0001-4000-e000-000000000012",
+      "name": "Output — Rejected",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [920, -120]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ee000001-assign-0016",
+              "name": "status",
+              "type": "string",
+              "value": "escalated_timeout"
+            },
+            {
+              "id": "ee000001-assign-0017",
+              "name": "ticket_subject",
+              "type": "string",
+              "value": "={{ $node['Store Draft + Status'].json.ticket_subject }}"
+            },
+            {
+              "id": "ee000001-assign-0018",
+              "name": "reason",
+              "type": "string",
+              "value": "No response within time limit — escalated automatically"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "ee000001-0001-4000-e000-000000000013",
+      "name": "Output — Timeout",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [920, 60]
+    }
+  ],
+  "connections": {
+    "Run: Human Approval": {
+      "main": [
+        [
+          {
+            "node": "Input — Support Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input — Support Ticket": {
+      "main": [
+        [
+          {
+            "node": "Step 1 — Draft Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 1 — Draft Response": {
+      "main": [
+        [
+          {
+            "node": "Store Draft + Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Draft + Status": {
+      "main": [
+        [
+          {
+            "node": "Wait — Human Approval",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Approver",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait — Human Approval": {
+      "main": [
+        [
+          {
+            "node": "Check Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Decision": {
+      "main": [
+        [
+          {
+            "node": "Output — Approved",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output — Approved": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Rejected": {
+      "main": [
+        [
+          {
+            "node": "Output — Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Output — Timeout",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Step 1 — Draft Response",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

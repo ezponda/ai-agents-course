@@ -1,0 +1,328 @@
+{
+  "name": "01 — Prompt Chaining (Chat + HTTP)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Prompt Chaining — Chat + HTTP Request\n**Goal:** Make the recipe workflow interactive with a chat interface and live recipe search.\n\n**How to use:** Click **Chat**, type a dish name (e.g. `chicken`, `lasagna`), and the workflow searches TheMealDB, then transforms the recipe.\n\n**Pattern:** Chat Trigger → HTTP Request (TheMealDB) → Simplify → Adapt for Kids → Shopping List",
+        "height": 200,
+        "width": 700,
+        "color": 3
+      },
+      "id": "aa000001-0001-4000-a000-000000000001",
+      "name": "NOTE — Prompt Chaining Chat",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-1080, -480]
+    },
+    {
+      "parameters": {
+        "public": true,
+        "mode": "webhook",
+        "options": {
+          "responseMode": "lastNode"
+        }
+      },
+      "id": "aa000001-0001-4000-a000-000000000002",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [-1000, -200],
+      "webhookId": "aa000001-webhook-0001"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.themealdb.com/api/json/v1/1/search.php",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "s",
+              "value": "={{ $json.chatInput }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aa000001-0001-4000-a000-000000000003",
+      "name": "HTTP Request (TheMealDB)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-780, -200]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aa000001-assign-0001",
+              "name": "recipe_name",
+              "type": "string",
+              "value": "={{ $json.meals[0].strMeal }}"
+            },
+            {
+              "id": "aa000001-assign-0002",
+              "name": "recipe",
+              "type": "string",
+              "value": "={{ $json.meals[0].strInstructions }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aa000001-0001-4000-a000-000000000004",
+      "name": "Input — Recipe",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-540, -200]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "aa000001-0001-4000-a000-000000000005",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [-640, 40]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Recipe: {{ $json.recipe_name }}\n\n{{ $json.recipe }}\n\nSimplify this recipe for a beginner cook.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a cooking instructor for beginners.\nSimplify the recipe into clear, easy-to-follow steps.\n\nRules:\n- Use simple language (no cooking jargon)\n- Explain any technique briefly (e.g., \"sauté\" → \"cook in a pan, stirring often\")\n- Keep all original ingredients\n- Number every step clearly\n- Output ONLY the simplified recipe\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "aa000001-0001-4000-a000-000000000006",
+      "name": "Step 1 — Simplify Recipe",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [-300, -200]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aa000001-assign-0003",
+              "name": "simplified_recipe",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aa000001-0001-4000-a000-000000000007",
+      "name": "Store Simplified Recipe",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-60, -200]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Simplified recipe:\n{{ $json.simplified_recipe }}\n\nAdapt this for kids.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a family cooking expert.\nAdapt the simplified recipe so it is fun and safe for kids aged 5–10 to help make.\n\nRules:\n- Suggest milder alternatives for strong flavors (e.g., less garlic, skip pepper)\n- Add fun names for steps (e.g., \"Squish the cheese mix!\")\n- Flag any step that needs adult help (hot oven, sharp knives)\n- Adjust portions for a family with kids\n- Output ONLY the kid-friendly recipe"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "aa000001-0001-4000-a000-000000000008",
+      "name": "Step 2 — Adapt for Kids",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [180, -200]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aa000001-assign-0004",
+              "name": "kid_friendly_recipe",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aa000001-0001-4000-a000-000000000009",
+      "name": "Store Kid-Friendly Recipe",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [420, -200]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Recipe:\n{{ $json.kid_friendly_recipe }}\n\nCreate a shopping list.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a helpful shopping assistant.\nCreate a shopping list from the recipe.\n\nRules:\n- Group items by store section (Produce, Dairy, Meat, Pantry)\n- Include quantities\n- Skip items most kitchens already have (salt, pepper, olive oil)\n- Add a \"Check at home first\" section for common pantry items\n- Output ONLY the shopping list"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "aa000001-0001-4000-a000-000000000010",
+      "name": "Step 3 — Shopping List",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [660, -200]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aa000001-assign-0005",
+              "name": "output",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "aa000001-0001-4000-a000-000000000011",
+      "name": "Output — Shopping List",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [900, -200]
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request (TheMealDB)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request (TheMealDB)": {
+      "main": [
+        [
+          {
+            "node": "Input — Recipe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input — Recipe": {
+      "main": [
+        [
+          {
+            "node": "Step 1 — Simplify Recipe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 1 — Simplify Recipe": {
+      "main": [
+        [
+          {
+            "node": "Store Simplified Recipe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Simplified Recipe": {
+      "main": [
+        [
+          {
+            "node": "Step 2 — Adapt for Kids",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 2 — Adapt for Kids": {
+      "main": [
+        [
+          {
+            "node": "Store Kid-Friendly Recipe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Kid-Friendly Recipe": {
+      "main": [
+        [
+          {
+            "node": "Step 3 — Shopping List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 3 — Shopping List": {
+      "main": [
+        [
+          {
+            "node": "Output — Shopping List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Step 1 — Simplify Recipe",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Step 2 — Adapt for Kids",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Step 3 — Shopping List",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

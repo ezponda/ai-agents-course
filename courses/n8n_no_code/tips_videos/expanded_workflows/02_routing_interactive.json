@@ -1,0 +1,336 @@
+{
+  "name": "02 — Routing (Chat + Text Classifier + Fallback)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Routing — Chat + Text Classifier + Fallback\n**Goal:** Classify support tickets and route to specialist prompts.\n\n**Changes from base:**\n1. Chat Trigger (interactive input)\n2. Text Classifier replaces Router LLM + Store Route + Switch (3 nodes → 1)\n3. Fallback \"other\" category for unrecognized tickets\n\n**How to use:** Click **Chat**, paste a support ticket, and see it classified and answered.",
+        "height": 220,
+        "width": 760,
+        "color": 4
+      },
+      "id": "dd000001-0001-4000-d000-000000000001",
+      "name": "NOTE — Routing Interactive",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-760, -480]
+    },
+    {
+      "parameters": {
+        "public": true,
+        "mode": "webhook",
+        "options": {
+          "responseMode": "lastNode"
+        }
+      },
+      "id": "dd000001-0001-4000-d000-000000000002",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [-760, -200],
+      "webhookId": "dd000001-webhook-0001"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dd000001-assign-0001",
+              "name": "ticket_subject",
+              "type": "string",
+              "value": "={{ $json.chatInput.split('\\n')[0] ?? 'Customer inquiry' }}"
+            },
+            {
+              "id": "dd000001-assign-0002",
+              "name": "ticket_body",
+              "type": "string",
+              "value": "={{ $json.chatInput }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dd000001-0001-4000-d000-000000000003",
+      "name": "Input — Support Ticket",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-520, -200]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "dd000001-0001-4000-d000-000000000004",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [-400, 60]
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.ticket_subject }}\\n{{ $json.ticket_body }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "refund",
+              "description": "Customer wants money back, was charged incorrectly, duplicate charge, billing issue"
+            },
+            {
+              "category": "order_status",
+              "description": "Customer asking about delivery, shipping, tracking, where is my order"
+            },
+            {
+              "category": "support",
+              "description": "General help, login issues, account problems, technical support"
+            },
+            {
+              "category": "other",
+              "description": "Anything that doesn't fit the other categories: product questions, pricing, complaints, feedback"
+            }
+          ]
+        }
+      },
+      "id": "dd000001-0001-4000-d000-000000000005",
+      "name": "Text Classifier",
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [-240, -200]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a customer support specialist for refunds.\nWrite a short, professional reply.\n\nRules:\n- Acknowledge the issue\n- Ask for any missing info (only if needed)\n- Explain next steps and expected timeline\n- Keep it under 120 words\n\nOutput ONLY the reply."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "dd000001-0001-4000-d000-000000000006",
+      "name": "Refund Specialist",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [60, -380]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a customer support specialist for order status.\nWrite a short, professional reply.\n\nRules:\n- Confirm you are checking the order\n- Ask for order number if missing\n- Provide what you can and what you still need\n- Keep it under 120 words\n\nOutput ONLY the reply."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "dd000001-0001-4000-d000-000000000007",
+      "name": "Order Status Specialist",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [60, -200]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a general customer support specialist.\nWrite a short, professional reply.\n\nRules:\n- Clarify the problem\n- Ask 1–2 targeted questions (only if needed)\n- Offer a next step\n- Keep it under 120 words\n\nOutput ONLY the reply."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "dd000001-0001-4000-d000-000000000008",
+      "name": "Support Specialist",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [60, -20]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Subject: {{ $node['Input — Support Ticket'].json.ticket_subject }}\nBody:\n{{ $node['Input — Support Ticket'].json.ticket_body }}\n\nWrite the reply:",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a helpful customer support agent.\nThe customer's request doesn't fit our standard categories.\n\nRules:\n- Acknowledge their message\n- If it's a product/pricing question, say you'll connect them with sales\n- If it's feedback, thank them\n- If unclear, ask a clarifying question\n- Keep it under 100 words\n\nOutput ONLY the response."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "dd000001-0001-4000-d000-000000000009",
+      "name": "Fallback Response",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [60, 160]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dd000001-assign-0003",
+              "name": "output",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "dd000001-0001-4000-d000-000000000010",
+      "name": "Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [340, -120]
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Input — Support Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input — Support Ticket": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Refund Specialist",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Order Status Specialist",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Support Specialist",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fallback Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Refund Specialist": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Order Status Specialist": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Support Specialist": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fallback Response": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Refund Specialist",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Order Status Specialist",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Support Specialist",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Fallback Response",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

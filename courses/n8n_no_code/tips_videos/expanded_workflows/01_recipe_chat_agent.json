@@ -1,0 +1,301 @@
+{
+  "name": "01 — Recipe Chat Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Recipe Chat Agent\n**Goal:** Conversational agent that finds and adapts recipes for families with kids.\n\n**Tools:**\n- **Recipe Search** (TheMealDB) — common dishes in English\n- **Google Search** (SerpAPI) — regional or specific dishes\n\n**How to use:** Click **Chat** and ask for a recipe. The agent will ask for kid ages and allergies before transforming.\n\n**Logging:** Every interaction is logged to Google Sheets (session, input, output, tools used).",
+        "height": 240,
+        "width": 700,
+        "color": 3
+      },
+      "id": "bb000001-0001-4000-b000-000000000001",
+      "name": "NOTE — Recipe Chat Agent",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-760, -400]
+    },
+    {
+      "parameters": {
+        "content": "## Google Sheets Setup\n\n1. Create a Google Sheet with these column headers (row 1):\n   `session_id` | `timestamp` | `input` | `output` | `tools_used`\n2. Add a **Google Sheets** credential in n8n (Settings → Credentials)\n3. Paste the Sheet URL in the **Log to Google Sheets** node\n\n⚠️ `tools_used` is **self-reported** by the agent — it may be inaccurate. Good teaching moment about observability limitations.",
+        "height": 220,
+        "width": 460,
+        "color": 6
+      },
+      "id": "bb000001-0001-4000-b000-000000000011",
+      "name": "NOTE — Google Sheets Setup",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-60, -400]
+    },
+    {
+      "parameters": {
+        "public": true,
+        "mode": "webhook",
+        "options": {
+          "responseMode": "lastNode"
+        }
+      },
+      "id": "bb000001-0001-4000-b000-000000000002",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [-760, -100],
+      "webhookId": "bb000001-webhook-0001"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a friendly recipe assistant for families with kids.\n\n## What you do\nHelp users find and adapt recipes for children.\n\n## Information you need\nBefore transforming any recipe, collect:\n1. Kid ages (required — ask if missing)\n2. Allergies or dislikes (ask once, optional)\n\n## How you work\n- If the user gives a common dish name (chicken, pasta, lasagna...), use Recipe Search (TheMealDB)\n- If TheMealDB returns no results, or the dish is regional/specific (croquetas, tortilla de patatas, pad thai), use Google Search\n- If the user pastes a full recipe, use it directly — no need to search\n- Once you have the recipe + kid ages, transform it:\n  1. Simplify for beginners\n  2. Adapt for kids (fun names, safety notes, age-appropriate portions)\n  3. Generate a shopping list with estimated cost\n- After presenting the result, ask if they want changes\n\n## Rules\n- Always ask for kid ages before transforming\n- Never invent recipes — search or ask the user to paste one\n- Recipe Search terms must be in English and simple (e.g. 'chicken', 'lasagna')\n- Be conversational, not robotic\n\n## Logging\nAt the end of every response, add on a new line:\n---\nTools used: [list each tool you called in order, comma-separated, or \"none\"]"
+        }
+      },
+      "id": "bb000001-0001-4000-b000-000000000003",
+      "name": "Recipe Chat Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [-420, -100]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bb000001-assign-0010",
+              "name": "session_id",
+              "type": "string",
+              "value": "={{ $('When chat message received').first().json.sessionId }}"
+            },
+            {
+              "id": "bb000001-assign-0011",
+              "name": "timestamp",
+              "type": "string",
+              "value": "={{ $now.toFormat('yyyy-MM-dd HH:mm:ss') }}"
+            },
+            {
+              "id": "bb000001-assign-0012",
+              "name": "input",
+              "type": "string",
+              "value": "={{ $('When chat message received').first().json.chatInput }}"
+            },
+            {
+              "id": "bb000001-assign-0013",
+              "name": "output",
+              "type": "string",
+              "value": "={{ $json.output.split('\\n---')[0].trim() }}"
+            },
+            {
+              "id": "bb000001-assign-0014",
+              "name": "tools_used",
+              "type": "string",
+              "value": "={{ $json.output.includes('Tools used:') ? $json.output.split('Tools used:').pop().trim() : 'unknown' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bb000001-0001-4000-b000-000000000009",
+      "name": "Prepare Log",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-100, -100]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "YOUR_GOOGLE_SHEET_URL"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "Sheet1",
+          "cachedResultName": "Sheet1"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData"
+        },
+        "options": {}
+      },
+      "id": "bb000001-0001-4000-b000-000000000010",
+      "name": "Log to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [160, -100],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bb000001-assign-0001",
+              "name": "output",
+              "type": "string",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bb000001-0001-4000-b000-000000000004",
+      "name": "Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [420, -100]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "bb000001-0001-4000-b000-000000000005",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [-620, 140]
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10,
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "id": "bb000001-0001-4000-b000-000000000006",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [-460, 140]
+    },
+    {
+      "parameters": {
+        "name": "Recipe Search",
+        "description": "Search for common recipes by name in TheMealDB. Search terms MUST be in English and simple (e.g. 'chicken', 'lasagna', 'beef stew'). If the dish is regional or not found, use Google Search instead. NEVER pass user messages like ages or allergies — only food terms.",
+        "method": "GET",
+        "url": "https://www.themealdb.com/api/json/v1/1/search.php?s={search_term}",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "search_term",
+              "description": "The recipe name to search for in English. Only food terms like 'chicken', 'lasagna', 'pasta'. Never ages, allergies or user messages."
+            }
+          ]
+        },
+        "optimizeResponse": true
+      },
+      "id": "bb000001-0001-4000-b000-000000000007",
+      "name": "Recipe Search",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [-300, 140]
+    },
+    {
+      "parameters": {},
+      "id": "bb000001-0001-4000-b000-000000000008",
+      "name": "Google Search",
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [-140, 140]
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Recipe Chat Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recipe Chat Agent": {
+      "main": [
+        [
+          {
+            "node": "Prepare Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Log": {
+      "main": [
+        [
+          {
+            "node": "Log to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Recipe Chat Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Recipe Chat Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recipe Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Recipe Chat Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Recipe Chat Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
