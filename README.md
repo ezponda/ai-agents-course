@@ -2,14 +2,13 @@
 
 [![n8n](https://img.shields.io/badge/n8n-workflow%20automation-FF6D5A)](https://n8n.io/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://python.org/)
-[![LangGraph](https://img.shields.io/badge/LangGraph-agent%20framework-1C3C3C)](https://langchain-ai.github.io/langgraph/)
 [![Level](https://img.shields.io/badge/Level-Beginner-brightgreen)](/)
 
 ## 📚 Course
 
 **[View the n8n Course →](https://ezponda.github.io/ai-agents-course/)**
 
-Learn to build AI agents using n8n and LangGraph. No prior experience required.
+Learn to build AI agents using n8n — no code, no prior experience required.
 
 ## Course Materials
 
@@ -102,7 +101,6 @@ ai-agents-course/
 
 - [n8n Docs](https://docs.n8n.io/)
 - [n8n Community](https://community.n8n.io/)
-- [LangGraph Docs](https://langchain-ai.github.io/langgraph/)
 - [Jupyter Book Docs](https://jupyterbook.org/)
 
 ## License
