@@ -1,0 +1,297 @@
+{
+  "name": "15 — Multi-Agent Content Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/10_multi_agent_systems.html)\n## Multi-Agent Content Pipeline\n\n**Goal:** An orchestrator agent delegates to two worker agents (Research + Writer) and returns a short, fact-based article.\n\n### Credentials needed\n- **OpenRouter API key** (Settings → Credentials) — used by all three agents\n- Wikipedia needs **no credentials**\n\n### Cost safety\nA multi-agent run makes several LLM calls (orchestrator + each worker). Keep workflows as **Drafts** (don't Publish) while learning, and Pin data after a good run.\n\n### How it works\n- **Orchestrator Agent** reads the topic and calls the workers in order.\n- **Research Agent** (its own model + Wikipedia) returns facts.\n- **Writer Agent** (its own model) writes the article from those facts.\n- Workers have **no memory** on purpose — keep them stateless.\n\n### Try this\nChange `topic` in **Input — Topic**: `the rules of chess`, `how vaccines work`, `the history of the Eiffel Tower`.\n\n**Common mistake:** giving a worker Memory — unrelated runs then bleed into each other.\n",
+        "height": 480,
+        "width": 900,
+        "color": 4
+      },
+      "id": "a1000000-0000-4000-8000-000000000001",
+      "name": "NOTE — Multi-Agent Pipeline",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -840,
+        -380
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -820,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b0000000-0000-4000-8000-000000000001",
+              "name": "topic",
+              "value": "={{ $json.topic || \"the history of the Eiffel Tower\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000003",
+      "name": "Input — Topic",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -600,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.topic }}",
+        "options": {
+          "systemMessage": "You are the orchestrator of a small content team. Your job is to produce a short, accurate article on the topic the user gives you.\n\nYou have two specialist agents available as tools:\n- Research Agent: looks up facts. Send it the topic; it returns key facts.\n- Writer Agent: writes the article. Send it the research findings; it returns the finished article.\n\nProcess:\n1. Send the topic to the Research Agent and wait for the facts.\n2. Send those facts to the Writer Agent.\n3. Return the Writer Agent's article as your final answer — do not rewrite it yourself.\n\nRules:\n- Always research before writing. Never write from your own knowledge.\n- Call each specialist once. Do not loop.\n- Output ONLY the final article."
+        }
+      },
+      "id": "a1000000-0000-4000-8000-000000000004",
+      "name": "Orchestrator Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -300,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b0000000-0000-4000-8000-000000000002",
+              "name": "article",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000005",
+      "name": "Output — Article",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        60,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000006",
+      "name": "OpenRouter (Orchestrator)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "text": "={{ $fromAI('topic', 'The topic to research', 'string') }}",
+        "toolDescription": "Looks up factual information about a topic on Wikipedia. Send it a topic or subject; it returns key facts as bullet points. Use this before writing anything.",
+        "hasOutputParser": false,
+        "options": {
+          "systemMessage": "You are a research assistant. Given a topic, look it up on Wikipedia and return the key facts.\n\nRules:\n- Use the Wikipedia tool. Do NOT answer from memory.\n- Return 4-6 short factual bullet points: dates, names, numbers, what it is.\n- No opinions, no introduction, no conclusion. Just the facts."
+        }
+      },
+      "id": "a1000000-0000-4000-8000-000000000007",
+      "name": "Research Agent",
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        -160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000008",
+      "name": "OpenRouter (Research)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        460
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "a1000000-0000-4000-8000-000000000009",
+      "name": "Wikipedia",
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        -100,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "text": "={{ $fromAI('facts', 'The research facts to write the article from', 'string') }}",
+        "toolDescription": "Writes a short article from a set of research facts. Send it the facts gathered by the Research Agent; it returns the finished article. Use this after research is done.",
+        "hasOutputParser": false,
+        "options": {
+          "systemMessage": "You are a writer. Given a set of research facts, write a short, engaging article.\n\nRules:\n- Use ONLY the facts provided. Do not add information from your own knowledge.\n- 2-3 short paragraphs, plain language, no headings.\n- Start with the most interesting fact, not a generic introduction.\n- Output ONLY the article."
+        }
+      },
+      "id": "a1000000-0000-4000-8000-00000000000a",
+      "name": "Writer Agent",
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-00000000000b",
+      "name": "OpenRouter (Writer)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        120,
+        460
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Input — Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input — Topic": {
+      "main": [
+        [
+          {
+            "node": "Orchestrator Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orchestrator Agent": {
+      "main": [
+        [
+          {
+            "node": "Output — Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter (Orchestrator)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Orchestrator Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Orchestrator Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Writer Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Orchestrator Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter (Research)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter (Writer)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Writer Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a1000000-0000-4000-8000-0000000000ff",
+  "meta": {
+    "instanceId": "f5aae0fa-0d15-4ba2-b2a7-efa19af205cb"
+  },
+  "id": "multiAgent00000015",
+  "tags": []
+}

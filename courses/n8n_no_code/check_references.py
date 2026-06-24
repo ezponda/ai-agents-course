@@ -224,6 +224,12 @@ NOTEBOOK_WORKFLOW_MAP = {
     "09_rag.ipynb": [
         "14_rag_faq_bot.json",
     ],
+    "10_multi_agent_systems.ipynb": [
+        "15_multi_agent_content_pipeline.json",
+    ],
+    "project_5_connect_your_app.ipynb": [
+        "16_connect_your_app.json",
+    ],
 }
 
 
