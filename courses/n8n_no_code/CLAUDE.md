@@ -167,7 +167,7 @@ Every workflow JSON must include a Sticky Note with:
 
 **Link patterns:**
 - Workflow Examples: `https://ezponda.github.io/ai-agents-course/04{a,b,c,d}_{pattern_name}.html`
-- AI Agent Examples: `https://ezponda.github.io/ai-agents-course/05_first_ai_agent.html#example-X-name`
+- First AI Agent examples: `https://ezponda.github.io/ai-agents-course/06_first_ai_agent.html#example-X-name`
 
 **Anchor format:** Each workflow pattern has its own page (e.g., `04a_prompt_chaining.html`), so anchors are rarely needed. For other pages: header text in lowercase, spaces → hyphens.
 
