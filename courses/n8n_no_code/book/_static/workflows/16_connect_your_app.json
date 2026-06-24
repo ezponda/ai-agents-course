@@ -1,0 +1,208 @@
+{
+  "name": "16 — Connect Your App",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_5_connect_your_app.html)\n## Connect Your App\n\n**Goal:** Expose an AI Agent as a webhook so your own app (Lovable / Replit) can call it.\n\n### Credentials needed\n- **OpenRouter API key** (Settings → Credentials)\n\n### The contract\nYour app POSTs JSON to `/webhook/chat`:\n`{ \"message\": \"...\", \"session_id\": \"...\", \"user_id\": \"...\" }`\nn8n responds:\n`{ \"reply\": \"...\", \"session_id\": \"...\" }`\n\n### Test it\nClick **Listen for Test Event**, then POST to the Test URL with curl (see the course page).\n\n### Before going public\nAdd **Max Iterations** and **Header Auth** — a public endpoint costs tokens on every call.\n",
+        "height": 460,
+        "width": 880,
+        "color": 4
+      },
+      "id": "c2000000-0000-4000-8000-000000000001",
+      "name": "NOTE — Connect Your App",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -860,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c2000000-0000-4000-8000-000000000002",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -820,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.message }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant embedded in a web app.\n\nRules:\n- Answer the user's message clearly and concisely (2-4 sentences unless asked for more).\n- Use the conversation history to handle follow-up questions.\n- If you don't know something, say so — don't invent facts."
+        }
+      },
+      "id": "c2000000-0000-4000-8000-000000000003",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -540,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"reply\": $json.output, \"session_id\": $('Webhook').item.json.body.session_id } }}",
+        "options": {}
+      },
+      "id": "c2000000-0000-4000-8000-000000000004",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d0000000-0000-4000-8000-000000000001",
+              "name": "received_at",
+              "value": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+              "type": "string"
+            },
+            {
+              "id": "d0000000-0000-4000-8000-000000000002",
+              "name": "user_id",
+              "value": "={{ $('Webhook').item.json.body.user_id }}",
+              "type": "string"
+            },
+            {
+              "id": "d0000000-0000-4000-8000-000000000003",
+              "name": "message",
+              "value": "={{ $('Webhook').item.json.body.message }}",
+              "type": "string"
+            },
+            {
+              "id": "d0000000-0000-4000-8000-000000000004",
+              "name": "reply",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "d0000000-0000-4000-8000-000000000005",
+              "name": "status",
+              "value": "responded",
+              "type": "string"
+            }
+          ]
+        },
+        "keepOnlySet": true,
+        "options": {}
+      },
+      "id": "c2000000-0000-4000-8000-000000000005",
+      "name": "Log Entry",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -180,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "c2000000-0000-4000-8000-000000000006",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.session_id }}",
+        "contextWindowLength": 10
+      },
+      "id": "c2000000-0000-4000-8000-000000000007",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -400,
+        280
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Entry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c2000000-0000-4000-8000-0000000000ff",
+  "meta": {
+    "instanceId": "f5aae0fa-0d15-4ba2-b2a7-efa19af205cb"
+  },
+  "id": "connectYourApp016",
+  "tags": []
+}

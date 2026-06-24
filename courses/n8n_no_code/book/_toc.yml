@@ -22,6 +22,7 @@ parts:
       - file: 07_tool_calling
       - file: 08_guardrails_safety
       - file: 09_rag
+      - file: 10_multi_agent_systems
   - caption: Projects
     numbered: false
     chapters:
@@ -29,6 +30,7 @@ parts:
       - file: project_2_ask_your_data
       - file: project_3_onboarding_checkin
       - file: project_4_deploy_to_production
+      - file: project_5_connect_your_app
   - caption: Appendices
     numbered: false
     chapters:
