@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/10_multi_agent_systems.html)\n## Multi-Agent Content Pipeline\n\n**Goal:** An orchestrator agent delegates to two worker agents (Research + Writer) and returns a short, fact-based article.\n\n### Credentials needed\n- **OpenRouter API key** (Settings → Credentials) — used by all three agents\n- Wikipedia needs **no credentials**\n\n### Cost safety\nA multi-agent run makes several LLM calls (orchestrator + each worker). Keep workflows as **Drafts** (don't Publish) while learning, and Pin data after a good run.\n\n### How it works\n- **Orchestrator Agent** reads the topic and calls the workers in order.\n- **Research Agent** (its own model + Wikipedia) returns facts.\n- **Writer Agent** (its own model) writes the article from those facts.\n- Workers have **no memory** on purpose — keep them stateless.\n\n### Try this\nChange `topic` in **Input — Topic**: `the rules of chess`, `how vaccines work`, `the history of the Eiffel Tower`.\n\n**Common mistake:** giving a worker Memory — unrelated runs then bleed into each other.\n",
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/10_multi_agent_systems.html)\n## Multi-Agent Content Pipeline\n\n**Goal:** An orchestrator agent delegates to two worker agents (Research + Writer) and returns a short, fact-based article.\n\n### Credentials needed\n- **OpenRouter API key** (Settings → Credentials) — one Chat Model, shared by all three agents\n- Wikipedia needs **no credentials**\n\n### Cost safety\nA multi-agent run makes several LLM calls (orchestrator + each worker). Keep workflows as **Drafts** (don't Publish) while learning, and Pin data after a good run.\n\n### How it works\n- **Orchestrator Agent** reads the topic and calls the workers in order.\n- **Research Agent** (Wikipedia) returns facts.\n- **Writer Agent** writes the article from those facts.\n- All three agents **share one Chat Model** — you could give each its own (e.g. a cheaper model for workers).\n- Workers have **no memory** on purpose — keep them stateless.\n\n### Try this\nChange `topic` in **Input — Topic**: `the rules of chess`, `how vaccines work`, `the history of the Eiffel Tower`.\n\n**Common mistake:** giving a worker Memory — unrelated runs then bleed into each other.\n",
         "height": 480,
         "width": 900,
         "color": 4
@@ -12,10 +12,7 @@
       "name": "NOTE — Multi-Agent Pipeline",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        -840,
-        -380
-      ]
+      "position": [-1180, -420]
     },
     {
       "parameters": {},
@@ -23,10 +20,7 @@
       "name": "Manual Trigger",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
-      "position": [
-        -820,
-        20
-      ]
+      "position": [-1140, 40]
     },
     {
       "parameters": {
@@ -46,10 +40,7 @@
       "name": "Input — Topic",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [
-        -600,
-        20
-      ]
+      "position": [-940, 40]
     },
     {
       "parameters": {
@@ -63,10 +54,7 @@
       "name": "Orchestrator Agent",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3,
-      "position": [
-        -300,
-        20
-      ]
+      "position": [-700, 0]
     },
     {
       "parameters": {
@@ -87,10 +75,7 @@
       "name": "Output — Article",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [
-        60,
-        20
-      ]
+      "position": [-360, 0]
     },
     {
       "parameters": {
@@ -98,13 +83,10 @@
         "options": {}
       },
       "id": "a1000000-0000-4000-8000-000000000006",
-      "name": "OpenRouter (Orchestrator)",
+      "name": "OpenRouter Chat Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
-      "position": [
-        -320,
-        240
-      ]
+      "position": [-820, 280]
     },
     {
       "parameters": {
@@ -119,24 +101,7 @@
       "name": "Research Agent",
       "type": "@n8n/n8n-nodes-langchain.agentTool",
       "typeVersion": 2.2,
-      "position": [
-        -160,
-        240
-      ]
-    },
-    {
-      "parameters": {
-        "model": "openai/gpt-4o-mini",
-        "options": {}
-      },
-      "id": "a1000000-0000-4000-8000-000000000008",
-      "name": "OpenRouter (Research)",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        -260,
-        460
-      ]
+      "position": [-640, 280]
     },
     {
       "parameters": {},
@@ -144,10 +109,7 @@
       "name": "Wikipedia",
       "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
       "typeVersion": 1,
-      "position": [
-        -100,
-        460
-      ]
+      "position": [-640, 500]
     },
     {
       "parameters": {
@@ -162,125 +124,36 @@
       "name": "Writer Agent",
       "type": "@n8n/n8n-nodes-langchain.agentTool",
       "typeVersion": 2.2,
-      "position": [
-        0,
-        240
-      ]
-    },
-    {
-      "parameters": {
-        "model": "openai/gpt-4o-mini",
-        "options": {}
-      },
-      "id": "a1000000-0000-4000-8000-00000000000b",
-      "name": "OpenRouter (Writer)",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        120,
-        460
-      ]
+      "position": [-420, 280]
     }
   ],
   "connections": {
     "Manual Trigger": {
-      "main": [
-        [
-          {
-            "node": "Input — Topic",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "Input — Topic", "type": "main", "index": 0 }]]
     },
     "Input — Topic": {
-      "main": [
-        [
-          {
-            "node": "Orchestrator Agent",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "Orchestrator Agent", "type": "main", "index": 0 }]]
     },
     "Orchestrator Agent": {
-      "main": [
-        [
-          {
-            "node": "Output — Article",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "Output — Article", "type": "main", "index": 0 }]]
     },
-    "OpenRouter (Orchestrator)": {
+    "OpenRouter Chat Model": {
       "ai_languageModel": [
         [
-          {
-            "node": "Orchestrator Agent",
-            "type": "ai_languageModel",
-            "index": 0
-          }
+          { "node": "Orchestrator Agent", "type": "ai_languageModel", "index": 0 },
+          { "node": "Research Agent", "type": "ai_languageModel", "index": 0 },
+          { "node": "Writer Agent", "type": "ai_languageModel", "index": 0 }
         ]
       ]
     },
     "Research Agent": {
-      "ai_tool": [
-        [
-          {
-            "node": "Orchestrator Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
+      "ai_tool": [[{ "node": "Orchestrator Agent", "type": "ai_tool", "index": 0 }]]
     },
     "Writer Agent": {
-      "ai_tool": [
-        [
-          {
-            "node": "Orchestrator Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "OpenRouter (Research)": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Research Agent",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
+      "ai_tool": [[{ "node": "Orchestrator Agent", "type": "ai_tool", "index": 0 }]]
     },
     "Wikipedia": {
-      "ai_tool": [
-        [
-          {
-            "node": "Research Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "OpenRouter (Writer)": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Writer Agent",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
+      "ai_tool": [[{ "node": "Research Agent", "type": "ai_tool", "index": 0 }]]
     }
   },
   "pinData": {},
@@ -288,10 +161,8 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "a1000000-0000-4000-8000-0000000000ff",
   "meta": {
-    "instanceId": "f5aae0fa-0d15-4ba2-b2a7-efa19af205cb"
+    "templateCredsSetupCompleted": false
   },
-  "id": "multiAgent00000015",
   "tags": []
 }
