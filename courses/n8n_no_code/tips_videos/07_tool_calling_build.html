@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guion del profesor — Tool Calling · Trip Briefing Agent</title>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#171a23; --panel2:#1e2230; --ink:#e8eaf0; --muted:#9aa3b2;
+    --line:#2a2f3e; --accent:#36a3ff; --say:#4aa3ff; --do:#36c98b; --warn:#ffb84d;
+    --new:#ff5c8a; --quote:#c08bff; --code:#0b0d13; --tip:#caa45a; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{display:grid;grid-template-columns:264px 1fr;min-height:100vh}
+
+  aside{position:sticky;top:0;height:100vh;overflow:auto;background:var(--panel);
+    border-right:1px solid var(--line);padding:20px 16px}
+  aside h1{font-size:15px;margin:0 0 4px}
+  aside .sub{color:var(--muted);font-size:12px;margin-bottom:18px}
+  .nav a{display:flex;justify-content:space-between;gap:8px;align-items:center;
+    color:var(--muted);text-decoration:none;padding:9px 11px;border-radius:10px;font-size:13.5px;margin-bottom:4px;border:1px solid transparent}
+  .nav a:hover{background:var(--panel2);color:var(--ink)}
+  .nav a.active{background:var(--panel2);color:var(--ink);border-color:var(--line)}
+  .nav a .t{font-size:11px;color:var(--muted);background:#000;padding:2px 7px;border-radius:20px;border:1px solid var(--line)}
+  .nav a.new{color:#ffb0c8}
+  .legend{margin-top:14px;padding:12px;background:var(--panel2);border-radius:10px;font-size:12px;color:var(--muted);line-height:1.9}
+  .legend b{color:var(--ink)}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+
+  main{padding:34px 40px 120px;max-width:1000px}
+  .thesis{background:linear-gradient(135deg,#10314d,#1a1d2b);border:1px solid #1f4e76;
+    border-radius:var(--radius);padding:20px 22px;margin-bottom:26px}
+  .thesis .k{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:#7fc1ff;margin-bottom:6px}
+  .thesis p{margin:0;font-size:19px;font-weight:600;line-height:1.45}
+
+  .pipe{font:13px/1.7 "SF Mono",Menlo,Consolas,monospace;color:#9fd9ff;background:var(--code);
+    border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 26px;overflow:auto}
+
+  section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:24px 26px;margin-bottom:22px;scroll-margin-top:18px;border-left:5px solid var(--accent)}
+  section.concept{border-left-color:#6b7280}
+  section.intro{border-left-color:#36c98b}
+  section.new{border-left-color:var(--new)}
+  section.close{border-left-color:var(--warn)}
+  .head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+  .head h2{font-size:21px;margin:0}
+  .badge{font-size:12px;font-weight:700;padding:3px 11px;border-radius:20px;background:#000;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+  .badge.ring{color:var(--accent);border-color:#244a6b}
+  .badge.tag-new{background:#3a1226;color:#ff9bbb;border-color:#5e2240}
+  .badge.time{color:var(--tip);border-color:#5a4a26}
+  .goal{color:var(--muted);font-size:14px;margin:0 0 14px}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+  .card h4{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:#bfc7d6}
+  .card ul{margin:0;padding-left:18px} .card li{margin:4px 0;font-size:14px}
+
+  .box{border-radius:12px;padding:14px 16px;margin:14px 0;border:1px solid var(--line);background:var(--panel2)}
+  .box .lbl{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+  .say{border-left:4px solid var(--say)} .say .lbl{color:var(--say)}
+  .do{border-left:4px solid var(--do)} .do .lbl{color:var(--do)}
+  .warn{border-left:4px solid var(--warn)} .warn .lbl{color:var(--warn)}
+  .tip{border-left:4px solid var(--tip)} .tip .lbl{color:var(--tip)}
+  .box p{margin:6px 0} .box ul,.box ol{margin:6px 0;padding-left:20px} .box li{margin:5px 0}
+  .pop{font-size:18px;font-weight:600;color:#fff}
+  .fieldlabel{font-size:12px;color:var(--muted);margin:12px 0 -6px;font-weight:600}
+
+  .quote{border-left:4px solid var(--quote);background:#1c1630;border-radius:10px;padding:12px 15px;margin:12px 0;font-style:italic;color:#d8ccff}
+  .quote .src{display:block;font-style:normal;font-size:12px;color:var(--muted);margin-top:6px}
+
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--ink);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  code{background:#0b0d13;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font:13px "SF Mono",Menlo,Consolas,monospace;color:#cfe3ff}
+
+  .codewrap{position:relative;margin:8px 0}
+  .codewrap .cap{font-size:11px;color:var(--muted);padding:0 0 4px 2px}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;
+    font:13px/1.5 "SF Mono",Menlo,Consolas,monospace;color:#cfe3ff;margin:0;white-space:pre-wrap}
+  .copy{position:absolute;top:8px;right:8px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+    font-size:11px;padding:4px 10px;border-radius:8px;cursor:pointer}
+  .copy:hover{color:var(--ink);border-color:var(--accent)}
+  .copy.ok{color:var(--do);border-color:var(--do)}
+
+  .step{font-size:16px;margin:18px 0 6px;color:#fff;font-weight:600}
+  .good{color:var(--do)} .bad{color:#ff7a7a}
+  hr{border:none;border-top:1px solid var(--line);margin:20px 0}
+  details{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:10px 0}
+  summary{cursor:pointer;font-weight:600}
+  @media(max-width:860px){.wrap{grid-template-columns:1fr}aside{position:static;height:auto}.grid2{grid-template-columns:1fr}}
+  @media print{aside{display:none}.wrap{grid-template-columns:1fr}.copy{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<aside>
+  <h1>🧭 Guion del profesor</h1>
+  <div class="sub">Tool Calling · Trip Briefing Agent · build por anillos</div>
+  <nav class="nav">
+    <a href="#intro"><span>0 · De qué va</span><span class="t">5′</span></a>
+    <a href="#concept"><span>Concepto · ¿cómo elige?</span><span class="t">5′</span></a>
+    <a href="#r1"><span>Anillo 1 · get_weather</span><span class="t">15′</span></a>
+    <a href="#r2"><span>Anillo 2 · 3 tools</span><span class="t">15′</span></a>
+    <a href="#r3" class="new"><span>Anillo 3 · descripción 🌟</span><span class="t">15′</span></a>
+    <a href="#r4"><span>Anillo 4 · aprobación</span><span class="t">12′</span></a>
+    <a href="#resumen"><span>Resumen</span><span class="t">5′</span></a>
+    <a href="#errores"><span>Errores comunes</span></a>
+  </nav>
+  <div class="legend">
+    <span class="dot" style="background:var(--say)"></span><b>🗣️ Decir</b> (narrador)<br>
+    <span class="dot" style="background:var(--do)"></span><b>🖱️ Hacer</b> (en n8n)<br>
+    <span class="dot" style="background:var(--tip)"></span><b>💡 Énfasis</b> docente<br>
+    <span class="dot" style="background:var(--warn)"></span><b>⚠️ Ojo</b> / errores<br>
+    <span class="dot" style="background:var(--new)"></span><b>Variación en vivo</b>
+  </div>
+</aside>
+
+<main>
+  <div class="thesis">
+    <div class="k">Idea central de la clase</div>
+    <p>El agente elige qué herramienta usar <b>leyendo la descripción que tú escribes</b>.<br>Para el modelo, la <b>descripción ES la herramienta</b>.</p>
+  </div>
+
+  <!-- INTRO -->
+  <section id="intro" class="intro">
+    <div class="head"><h2>0 · De qué va esta clase y este workflow</h2><span class="badge time">~5 min</span></div>
+
+    <div class="box say"><div class="lbl">🗣️ Abrir la clase (lee esto)</div>
+      <p>"En las clases anteriores montamos nuestro primer <b>AI Agent</b>: un LLM que tiene memoria y puede usar herramientas como la calculadora o Wikipedia. Vimos que <b>el agente decide</b> cuándo usar cada herramienta. Hoy abrimos esa caja negra y respondemos a la pregunta clave: <b>¿cómo decide?</b> Y de paso le damos un superpoder nuevo: llamar a <b>cualquier API de internet</b>."</p>
+      <p>"Para verlo, vamos a construir paso a paso un asistente útil y real: un <b>conserje de viajes</b>. Le dices un destino y te prepara un mini-informe: el tiempo que hará, un par de sitios imprescindibles, y qué está pasando allí ahora mismo. Y, como en la vida real, el informe no se da por bueno hasta que <b>una persona lo aprueba</b>."</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h4>🎯 Qué van a aprender</h4>
+        <ul>
+          <li>Cómo el agente <b>elige</b> una herramienta (la descripción)</li>
+          <li>Conectar una API cualquiera con el <b>HTTP Request Tool</b></li>
+          <li><code>$fromAI()</code>: que el modelo rellene los parámetros</li>
+          <li>Tools de <b>lectura vs escritura</b> y el gate de aprobación</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>👤 Para quién / qué saben ya</h4>
+        <ul>
+          <li>Ya saben qué es el nodo <b>AI Agent</b> (LLM + tools + memoria)</li>
+          <li>Han usado tools nativas (Calculator, Wikipedia)</li>
+          <li>No hace falta programar</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🧩 El workflow que construiremos</h4>
+        <ul>
+          <li><b>Trip Briefing Agent</b> con 3 tools</li>
+          <li><code>get_weather</code> (API en vivo) · Wikipedia · Google</li>
+          <li>Cierre con <b>aprobación humana</b></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🔑 Credenciales</h4>
+        <ul>
+          <li><b>OpenRouter</b> (Chat Model)</li>
+          <li><b>SerpAPI</b> (gratis) — desde el anillo 2</li>
+          <li>wttr.in y Wikipedia: <b>sin clave</b></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="fieldlabel">El recorrido (4 anillos · cada uno es un workflow que ya funciona):</div>
+    <table>
+      <tr><th>Anillo</th><th>Qué añadimos</th><th>Concepto nuevo</th></tr>
+      <tr><td><b>1</b></td><td>Agent + <code>get_weather</code> (HTTP)</td><td>Llamar a cualquier API · <code>$fromAI()</code> · botón ✨</td></tr>
+      <tr><td><b>2</b></td><td>+ Wikipedia + Google Search</td><td>El agente <b>elige</b> · descripción vs system message</td></tr>
+      <tr><td><b>3</b></td><td>romper y arreglar una descripción</td><td><b>La descripción ES la interfaz</b></td></tr>
+      <tr><td><b>4</b></td><td>Wait — Approval</td><td>Lectura vs escritura · gate de aprobación</td></tr>
+    </table>
+
+    <div class="box tip"><div class="lbl">💡 Énfasis docente</div>
+      <p>Hoy <b>no</b> repetimos qué es un agente (ya lo saben). El foco es uno solo: <b>la descripción manda</b>. Vuelve a esa idea en cada anillo.</p>
+    </div>
+  </section>
+
+  <div class="pipe">Run: Trip Briefing → Input — Trip Request → Trip Briefing Agent → Wait — Approval → Output — Approved
+                                          ⋮  OpenRouter · get_weather (HTTP+$fromAI) · Wikipedia · Google Search</div>
+
+  <!-- CONCEPTO -->
+  <section id="concept" class="concept">
+    <div class="head"><h2>Concepto · ¿cómo elige el agente una herramienta?</h2><span class="badge time">~5 min</span></div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div>
+      <p>"Conectas tools al agente y n8n le manda al modelo una <b>lista</b>: nombre, descripción y parámetros de cada una. El modelo lee eso + la pregunta y <b>decide</b>. Tú NO escribes 'si pregunta el tiempo, usa get_weather'."</p>
+      <p class="pop">"Para el modelo, la descripción ES la herramienta. El código de detrás le da igual."</p>
+    </div>
+    <table>
+      <tr><th>Lo que ve el modelo</th><th>De dónde sale</th></tr>
+      <tr><td>Nombre de la tool</td><td>el nombre del nodo</td></tr>
+      <tr><td><b>Descripción</b> (lo +importante)</td><td>tools HTTP/Code: la escribes tú · nativas (Wikipedia): fija</td></tr>
+      <tr><td>Parámetros a rellenar</td><td><code>$fromAI()</code> en la tool</td></tr>
+      <tr><td>Reglas extra</td><td>el <b>System Message</b> del agente</td></tr>
+    </table>
+  </section>
+
+  <!-- RING 1 -->
+  <section id="r1">
+    <div class="head"><h2>Anillo 1 · Agent + <code>get_weather</code></h2><span class="badge ring">HTTP + $fromAI</span><span class="badge time">~15 min</span></div>
+    <p class="goal">Una sola tool, pero potente: llama a una API de tiempo real.</p>
+
+    <div class="box do"><div class="lbl">🖱️ Hacer · trigger + input</div>
+      <ol>
+        <li><b>Add Workflow</b> → renómbralo "Trip Briefing Agent".</li>
+        <li><b>Manual Trigger</b> → renómbralo <code>Run: Trip Briefing</code>.</li>
+        <li><b>Edit Fields</b> → <code>Input — Trip Request</code>, añade un campo String <code>request</code> con este valor:</li>
+      </ol>
+      <div class="codewrap"><div class="cap">campo <code>request</code> (pregunta de ejemplo)</div><button class="copy">copiar</button><pre>I'm visiting Lisbon this weekend. Give me a short trip brief: the weather, a couple of must-see sights, and anything happening right now.</pre></div>
+    </div>
+
+    <div class="box do"><div class="lbl">🖱️ Hacer · el agente</div>
+      <ol>
+        <li><b>AI Agent</b> → renómbralo <code>Trip Briefing Agent</code>. Source for Prompt = <b>Define below</b>.</li>
+        <li><b>Prompt</b> (modo Expression):</li>
+      </ol>
+      <div class="codewrap"><div class="cap">Prompt del agente</div><button class="copy">copiar</button><pre>{{ $json.request }}</pre></div>
+      <p>Options → <b>System Message</b> (de momento solo el rol; las reglas de tools van en el anillo 2):</p>
+      <div class="codewrap"><div class="cap">System Message (anillo 1)</div><button class="copy">copiar</button><pre>You are a Trip Briefing assistant. The user names a destination and you prepare a short, practical trip brief.</pre></div>
+      <p><b>+ Chat Model</b> → OpenRouter (modelo barato actual).</p>
+    </div>
+
+    <div class="step">Añadir <code>get_weather</code> (HTTP Request Tool)</div>
+    <div class="box do"><div class="lbl">🖱️ Hacer</div>
+      <ol>
+        <li><b>+</b> en el conector <b>Tool</b> del agente → busca <b>HTTP Request</b> → renómbralo <code>get_weather</code>.</li>
+        <li>Method <b>GET</b> · Send Query Parameters <b>ON</b> · Optimize Response <b>ON</b>.</li>
+      </ol>
+      <div class="codewrap"><div class="cap">Description del tool (lo que LEE el modelo)</div><button class="copy">copiar</button><pre>Get the current weather for a city. Input: the destination city name in English (for example "Lisbon"). Returns temperature, conditions, humidity and wind. Use this when the user asks about the weather or what to pack. Do NOT use it for opening hours, events, prices or general facts.</pre></div>
+      <div class="codewrap"><div class="cap">Query Parameter → Name</div><button class="copy">copiar</button><pre>format</pre></div>
+      <div class="codewrap"><div class="cap">Query Parameter → Value</div><button class="copy">copiar</button><pre>j1</pre></div>
+    </div>
+
+    <div class="step">El botón ✨ y <code>$fromAI()</code></div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div>
+      <p>"La URL necesita la ciudad… pero no sé cuál pedirá el usuario. Que la rellene el modelo."</p>
+    </div>
+    <div class="box do"><div class="lbl">🖱️ Hacer</div>
+      <p>En <b>URL</b> escribe <code>https://wttr.in/</code> → pasa el ratón por el final → icono <b>✨</b> → clic. Te queda así (puedes pegar esto directamente, en modo Expression):</p>
+      <div class="codewrap"><div class="cap">URL del tool (con $fromAI)</div><button class="copy">copiar</button><pre>https://wttr.in/{{ $fromAI('city', 'The destination city name in English, e.g. Lisbon or Paris', 'string') }}</pre></div>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div>
+      <p>"<code>$fromAI('city', …)</code> es un hueco que rellena el modelo. La previsualización gris de abajo aún no resuelve; al ejecutar, el agente lee la pregunta, ve Lisboa y pone <code>city=Lisbon</code> → <code>https://wttr.in/Lisbon</code>."</p>
+    </div>
+
+    <div class="box do"><div class="lbl">🖱️ Hacer · output</div>
+      <p>Edit Fields → <code>Output — Approved</code> (lo reusamos en el anillo 4). Campo String <code>trip_brief</code>:</p>
+      <div class="codewrap"><div class="cap">Output · campo trip_brief (Expression)</div><button class="copy">copiar</button><pre>{{ $('Trip Briefing Agent').item.json.output }}</pre></div>
+      <p>Conecta: <code>Run: Trip Briefing → Input → Trip Briefing Agent → Output</code> y <b>Execute</b>.</p>
+    </div>
+    <div class="box tip"><div class="lbl">💡 Énfasis · abrir los Logs</div>
+      <p>Abre el agente → pestaña <b>Logs</b> y enseña la llamada a get_weather: con qué <code>city</code> la llamó y qué devolvió. "El agente decidió la herramienta y rellenó el parámetro solo. Eso es tool calling."</p>
+    </div>
+  </section>
+
+  <!-- RING 2 -->
+  <section id="r2">
+    <div class="head"><h2>Anillo 2 · + Wikipedia + Google Search</h2><span class="badge ring">el agente elige</span><span class="badge time">~15 min</span></div>
+    <p class="goal">Con varias tools, lo interesante es cuál elige y por qué.</p>
+    <div class="box do"><div class="lbl">🖱️ Hacer</div>
+      <ul>
+        <li><b>+ Tool → Wikipedia</b> (sin credenciales).</li>
+        <li><b>+ Tool → SerpAPI</b> → renómbralo <code>Google Search</code> (credencial gratis).</li>
+        <li>Reemplaza el System Message por este:</li>
+      </ul>
+      <div class="codewrap"><div class="cap">System Message completo (anillo 2)</div><button class="copy">copiar</button><pre>You are a Trip Briefing assistant. The user names a destination (and sometimes dates) and you prepare a short, practical trip brief.
+
+You have three tools:
+- get_weather: live weather for a city. Use it whenever the user wants the weather or what to pack.
+- Wikipedia: established background facts (history, main sights, geography) that rarely change. Use it for general "tell me about" knowledge.
+- Google Search: current, time-sensitive info (events this week, opening hours, ticket prices, recent news). Use it when the answer depends on what is happening NOW.
+
+Rules:
+- Choose the RIGHT tool: stable facts -> Wikipedia; current/this-week info -> Google Search; weather -> get_weather.
+- Do NOT invent opening hours, prices or dates. If it is time-sensitive, search.
+- Final answer: a short brief of 4-6 bullets (weather, 2-3 things to see, 1 current tip).</pre></div>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div>
+      <p>"Wikipedia y Google se parecen — las dos 'buscan'. ¿Cómo elige? Por la diferencia que marco: <b>hechos que no cambian → Wikipedia; cosas de AHORA → Google</b>. Las dos son nativas (descripción fija), así que las dirijo desde el <b>System Message</b>."</p>
+      <p class="pop">Pista: cuando no puedes tocar la descripción de una tool, la guías con el system message.</p>
+    </div>
+    <div class="box do"><div class="lbl">🖱️ Demo</div><p>Execute → agente → <b>Logs</b>: get_weather (tiempo) + Wikipedia (Belém, Castillo) + Google (eventos del finde). Cada tool para lo suyo, decidido por el agente.</p></div>
+  </section>
+
+  <!-- RING 3 -->
+  <section id="r3" class="new">
+    <div class="head"><h2>Anillo 3 · La descripción ES la interfaz</h2><span class="badge tag-new">VARIACIÓN EN VIVO 🌟</span><span class="badge time">~15 min</span></div>
+    <p class="goal">Demostrar la tesis rompiendo una descripción.</p>
+    <div class="box do"><div class="lbl">🖱️ Romper</div>
+      <p>En <code>get_weather</code>, sustituye la Description por algo vago:</p>
+      <div class="codewrap"><div class="cap">Description "mala"</div><button class="copy">copiar</button><pre>Checks the weather.</pre></div>
+      <p>Execute con una pregunta ambigua:</p>
+      <div class="codewrap"><div class="cap">Pregunta de prueba (cambia el <code>request</code>)</div><button class="copy">copiar</button><pre>I'm going to Porto on Saturday — is it a good day to walk around?</pre></div>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div>
+      <p>"Con descripción pobre el modelo duda: a veces no llama a la tool y se inventa el tiempo, a veces la llama mal. El nombre <code>get_weather</code> no basta."</p>
+    </div>
+    <div class="box do"><div class="lbl">🖱️ Arreglar</div>
+      <p>Restaura la descripción buena y vuelve a ejecutar la misma pregunta → ahora la llama bien.</p>
+      <div class="codewrap"><div class="cap">Description "buena" (restaurar)</div><button class="copy">copiar</button><pre>Get the current weather for a city. Input: the destination city name in English (for example "Lisbon"). Returns temperature, conditions, humidity and wind. Use this when the user asks about the weather or what to pack. Do NOT use it for opening hours, events, prices or general facts.</pre></div>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div>
+      <p class="pop">"Cambié UN campo de texto y el comportamiento cambia entero."</p>
+      <p>"Escríbela como a un fichaje nuevo: <b>qué hace, cuándo SÍ, cuándo NO, qué entra y sale</b>. 3-4 frases."</p>
+    </div>
+    <div class="quote">"Provide extremely detailed descriptions. This is by far the most important factor in tool performance." <span class="src">Anthropic</span></div>
+    <details><summary>(Opcional) Variación vía system message</summary>
+      <p>"¿Forzar que SIEMPRE consulte el tiempo? No toco la descripción: añado una regla al system message."</p>
+      <div class="codewrap"><div class="cap">Regla extra para el System Message</div><button class="copy">copiar</button><pre>Always include current weather in the brief, even if the user does not ask for it.</pre></div>
+    </details>
+  </section>
+
+  <!-- RING 4 -->
+  <section id="r4" class="close">
+    <div class="head"><h2>Anillo 4 · Lectura vs escritura + aprobación</h2><span class="badge ring">write</span><span class="badge time">~12 min</span></div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div>
+      <p>"Todas nuestras tools son de SOLO LECTURA: buscan, no cambian nada. El día que una tool <b>envíe un email</b> o <b>borre algo</b>, un error sale caro."</p>
+      <p class="pop">Regla de oro: si una tool cambia algo en el mundo real, necesita aprobación humana antes de ejecutarse.</p>
+    </div>
+    <div class="box do"><div class="lbl">🖱️ Hacer</div>
+      <ol>
+        <li>Entre Agent y Output, añade <b>Wait</b> → <code>Wait — Approval</code>. Resume: <b>On Webhook Call</b>.</li>
+        <li>En Options, Webhook Suffix (Expression):</li>
+      </ol>
+      <div class="codewrap"><div class="cap">Wait → Webhook Suffix</div><button class="copy">copiar</button><pre>{{ $execution.id }}</pre></div>
+      <p>Reconecta: <code>Trip Briefing Agent → Wait — Approval → Output — Approved</code>. En el Output añade un 2º campo:</p>
+      <div class="codewrap"><div class="cap">Output · campo status (valor fijo)</div><button class="copy">copiar</button><pre>approved</pre></div>
+      <p>(activa <b>Keep Only Set</b>)</p>
+    </div>
+    <div class="box do"><div class="lbl">🖱️ Demo</div>
+      <p>Execute → se <b>pausa</b> en Wait. Clic en el nodo → copia la <b>Test URL</b> → ábrela → continúa a <code>status: approved</code>.</p>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div><p class="pop">El patrón: la IA prepara → el humano aprueba → el sistema ejecuta.</p></div>
+  </section>
+
+  <!-- RESUMEN -->
+  <section id="resumen" class="concept">
+    <div class="head"><h2>Resumen</h2><span class="badge time">~5 min</span></div>
+    <table>
+      <tr><th>Anillo</th><th>Qué aprendimos</th></tr>
+      <tr><td>1</td><td>Una tool HTTP llama a <b>cualquier API</b>; <code>$fromAI()</code> rellena los parámetros</td></tr>
+      <tr><td>2</td><td>Con varias tools el agente <b>elige</b>; la descripción (o el system message) decide</td></tr>
+      <tr><td>3</td><td><b>La descripción ES la interfaz</b>: cámbiala y cambia el comportamiento</td></tr>
+      <tr><td>4</td><td><b>Lectura vs escritura</b>: las acciones que cambian el mundo van tras un gate de aprobación</td></tr>
+    </table>
+    <div class="box say"><div class="lbl">🗣️ Tres ideas para llevarse</div>
+      <ol>
+        <li>El modelo elige la tool <b>leyendo su descripción</b> (qué hace + cuándo SÍ + cuándo NO).</li>
+        <li><code>$fromAI()</code> = el modelo rellena los argumentos en tiempo de ejecución.</li>
+        <li><b>Read-only se usa libre; write necesita aprobación.</b></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ERRORES -->
+  <section id="errores" class="close">
+    <div class="head"><h2>Errores comunes</h2></div>
+    <table>
+      <tr><th>Error</th><th>Solución</th></tr>
+      <tr><td>No llama a <code>get_weather</code></td><td>descripción vaga → "Use this when… / Do NOT use…"</td></tr>
+      <tr><td>Elige Wikipedia cuando debía Google (o al revés)</td><td>marcar la diferencia en el system message (hechos vs ahora)</td></tr>
+      <tr><td><code>$fromAI</code> no rellena la ciudad</td><td>URL en modo <b>Expression</b>; <code>key</code> con sentido (<code>city</code>)</td></tr>
+      <tr><td>wttr.in devuelve texto enorme / falla</td><td>Optimize Response ON; si da guerra, OFF</td></tr>
+      <tr><td>Ciudad con espacios ("New York")</td><td>wttr.in acepta <code>New+York</code> o <code>%20</code></td></tr>
+      <tr><td>No continúa tras el Wait</td><td>abrir la <b>Test URL</b> del nodo Wait</td></tr>
+      <tr><td>Bucle de tools sin parar</td><td>bajar <b>Max Iterations</b> (Agent → Options) a 5-8</td></tr>
+    </table>
+  </section>
+</main>
+</div>
+
+<script>
+  document.querySelectorAll('.copy').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const txt=btn.parentElement.querySelector('pre').innerText;
+      navigator.clipboard.writeText(txt).then(()=>{
+        const o=btn.textContent;btn.textContent='✓ copiado';btn.classList.add('ok');
+        setTimeout(()=>{btn.textContent=o;btn.classList.remove('ok')},1200);
+      });
+    });
+  });
+  const links=[...document.querySelectorAll('.nav a')];
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));
+      const a=map.get(e.target.id);if(a)a.classList.add('active');}});
+  },{rootMargin:'-20% 0px -70% 0px'});
+  document.querySelectorAll('section[id]').forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>

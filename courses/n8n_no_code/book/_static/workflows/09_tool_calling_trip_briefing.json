@@ -1,0 +1,197 @@
+{
+  "name": "09 — Trip Briefing Agent (Tool Calling)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/07_tool_calling.html)\n## Trip Briefing Agent (Tool Calling)\n**Goal:** One agent picks the RIGHT tool for each question — live weather (HTTP + `$fromAI`), Wikipedia for stable facts, Google for current info — then a human approves the brief.\n\n### Tools\n- **get_weather** (HTTP Request Tool → wttr.in, no key): the agent fills the city with `$fromAI`\n- **Wikipedia** (no key): established background facts\n- **Google Search** (SerpAPI key): current, time-sensitive info\n\n### Read-only vs write\nAll tools are read-only, so the agent researches freely. The **Wait — Approval** node gates the brief before it could be sent.\n\n### Credentials\n- OpenRouter (Chat Model) · SerpAPI (free key) · wttr.in and Wikipedia need none\n\n### How to run\n1. Click **Execute Workflow**\n2. Open the **Agent** node → **Logs** to see which tool it chose and with what input\n3. At **Wait — Approval**, click the node, copy the **Test URL** and open it to approve",
+        "height": 460,
+        "width": 760,
+        "color": 4
+      },
+      "id": "a1b2c3d4-0001-4a01-8a01-000000000001",
+      "name": "NOTE — Trip Briefing",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-1200, -520]
+    },
+    {
+      "parameters": {
+        "content": "## ⏸️ APPROVAL GATE\nThe agent's tools are read-only, so it researches freely.\nThis Wait node gates the brief before it could be sent.\n\n**To test:** click this node → copy the **Test URL** → open it in your browser.\n**In production:** send the brief + an approval link, then connect a send action AFTER approval.",
+        "height": 220,
+        "width": 300,
+        "color": 6
+      },
+      "id": "a1b2c3d4-0002-4a02-8a02-000000000002",
+      "name": "NOTE — Approval",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-420, -300]
+    },
+    {
+      "parameters": {},
+      "id": "a1b2c3d4-0003-4a03-8a03-000000000003",
+      "name": "Run: Trip Briefing",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-1140, 20]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "req-1",
+              "name": "request",
+              "type": "string",
+              "value": "I'm visiting Lisbon this weekend. Give me a short trip brief: the weather, a couple of must-see sights, and anything happening right now."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0004-4a04-8a04-000000000004",
+      "name": "Input — Trip Request",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-920, 20]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.request }}",
+        "options": {
+          "systemMessage": "You are a Trip Briefing assistant. The user names a destination (and sometimes dates) and you prepare a short, practical trip brief.\n\nYou have three tools:\n- get_weather: live weather for a city. Use it whenever the user wants the weather or what to pack.\n- Wikipedia: established background facts (history, main sights, geography) that rarely change. Use it for general \"tell me about\" knowledge.\n- Google Search: current, time-sensitive info (events this week, opening hours, ticket prices, recent news). Use it when the answer depends on what is happening NOW.\n\nRules:\n- Choose the RIGHT tool: stable facts -> Wikipedia; current/this-week info -> Google Search; weather -> get_weather.\n- Do NOT invent opening hours, prices or dates. If it is time-sensitive, search.\n- Final answer: a short brief of 4-6 bullets (weather, 2-3 things to see, 1 current tip).",
+          "maxIterations": 8
+        }
+      },
+      "id": "a1b2c3d4-0005-4a05-8a05-000000000005",
+      "name": "Trip Briefing Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [-680, -40]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0006-4a06-8a06-000000000006",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [-760, 220]
+    },
+    {
+      "parameters": {
+        "url": "=https://wttr.in/{{ /*n8n-auto-generated-fromAI-override*/ $fromAI('city', 'The destination city name in English, e.g. Lisbon or Paris', 'string') }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "format",
+              "value": "j1"
+            }
+          ]
+        },
+        "toolDescription": "Get the current weather for a city. Input: the destination city name in English (for example \"Lisbon\"). Returns temperature, conditions, humidity and wind. Use this when the user asks about the weather or what to pack. Do NOT use it for opening hours, events, prices or general facts.",
+        "optimizeResponse": true,
+        "options": {}
+      },
+      "id": "a1b2c3d4-0007-4a07-8a07-000000000007",
+      "name": "get_weather",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [-620, 220]
+    },
+    {
+      "parameters": {},
+      "id": "a1b2c3d4-0008-4a08-8a08-000000000008",
+      "name": "Wikipedia",
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [-490, 220]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "a1b2c3d4-0009-4a09-8a09-000000000009",
+      "name": "Google Search",
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [-360, 220]
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "options": {
+          "webhookSuffix": "={{ $execution.id }}"
+        }
+      },
+      "id": "a1b2c3d4-000a-4a0a-8a0a-00000000000a",
+      "name": "Wait — Approval",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [-360, -40]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "brief-1",
+              "name": "trip_brief",
+              "type": "string",
+              "value": "={{ $('Trip Briefing Agent').item.json.output }}"
+            },
+            {
+              "id": "status-1",
+              "name": "status",
+              "type": "string",
+              "value": "approved"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "a1b2c3d4-000b-4a0b-8a0b-00000000000b",
+      "name": "Output — Approved",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-140, -40]
+    }
+  ],
+  "connections": {
+    "Run: Trip Briefing": {
+      "main": [[{ "node": "Input — Trip Request", "type": "main", "index": 0 }]]
+    },
+    "Input — Trip Request": {
+      "main": [[{ "node": "Trip Briefing Agent", "type": "main", "index": 0 }]]
+    },
+    "Trip Briefing Agent": {
+      "main": [[{ "node": "Wait — Approval", "type": "main", "index": 0 }]]
+    },
+    "Wait — Approval": {
+      "main": [[{ "node": "Output — Approved", "type": "main", "index": 0 }]]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [[{ "node": "Trip Briefing Agent", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "get_weather": {
+      "ai_tool": [[{ "node": "Trip Briefing Agent", "type": "ai_tool", "index": 0 }]]
+    },
+    "Wikipedia": {
+      "ai_tool": [[{ "node": "Trip Briefing Agent", "type": "ai_tool", "index": 0 }]]
+    },
+    "Google Search": {
+      "ai_tool": [[{ "node": "Trip Briefing Agent", "type": "ai_tool", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

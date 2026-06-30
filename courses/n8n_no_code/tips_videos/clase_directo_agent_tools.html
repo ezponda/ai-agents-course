@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clase en directo — El nodo AI Agent y las tools</title>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#171a23; --panel2:#1e2230; --ink:#e8eaf0; --muted:#9aa3b2;
+    --line:#2a2f3e; --accent:#7c5cff; --say:#4aa3ff; --do:#36c98b; --warn:#ffb84d;
+    --new:#ff5c8a; --quote:#c08bff; --code:#0b0d13;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+
+  /* SIDEBAR */
+  aside{position:sticky;top:0;height:100vh;overflow:auto;background:var(--panel);
+    border-right:1px solid var(--line);padding:20px 16px}
+  aside h1{font-size:15px;margin:0 0 4px;letter-spacing:.2px}
+  aside .sub{color:var(--muted);font-size:12px;margin-bottom:18px}
+  .nav a{display:flex;justify-content:space-between;gap:8px;align-items:center;
+    color:var(--muted);text-decoration:none;padding:9px 11px;border-radius:10px;font-size:13.5px;margin-bottom:4px;border:1px solid transparent}
+  .nav a:hover{background:var(--panel2);color:var(--ink)}
+  .nav a.active{background:var(--panel2);color:var(--ink);border-color:var(--line)}
+  .nav a .t{font-size:11px;color:var(--muted);background:#000;padding:2px 7px;border-radius:20px;border:1px solid var(--line)}
+  .nav a.new{color:#ffb0c8}
+  .totaltime{margin-top:14px;padding:12px;background:var(--panel2);border-radius:10px;font-size:13px;color:var(--muted)}
+  .totaltime b{color:var(--ink)}
+
+  /* MAIN */
+  main{padding:34px 40px 120px;max-width:1000px}
+  .thesis{background:linear-gradient(135deg,#241c4d,#1a1d2b);border:1px solid #3a2f6b;
+    border-radius:var(--radius);padding:20px 22px;margin-bottom:30px}
+  .thesis .k{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--quote);margin-bottom:6px}
+  .thesis p{margin:0;font-size:19px;font-weight:600;line-height:1.45}
+
+  section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:24px 26px;margin-bottom:22px;scroll-margin-top:18px;border-left:5px solid var(--accent)}
+  section.new{border-left-color:var(--new)}
+  section.close{border-left-color:var(--warn)}
+  .head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+  .head h2{font-size:21px;margin:0}
+  .badge{font-size:12px;font-weight:700;padding:3px 11px;border-radius:20px;background:#000;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+  .badge.time{color:var(--accent);border-color:#3a3160}
+  .badge.tag-new{background:#3a1226;color:#ff9bbb;border-color:#5e2240}
+  .badge.tag-rep{background:#0d2336;color:#8fcaff;border-color:#1d456b}
+  .goal{color:var(--muted);font-size:14px;margin:0 0 14px}
+
+  .box{border-radius:12px;padding:14px 16px;margin:14px 0;border:1px solid var(--line);background:var(--panel2)}
+  .box .lbl{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+  .say{border-left:4px solid var(--say)} .say .lbl{color:var(--say)}
+  .do{border-left:4px solid var(--do)} .do .lbl{color:var(--do)}
+  .warn{border-left:4px solid var(--warn)} .warn .lbl{color:var(--warn)}
+  .box p{margin:6px 0} .box ul,.box ol{margin:6px 0;padding-left:20px} .box li{margin:5px 0}
+  .pop{font-size:18px;font-weight:600;color:#fff}
+
+  .quote{border-left:4px solid var(--quote);background:#1c1630;border-radius:10px;padding:12px 15px;margin:12px 0;font-style:italic;color:#d8ccff}
+  .quote .src{display:block;font-style:normal;font-size:12px;color:var(--muted);margin-top:6px}
+
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--ink);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  td .pill{font-size:12px;background:#000;border:1px solid var(--line);padding:1px 8px;border-radius:20px;color:var(--muted)}
+
+  .codewrap{position:relative;margin:12px 0}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;
+    font:13px/1.5 "SF Mono",Menlo,Consolas,monospace;color:#cfe3ff;margin:0}
+  .copy{position:absolute;top:8px;right:8px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+    font-size:11px;padding:4px 10px;border-radius:8px;cursor:pointer}
+  .copy:hover{color:var(--ink);border-color:var(--accent)}
+  .copy.ok{color:var(--do);border-color:var(--do)}
+
+  h3.layer{font-size:16px;margin:22px 0 6px;color:#fff;display:flex;align-items:center;gap:8px}
+  h3.layer .chip{font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;background:#2a1430;color:#ff9bbb;border:1px solid #5e2240}
+  h3.layer .opt{background:#1a2230;color:#8fcaff;border-color:#264}
+  .good{color:var(--do)} .bad{color:#ff7a7a}
+  hr{border:none;border-top:1px solid var(--line);margin:20px 0}
+  .anchor{scroll-margin-top:18px}
+  .mini{font-size:12.5px;color:var(--muted)}
+  a.ext{color:#8fb4ff}
+  details{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:10px 0}
+  summary{cursor:pointer;font-weight:600}
+  @media(max-width:860px){.wrap{grid-template-columns:1fr}aside{position:static;height:auto}}
+  @media print{aside{display:none}.wrap{grid-template-columns:1fr}.copy{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<aside>
+  <h1>🎬 Clase en directo</h1>
+  <div class="sub">El nodo AI Agent: de <i>workflow</i> a <i>agente</i> + descripciones de tools</div>
+  <nav class="nav">
+    <a href="#b0"><span>0 · Checklist</span><span class="t">2′</span></a>
+    <a href="#b1"><span>1 · Workflow vs Agente</span><span class="t">8′</span></a>
+    <a href="#b2"><span>2 · Reflection V1 (loop)</span><span class="t">12′</span></a>
+    <a href="#b3"><span>3 · V2: el agente decide</span><span class="t">12′</span></a>
+    <a href="#b4" class="new"><span>4 · 🌟 Tools + descripciones</span><span class="t">20′</span></a>
+    <a href="#b5"><span>5 · Cuándo NO + cierre</span><span class="t">5′</span></a>
+    <a href="#anexos"><span>📋 Anexos / copy-paste</span><span class="t"></span></a>
+  </nav>
+  <div class="totaltime">⏱️ Total: <b>~60 min</b><br><span class="mini">(ampliable a ~75 con Capa 3 + Q&A)</span></div>
+</aside>
+
+<main>
+  <div class="thesis">
+    <div class="k">Idea central · repetir 3 veces</div>
+    <p>Un workflow normal te obliga a <b>cablear</b> cada decisión.<br>El nodo AI Agent le da al modelo un <b>objetivo</b> y deja que <b>él</b> elija el camino.</p>
+  </div>
+
+  <!-- B0 -->
+  <section id="b0" class="anchor close">
+    <div class="head"><h2>0 · Checklist antes de empezar</h2><span class="badge time">2 min</span></div>
+    <div class="box do"><div class="lbl">🖱️ Tener listo</div>
+      <ul>
+        <li>n8n con <b>05 — Reflection Pattern</b> importado · credencial <b>OpenRouter</b> OK</li>
+        <li>Workflows en <b>modo Test</b> (no Activated) → control de coste</li>
+        <li>Este guion en la 2ª pantalla · Anexos de copy-paste abiertos</li>
+      </ul>
+    </div>
+    <div class="box warn"><div class="lbl">⚠️ Modelo</div>
+      <p>El workflow trae <code>openai/gpt-4o-mini</code>. Para 2026 usa uno <b>actual y barato</b> (Claude Haiku 4.5 / GPT-5 mini). Verifica el ID en OpenRouter el día de la clase. El concepto no depende del modelo.</p>
+    </div>
+  </section>
+
+  <!-- B1 -->
+  <section id="b1" class="anchor">
+    <div class="head"><h2>1 · ¿Workflow o agente?</h2><span class="badge time">8 min</span><span class="badge tag-rep">REPASO + ENCUADRE</span></div>
+    <p class="goal">Encuadrar toda la clase y enlazar con lo que ya vieron en vídeo.</p>
+
+    <div class="box say"><div class="lbl">🗣️ El gancho</div>
+      <p>"En los vídeos anteriores <b>vosotros</b> decidíais cada paso: encadenar prompts, un Switch, un If. Hoy entramos de lleno en el nodo que cambia las reglas. La pregunta de toda la clase: <span class="pop">¿qué decisión dejo de cablear y se la doy al modelo?</span>"</p>
+    </div>
+
+    <div class="box say"><div class="lbl">🗣️ Las dos definiciones (Anthropic)</div>
+      <ul>
+        <li><b>Workflow</b> = "LLMs y herramientas orquestados por <b>rutas de código predefinidas</b>." → tú escribes el guion.</li>
+        <li><b>Agente</b> = "el LLM <b>dirige dinámicamente</b> sus procesos y el uso de tools." → tú das un objetivo.</li>
+      </ul>
+      <p class="pop">"Un agente = LLM + bucle + tools."</p>
+    </div>
+
+    <p><b>Las 3 decisiones que dejas de cablear</b> (une todo lo ya visto):</p>
+    <table>
+      <tr><th>Decisión cableada</th><th>Workflow determinista</th><th>La pieza</th></tr>
+      <tr><td><b>Secuencia</b> (en qué orden)</td><td>01 Prompt Chaining</td><td><span class="pill">Step 1→2→3</span></td></tr>
+      <tr><td><b>Rama</b> (qué camino)</td><td>02 Routing</td><td><span class="pill">Switch</span></td></tr>
+      <tr><td><b>Bucle</b> (cuándo parar)</td><td>05 Reflection V1</td><td><span class="pill">If Done?</span></td></tr>
+    </table>
+    <p class="mini">El AI Agent colapsa las tres en una. Hoy atacamos <b>el bucle</b> a fondo.</p>
+
+    <div class="box say"><div class="lbl">🗣️ Regla de decisión</div>
+      <p class="pop">"¿Puedes dibujar el diagrama de flujo antes de ejecutar el LLM? Sí → workflow. No → agente."</p>
+      <p class="mini">Mantra Anthropic: "busca la solución más simple posible; añade complejidad solo cuando haga falta."</p>
+    </div>
+
+    <div class="box do"><div class="lbl">🖱️ Repaso exprés del nodo (NO re-analizar)</div>
+      <p>Abre <b>Reflection Agent (V2)</b> y señala los sub-nodos por línea punteada: <b>Chat Model</b> (cerebro) · <b>Memory</b> · <b>Tools</b> (manos) · <b>System Message</b> (reglas).</p>
+    </div>
+    <div class="box warn"><div class="lbl">⚠️ Dato que data el material viejo</div>
+      <p>Desde <b>n8n v1.82</b> el desplegable de "tipo de agente" <b>desapareció</b>: todos son <b>"Tools Agent"</b> y requieren ≥1 tool conectada. Si ven "Conversational / ReAct / Plan-and-Execute" → obsoleto.</p>
+    </div>
+  </section>
+
+  <!-- B2 -->
+  <section id="b2" class="anchor">
+    <div class="head"><h2>2 · El bucle a mano: Reflection V1</h2><span class="badge time">12 min</span><span class="badge">DETERMINISTA</span></div>
+    <p class="goal">Mostrar que en un workflow normal TÚ cableas la condición de salida.</p>
+
+    <p><b>El reto</b> (en pantalla): descripción de producto que el LLM casi nunca clava a la primera:</p>
+    <table>
+      <tr><th>Restricción</th><th>Requisito</th></tr>
+      <tr><td>Frases</td><td>exactamente <b>3</b></td></tr>
+      <tr><td>Palabras</td><td><b>25–30</b></td></tr>
+      <tr><td>Keyword</td><td>"sound" <b>2 veces</b></td></tr>
+      <tr><td>Prohibido</td><td>sin "music" ni "audio"</td></tr>
+    </table>
+
+    <div class="box do"><div class="lbl">🖱️ Hacer</div>
+      <ol>
+        <li>Ejecuta <b>Run: V1 Loop</b>.</li>
+        <li>En el panel, muestra los nodos ejecutándose <b>varias veces</b> (Generate→Validate→Parse→If Done?→loop).</li>
+        <li>Señala el <b>If Done?</b>: la salida la pusiste tú → <code>all_pass OR iteration ≥ 5</code>.</li>
+      </ol>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Dos puntos</div>
+      <ul>
+        <li class="pop">"En V1, el que decide cuándo parar soy yo."</li>
+        <li>V1 valida con <b>otro LLM</b>… y los LLMs cuentan mal (lo arreglamos en V2).</li>
+      </ul>
+    </div>
+    <div class="box warn"><div class="lbl">⚠️ Riesgo en directo</div>
+      <p>V1 puede no converger y agotar las 5 iteraciones (validador LLM). Perfecto para el argumento, pero <b>no te juegues el "wow" a V1</b> — apóyate en V2.</p>
+    </div>
+  </section>
+
+  <!-- B3 -->
+  <section id="b3" class="anchor">
+    <div class="head"><h2>3 · El bucle delegado: V2, el agente decide</h2><span class="badge time">12 min</span></div>
+    <p class="goal">Misma tarea; ahora el agente gestiona el bucle solo.</p>
+
+    <div class="box do"><div class="lbl">🖱️ Hacer</div>
+      <ol>
+        <li>Ejecuta <b>Run: V2 Agent</b>.</li>
+        <li>Clica <b>Reflection Agent (V2)</b> → <b>tool calls</b>: escribe → llama al Validator → lee issues → reescribe → revalida hasta <code>all_pass</code>.</li>
+        <li>Compara con V1 lado a lado.</li>
+      </ol>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Tres remates</div>
+      <ol>
+        <li>"El agente decide cuándo ha terminado" (cuando ya no llama tools). Es el <b>agent loop</b>: reunir contexto → actuar → <b>verificar</b> → repetir.</li>
+        <li>El Validator es <b>código</b>, no un LLM. Jerarquía de verificación (Anthropic):
+          <br>🥇 reglas/tests · 🥈 visual · 🥉 LLM-as-judge (el menos fiable).</li>
+        <li class="pop">"Los agentes no son magia: automatizan el mismo bucle que montaste a mano en V1."</li>
+      </ol>
+    </div>
+    <div class="quote">"The best form of feedback is providing clearly defined rules… LLM-as-judge is generally not a very robust method."<span class="src">— Anthropic, Building agents with the Claude Agent SDK</span></div>
+
+    <table>
+      <tr><th>Versión</th><th>Tú diseñas…</th><th>n8n gestiona…</th><th>La IA gestiona…</th></tr>
+      <tr><td><b>V1: Loop</b></td><td>el bucle y la salida</td><td>iterar, contar</td><td>generar texto</td></tr>
+      <tr><td><b>V2: Agente</b></td><td>el objetivo y las tools</td><td><b>todo</b></td><td><b>el bucle entero</b></td></tr>
+    </table>
+  </section>
+
+  <!-- B4 -->
+  <section id="b4" class="anchor new">
+    <div class="head"><h2>4 · 🌟 Tool calling y descripciones</h2><span class="badge time">20 min</span><span class="badge tag-new">NÚCLEO NUEVO</span></div>
+    <p class="goal">Lo que NO está en ningún vídeo. El corazón de la clase.</p>
+
+    <div class="box say"><div class="lbl">🗣️ La pregunta y la respuesta</div>
+      <p>"El agente 'llama al Validator'… ¿pero cómo sabe cuándo y cómo usarlo?"</p>
+      <p class="pop">"Lee su DESCRIPCIÓN. Para el modelo, la descripción ES la herramienta."</p>
+    </div>
+    <div class="quote">"Provide extremely detailed descriptions. This is <b>by far the most important factor</b> in tool performance."<span class="src">— Anthropic, docs de tool use</span></div>
+
+    <h3 class="layer">🔬 Capa 1 — "La descripción es la interfaz" <span class="chip">imprescindible</span></h3>
+    <div class="box do"><div class="lbl">🖱️ Romper y arreglar</div>
+      <ol>
+        <li>Abre el tool <b>Validator</b>; lee su descripción actual (buena).</li>
+        <li><b>Rómpela</b> → <code>Checks the text.</code> → ejecuta V2 → el agente duda / cuenta él mismo / se degrada.</li>
+        <li><b>Restáurala</b> → vuelve a funcionar.</li>
+      </ol>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Frases que se quedan</div>
+      <ul>
+        <li class="pop">"El nombre <code>Validator</code> no basta. El modelo solo conoce la tool por su descripción."</li>
+        <li>"Descríbela como a un <b>fichaje nuevo</b>" · "como un buen <b>docstring</b> para un junior."</li>
+        <li><b>ACI = HCI</b>: dedica a la interfaz agente-ordenador tanto esfuerzo como a una de usuario.</li>
+        <li>Heurística: <b>3–4 frases</b>, y di <b>cuándo SÍ y cuándo NO</b> usarla.</li>
+      </ul>
+    </div>
+    <p class="mini">Ejemplo de pizarra (Anthropic):</p>
+    <div class="codewrap"><button class="copy">copiar</button><pre><span class="bad">❌ Mala:</span>  "Gets the stock price for a ticker."
+
+<span class="good">✅ Buena:</span> "Retrieves the current stock price for a given ticker symbol.
+        The ticker must be a valid symbol on a major US exchange (NYSE/NASDAQ).
+        Returns the latest trade price in USD. Use it when the user asks for the
+        current/most recent price of a stock. It will not return any other info."</pre></div>
+    <div class="box warn"><div class="lbl">🗣️ System message ≠ descripción</div>
+      <p>El <b>system message</b> = las <b>reglas</b> ("no cuentes tú, usa el Validator"). La <b>descripción</b> = <b>qué hace y cómo llamarla</b>. Reglas ≠ manual de la herramienta.</p>
+    </div>
+
+    <h3 class="layer">🔬 Capa 2 — Multi-tool: cómo ELIGE <span class="chip">el núcleo</span></h3>
+    <div class="box do"><div class="lbl">🖱️ Partir el Validator en dos</div>
+      <ol>
+        <li>Crea <b>LengthChecker</b> (frases + palabras) y <b>KeywordChecker</b> ("sound" + prohibidas). <span class="mini">(código en Anexos)</span></li>
+        <li>Descripciones claras y distintas → el agente <b>elige la correcta</b> (a veces las dos).</li>
+        <li><b>El "aha":</b> hazlas <b>solapar</b> ("checks the description") → elige mal / redundante → afínalas → arreglado.</li>
+      </ol>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Remates</div>
+      <ul>
+        <li class="pop">"Con varias tools, la descripción es lo que las desambigua."</li>
+        <li><b>Test del límite:</b> "si no puedes decir en una frase por qué elegiría la tool A en vez de la B, no está lista."</li>
+        <li><b>Menos tools, mejores:</b> "más herramientas no dan mejores resultados" (OpenAI: &lt;20 por turno).</li>
+      </ul>
+    </div>
+
+    <h3 class="layer">🔬 Capa 3 — ¿Con qué argumento la llama? <code>$fromAI()</code> <span class="chip opt">opcional · puente</span></h3>
+    <div class="box say"><div class="lbl">🗣️ Decir</div>
+      <p>"Tool calling = elegir la tool <b>+ rellenar sus argumentos</b>. ¿Quién decide qué texto mandar? El modelo, con <code>$fromAI()</code>: un hueco que rellena."</p>
+      <p class="mini">Solo en tools del AI Agent (no en el Code tool). <b>Puente a la próxima clase:</b> HTTP Request Tool + <code>$fromAI()</code> = llamar a cualquier API. Luego: AI Agent Tool (multi-agente) y MCP.</p>
+    </div>
+  </section>
+
+  <!-- B5 -->
+  <section id="b5" class="anchor close">
+    <div class="head"><h2>5 · Cuándo NO usar agente + cierre</h2><span class="badge time">5 min</span></div>
+    <div class="box say"><div class="lbl">🗣️ Honestidad = credibilidad</div>
+      <ul>
+        <li>Anthropic: "workflows = previsibilidad para tareas bien definidas; agentes = flexibilidad y decisión del modelo a escala."</li>
+        <li><b>Caso real:</b> en la comunidad n8n montaron la misma clasificación de facturas de las dos formas — <b>"el agente perdió"</b>: enrutaba distinto en cada ejecución y "te dice tan tranquilo que está 90% seguro de algo que falló."</li>
+        <li class="pop">Clasificar es determinista: no metas un agente donde un Switch sobra.</li>
+        <li>Regla n8n: "construye el workflow primero; añade IA solo donde haya ambigüedad."</li>
+      </ul>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Cierre + teaser</div>
+      <p>"Hoy: el agente como <b>bucle automatizado</b> y por qué las <b>descripciones</b> mandan. La próxima: superpoderes — HTTP tool con <code>$fromAI()</code>, multi-agente con AI Agent Tool, y MCP."</p>
+    </div>
+    <p class="goal">→ Q&A con el tiempo restante.</p>
+  </section>
+
+  <!-- ANEXOS -->
+  <section id="anexos" class="anchor">
+    <div class="head"><h2>📋 Anexos — copy-paste</h2></div>
+
+    <h3 class="layer">A1 · Descripción "mala" (romper)</h3>
+    <div class="codewrap"><button class="copy">copiar</button><pre>Checks the text.</pre></div>
+
+    <h3 class="layer">A2 · Descripción "buena" (restaurar)</h3>
+    <div class="codewrap"><button class="copy">copiar</button><pre>Validates a product description against the constraints. Input: ONLY the description text (no extra words like "Here is my draft:"). Returns JSON with sentences (count), words (count), sound_count, has_forbidden, all_pass (true/false) and issues (list of specific problems to fix). Use this after writing or revising a draft, before returning the final answer.</pre></div>
+
+    <h3 class="layer">A3 · Tool <code>LengthChecker</code></h3>
+    <p class="mini">Description:</p>
+    <div class="codewrap"><button class="copy">copiar</button><pre>Counts the number of sentences and words in a product description. Input: ONLY the description text. Returns JSON: { sentences, words, length_ok }. Use this to check the length/structure constraints (exactly 3 sentences, 25–30 words). Do NOT use it for keyword checks.</pre></div>
+    <p class="mini">JavaScript:</p>
+    <div class="codewrap"><button class="copy">copiar</button><pre>const item = $input.first().json;
+let text = '';
+for (const k of ['query','input','chatInput','action_input']) { if (item[k]) { text = String(item[k]).trim(); break; } }
+if (!text) { for (const v of Object.values(item)) { if (typeof v === 'string' &amp;&amp; v.trim()) { text = v.trim(); break; } } }
+
+const sentences = text.split(/[.!?]+/).filter(s =&gt; s.trim()).length;
+const words = text.split(/\s+/).filter(w =&gt; w).length;
+const length_ok = sentences === 3 &amp;&amp; words &gt;= 25 &amp;&amp; words &lt;= 30;
+
+return [{ json: { input_received: text.slice(0,200), sentences, words, length_ok } }];</pre></div>
+
+    <h3 class="layer">A4 · Tool <code>KeywordChecker</code></h3>
+    <p class="mini">Description:</p>
+    <div class="codewrap"><button class="copy">copiar</button><pre>Checks keyword rules in a product description. Input: ONLY the description text. Returns JSON: { sound_count, has_forbidden, keywords_ok }. Use this to verify the word "sound" appears exactly twice and that "music"/"audio" are absent. Do NOT use it to count sentences or total words.</pre></div>
+    <p class="mini">JavaScript:</p>
+    <div class="codewrap"><button class="copy">copiar</button><pre>const item = $input.first().json;
+let text = '';
+for (const k of ['query','input','chatInput','action_input']) { if (item[k]) { text = String(item[k]).trim(); break; } }
+if (!text) { for (const v of Object.values(item)) { if (typeof v === 'string' &amp;&amp; v.trim()) { text = v.trim(); break; } } }
+
+const sound_count = (text.toLowerCase().match(/\bsound\b/g) || []).length;
+const has_forbidden = /\b(music|audio)\b/i.test(text);
+const keywords_ok = sound_count === 2 &amp;&amp; !has_forbidden;
+
+return [{ json: { input_received: text.slice(0,200), sound_count, has_forbidden, keywords_ok } }];</pre></div>
+
+    <h3 class="layer">A5 · Descripciones "solapadas" (demo de fallo)</h3>
+    <div class="codewrap"><button class="copy">copiar</button><pre>LengthChecker  → "Checks the product description."
+KeywordChecker → "Checks the product description."</pre></div>
+
+    <details>
+      <summary>🐞 Troubleshooting en vivo</summary>
+      <table>
+        <tr><th>Síntoma</th><th>Causa</th><th>Arreglo</th></tr>
+        <tr><td>No llama a la tool</td><td>descripción vaga</td><td>específica + regla en system message</td></tr>
+        <tr><td>Recuento mal</td><td>envía "Here is my draft:"</td><td>"ONLY the description text"; mira <code>input_received</code></td></tr>
+        <tr><td>V1 no converge</td><td>validador LLM cuenta mal</td><td>normal → es el argumento para V2</td></tr>
+        <tr><td>Dos tools redundantes</td><td>descripciones solapadas</td><td>límites claros: para qué SÍ / NO</td></tr>
+        <tr><td>Bucle no para</td><td>sin guardrail</td><td>V1: iter ≥ 5 · V2: Max Iterations (10)</td></tr>
+        <tr><td>Output JSON crudo</td><td>campo no se llama <code>output</code></td><td>renombra a <code>output</code></td></tr>
+      </table>
+    </details>
+
+    <details>
+      <summary>🧾 Frases citables</summary>
+      <div class="quote">"Provide extremely detailed descriptions. This is by far the most important factor in tool performance." <span class="src">Anthropic</span></div>
+      <div class="quote">"Think of how you would describe your tool to a new hire on your team." <span class="src">Anthropic</span></div>
+      <div class="quote">"Invest as much effort in agent-computer interfaces (ACI) as in human-computer interfaces (HCI)." <span class="src">Anthropic</span></div>
+      <div class="quote">"Find the simplest solution possible, and only increase complexity when needed." <span class="src">Anthropic</span></div>
+      <div class="quote">Workflow = receta; agente = chef que gestiona la comida entera. <span class="src">LSE Business Review</span></div>
+    </details>
+
+    <details>
+      <summary>🔗 Fuentes</summary>
+      <ul class="mini">
+        <li><a class="ext" href="https://www.anthropic.com/engineering/building-effective-agents">Anthropic — Building Effective Agents</a></li>
+        <li><a class="ext" href="https://www.anthropic.com/engineering/writing-tools-for-agents">Anthropic — Writing effective tools for AI agents</a></li>
+        <li><a class="ext" href="https://claude.com/blog/building-agents-with-the-claude-agent-sdk">Anthropic — Building agents with the Claude Agent SDK</a></li>
+        <li><a class="ext" href="https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.agent/">n8n — AI Agent (Tools Agent)</a></li>
+        <li><a class="ext" href="https://docs.n8n.io/advanced-ai/examples/using-the-fromai-function/">n8n — $fromAI()</a></li>
+        <li>Self-Refine (2303.17651) · Reflexion (2303.11366) · ReAct (2210.03629)</li>
+      </ul>
+    </details>
+  </section>
+</main>
+</div>
+
+<script>
+  // copiar al portapapeles
+  document.querySelectorAll('.copy').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const txt=btn.parentElement.querySelector('pre').innerText;
+      navigator.clipboard.writeText(txt).then(()=>{
+        const o=btn.textContent;btn.textContent='✓ copiado';btn.classList.add('ok');
+        setTimeout(()=>{btn.textContent=o;btn.classList.remove('ok')},1200);
+      });
+    });
+  });
+  // resaltar sección activa en el nav
+  const links=[...document.querySelectorAll('.nav a')];
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));
+      const a=map.get(e.target.id);if(a)a.classList.add('active');}});
+  },{rootMargin:'-20% 0px -70% 0px'});
+  document.querySelectorAll('section[id]').forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>
