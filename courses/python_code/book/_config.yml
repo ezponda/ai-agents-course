@@ -1,0 +1,41 @@
+# Book settings
+title: AI Agents in Python
+author: Alberto Ezpondaburu
+copyright: ""
+logo: ""
+
+# Execution settings — notebooks are Colab-first; don't execute at build (needs API keys)
+execute:
+  execute_notebooks: "off"
+
+# Parse settings
+parse:
+  myst_enable_extensions:
+    - colon_fence
+    - deflist
+
+# HTML settings
+html:
+  use_issues_button: false
+  use_repository_button: true
+  use_edit_page_button: false
+
+# Repository settings
+repository:
+  url: https://github.com/ezponda/ai-agents-course
+  branch: main
+  path_to_book: courses/python_code/book
+
+# Launch buttons: adds a launch dropdown in the top toolbar with "Colab" for each page.
+# (Uses the `repository` config above to build the GitHub path — resolves once the repo is pushed.)
+launch_buttons:
+  notebook_interface: "classic"
+  colab_url: "https://colab.research.google.com"
+
+# Swap the default rocket launch icon for the Colab logo (via custom CSS).
+sphinx:
+  config:
+    html_css_files:
+      - css/colab-btn.css
+    html_js_files:
+      - js/colab-direct.js

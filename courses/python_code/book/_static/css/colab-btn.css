@@ -1,0 +1,20 @@
+/* Font Awesome is loaded as SVG-with-JS, so <i class="fa-rocket"> becomes <svg class="fa-rocket">
+   at runtime. Hide whichever icon renders on the launch toggle and draw the Colab logo instead. */
+.dropdown-launch-buttons .dropdown-toggle i.fa-rocket,
+.dropdown-launch-buttons .dropdown-toggle svg.fa-rocket {
+  display: none !important;
+}
+.dropdown-launch-buttons .dropdown-toggle::after {
+  display: none !important;                /* hide the dropdown caret */
+}
+.dropdown-launch-buttons .dropdown-toggle::before {
+  content: "" !important;
+  display: inline-block !important;
+  width: 1.2em !important;
+  height: 1.2em !important;
+  vertical-align: -0.25em !important;
+  background-image: url("../images/logo_colab.png") !important;   /* the theme's own Colab logo */
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+}

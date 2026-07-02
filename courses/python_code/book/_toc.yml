@@ -1,0 +1,50 @@
+# Table of contents
+format: jb-book
+root: 00_what_is_an_agent
+defaults:
+  numbered: false
+
+parts:
+  - caption: "Block 0 · Pure Python core"
+    chapters:
+      - file: 01_setup_and_first_call
+      - file: 02_messages_and_structured_output
+      - file: 03_tool_use_from_scratch
+      - file: 04_workflow_patterns
+      - file: 05_reflection_and_hitl
+      - file: 06_memory_from_scratch
+  - caption: "Block 1 · PydanticAI"
+    chapters:
+      - file: 10_rosetta_raw_vs_pydanticai
+      - file: 11_first_pydanticai_agent
+      - file: 12_tools_and_descriptions
+      - file: 13_typed_output_and_di
+      - file: 14_memory_and_history
+      - file: 15_guardrails_and_validation
+      - file: 16_evals_and_observability
+      - file: 17_knowledge_agent_rag
+      - file: 18_mcp_tools
+      - file: 18b_build_an_mcp_server
+      - file: 19_debugging_agents
+  - caption: "Block 2 · LangGraph"
+    chapters:
+      - file: 20_rosetta_agent_as_graph
+      - file: 21_stategraph_fundamentals
+      - file: 22_agent_loop_as_graph
+      - file: 23_persistence_and_checkpointers
+      - file: 24_human_in_the_loop
+      - file: 25_reflection_cyclic_graph
+      - file: 26_multi_agent_supervisor
+      - file: 27_agentic_rag
+      - file: 28_long_term_memory
+  - caption: "Block 3 · Production & projects"
+    chapters:
+      - file: 30_deploy_fastapi
+      - file: 31_connect_your_app
+      - file: 32_project_data_analyst
+      - file: 32b_project_onboarding
+      - file: 33_which_tool_when
+  - caption: "Appendices"
+    chapters:
+      - file: appendix_prompt_engineering
+      - file: appendix_resources

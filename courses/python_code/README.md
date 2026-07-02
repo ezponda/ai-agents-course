@@ -1,0 +1,68 @@
+# Python AI Agents — Code Course (WORK IN PROGRESS)
+
+The **code** counterpart of the no-code n8n course (`../n8n_no_code/`). Teaches AI agents in
+Python, from the raw agent loop up to LangGraph, all runnable in Google Colab.
+
+> ⚠️ **Not published yet.** This course is under active development and is intentionally **not**
+> wired into any Jupyter Book build or GitHub Pages site. Do not add it to a `_toc.yml` / site
+> build until the content is ready. The "Open in Colab" badges point at the (not-yet-pushed) GitHub
+> path, so they resolve only after the course is published.
+
+## The arc
+
+| Block | Tool | What you learn |
+|-------|------|----------------|
+| **0 · Pure Python core** | raw `openai` SDK | What an agent *is*: the loop by hand, workflows, memory. "This is how Claude Code works." |
+| **1 · PydanticAI** | `pydantic-ai` | The clean, typed agent: tools, memory, guardrails, evals — up to the **knowledge agent (RAG)**. |
+| **2 · LangGraph** | `langgraph` + `langchain` | State, graphs, persistence, human-in-the-loop, multi-agent. The visual payoff. |
+| **3 · Production** | `fastapi` | Deploy as code, connect your app, projects, "which tool when". |
+
+## Design decisions
+
+- **Model-agnostic via one variable.** Every notebook has a single `MODEL = "..."` the student
+  changes. The spine is the **OpenAI Chat Completions format via OpenRouter** (one key, any model —
+  Claude / GPT / Gemini / Llama), chosen for durability and continuity with the n8n course.
+- **Colab-first.** Each notebook is self-contained (installs its own deps, downloads its own data)
+  and carries an "Open in Colab" badge.
+- **Language: English** (same as the n8n book).
+
+## Contents (34 notebooks)
+
+Numbering leaves gaps on purpose — the tens digit is the block, and remaining gaps (`07–09`, `29`)
+are headroom for future notebooks without renumbering.
+
+- **Block 0** — `00`–`06` (7): what an agent is, setup, structured output, the raw tool loop,
+  workflow patterns, reflection + human-in-the-loop, memory.
+- **Block 1** — `10`–`19` (11): raw↔PydanticAI Rosetta, first agent, tools (incl. a real wttr.in
+  tool), typed output + DI, memory, guardrails (incl. read/write tool safety), evals +
+  observability + error-analysis, the knowledge agent (RAG), **using** an MCP server (`18`),
+  **building** an MCP server with FastMCP (`18b`), debugging agents.
+- **Block 2** — `20`–`28` (9): agent-as-graph Rosetta, StateGraph, the agent loop as a graph,
+  persistence, human-in-the-loop, cyclic reflection, multi-agent, agentic RAG, long-term memory
+  (the Store).
+- **Block 3** — `30`–`33` (5): deploy with FastAPI + streaming, connect your app, the **capstone
+  project** (Data Analyst Agent — code-execution tool + memory + guardrails + eval), a second
+  project (**Smart Onboarding**, `32b`), "which tool when".
+- **Appendices** — prompt engineering, resources.
+
+Most notebooks carry a `🔧 Common issues (and fixes)` troubleshooting dropdown.
+
+## Versions — last verified
+
+The framework code was written and API-verified against these versions (mid-2026). Pins cap at the
+next major to avoid a breaking release landing mid-lesson. See `requirements.txt`.
+
+| Package | Verified | Pin |
+|---------|----------|-----|
+| `openai` | 2.x | `>=2,<3` |
+| `pydantic-ai-slim[openai]` | **2.2** | `>=2.0,<3.0` |
+| `pydantic-evals` | 2.2 | `>=2.0,<3.0` |
+| `langchain` / `langgraph` / `langchain-openai` | 1.3 / 1.2 / 1.3 | `>=1.x,<2.0` |
+| `sentence-transformers` (RAG) | 5.x | `>=3,<6` |
+
+> **Note on PydanticAI:** the course uses the v2 API (`OpenAIChatModel`, `result.output`,
+> `output_type`). `OpenAIChatModel` is the forward-compatible name (the v1-only spelling was the now
+> removed `OpenAIModel`). When a future major lands, re-verify and bump deliberately — don't let pip
+> pick it mid-lesson.
+
+See `../../plan_curso_python_agents_2026-07-01.html` at the repo root for the full plan.
