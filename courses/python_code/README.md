@@ -1,12 +1,12 @@
-# Python AI Agents — Code Course (WORK IN PROGRESS)
+# Python AI Agents — Code Course
 
 The **code** counterpart of the no-code n8n course (`../n8n_no_code/`). Teaches AI agents in
 Python, from the raw agent loop up to LangGraph, all runnable in Google Colab.
 
-> ⚠️ **Not published yet.** This course is under active development and is intentionally **not**
-> wired into any Jupyter Book build or GitHub Pages site. Do not add it to a `_toc.yml` / site
-> build until the content is ready. The "Open in Colab" badges point at the (not-yet-pushed) GitHub
-> path, so they resolve only after the course is published.
+> 📖 **Live:** [ezponda.github.io/ai-agents-course/python](https://ezponda.github.io/ai-agents-course/python/).
+> Every push to `main` rebuilds and republishes it via `.github/workflows/deploy-book.yml`.
+> Build locally with `make build-python`. When you change anything under `_static/` (CSS/JS), use a
+> clean build so Sphinx recopies it: `jupyter-book build courses/python_code/book --all`.
 
 ## The arc
 
