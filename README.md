@@ -6,9 +6,9 @@
 
 ## 📚 Course
 
-**[View the n8n Course →](https://ezponda.github.io/ai-agents-course/)**
+**[View the n8n Course →](https://ezponda.github.io/ai-agents-course/)** — build AI agents with n8n, no code, no prior experience required.
 
-Learn to build AI agents using n8n — no code, no prior experience required.
+**[View the Python Course →](https://ezponda.github.io/ai-agents-course/python/)** — the same ideas in code: the raw agent loop, then PydanticAI and LangGraph.
 
 ## Course Materials
 
@@ -35,20 +35,33 @@ The n8n course is available as a Jupyter Book:
 
 **Appendices:** Node Toolbox · Going Live · Specialized AI Nodes · Prompt Engineering (Basics & Agents) · Resources
 
-## Build the Book Locally
+### Python Code Course
+
+The code counterpart, as a Jupyter Book:
+
+- **Book location:** `courses/python_code/book/`
+- **Live site:** [ezponda.github.io/ai-agents-course/python](https://ezponda.github.io/ai-agents-course/python/)
+
+Colab-first and model-agnostic (one `MODEL` variable via OpenRouter). Four blocks
+— pure-Python core → PydanticAI → LangGraph → production — plus capstone projects.
+See `courses/python_code/README.md` for the full chapter list.
+
+## Build the Books Locally
 
 ```bash
 # Install dependencies
 pip install -r requirements.txt
 
-# Build the n8n book
-make build-n8n
+# Build a book
+make build-n8n        # n8n course
+make build-python     # Python course
 
 # Or directly:
 jupyter-book build courses/n8n_no_code/book
+jupyter-book build courses/python_code/book
 ```
 
-The built HTML will be in `courses/n8n_no_code/book/_build/html/`.
+The built HTML lands in each course's `book/_build/html/`.
 
 ## Install n8n
 
@@ -91,17 +104,24 @@ Open `http://localhost:5678` in your browser.
 ```
 ai-agents-course/
 ├── courses/
-│   └── n8n_no_code/
-│       ├── book/                      # Jupyter Book source
+│   ├── n8n_no_code/
+│   │   ├── book/                      # Jupyter Book source (served at site root)
+│   │   │   ├── _config.yml
+│   │   │   ├── _toc.yml
+│   │   │   ├── *.ipynb                # Chapter notebooks
+│   │   │   └── _static/
+│   │   │       └── workflows/         # Example workflow JSONs
+│   │   └── check_references.py        # Reference/consistency checker
+│   └── python_code/
+│       ├── book/                      # Jupyter Book source (served at /python/)
 │       │   ├── _config.yml
 │       │   ├── _toc.yml
-│       │   ├── *.ipynb                # Chapter notebooks
-│       │   └── _static/
-│       │       └── workflows/         # Example workflow JSONs
-│       └── check_references.py        # Reference/consistency checker
+│       │   └── *.ipynb                # Chapter notebooks (runnable)
+│       ├── README.md
+│       └── requirements.txt           # pinned deps for running the notebooks
 ├── .github/
 │   └── workflows/
-│       └── deploy-book.yml            # GitHub Pages deployment
+│       └── deploy-book.yml            # Builds both books → GitHub Pages
 ├── Makefile
 ├── requirements.txt
 └── README.md

@@ -1,4 +1,4 @@
-name: Deploy Jupyter Book
+name: Deploy Jupyter Books
 
 on:
   push:
@@ -32,10 +32,17 @@ jobs:
           python -m pip install -U pip
           python -m pip install -r requirements.txt
 
-      - name: Build n8n book (clean)
+      - name: Build both books (clean)
         run: |
-          rm -rf courses/n8n_no_code/book/_build
+          rm -rf courses/n8n_no_code/book/_build courses/python_code/book/_build
           jupyter-book build courses/n8n_no_code/book
+          jupyter-book build courses/python_code/book
+
+      - name: Assemble site (n8n at root, python under /python/)
+        run: |
+          mkdir -p _site/python
+          cp -r courses/n8n_no_code/book/_build/html/. _site/
+          cp -r courses/python_code/book/_build/html/. _site/python/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -43,7 +50,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: courses/n8n_no_code/book/_build/html
+          path: _site
 
   deploy:
     environment:

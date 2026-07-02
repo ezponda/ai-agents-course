@@ -4,7 +4,7 @@ PYTHON ?= python3
 MODULE ?= n8n_no_code
 BOOK_DIR := courses/$(MODULE)/book
 
-.PHONY: install build clean build-n8n clean-n8n help
+.PHONY: install build clean build-n8n clean-n8n build-python clean-python help
 
 # Default target
 help:
@@ -14,6 +14,8 @@ help:
 	@echo "  clean       - Remove build artifacts"
 	@echo "  build-n8n   - Build the n8n no-code book"
 	@echo "  clean-n8n   - Clean the n8n no-code book"
+	@echo "  build-python - Build the Python code book"
+	@echo "  clean-python - Clean the Python code book"
 
 # Install dependencies
 install:
@@ -33,3 +35,10 @@ build-n8n:
 
 clean-n8n:
 	$(MAKE) clean MODULE=n8n_no_code
+
+# python-specific aliases
+build-python:
+	$(MAKE) build MODULE=python_code
+
+clean-python:
+	$(MAKE) clean MODULE=python_code
