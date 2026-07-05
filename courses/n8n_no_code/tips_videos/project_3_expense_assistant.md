@@ -90,7 +90,7 @@ La **tabla `expenses`** (la creas tú) = la libreta donde se guardan los gastos.
 
 ## 3b · ¿Qué es una Data Table? (y crea la tuya) 🗄️
 
-> Es la **primera vez** que aparecen en el curso (en P6 se usan a lo grande). Aquí toca **entender qué son** y **crear la tabla**. Los dos nodos que la usan (Find Similar / Log Expense) los detallamos uno a uno en la **sección 4** — que no son dos tablas: son dos nodos que usan **la misma** tabla.
+> Es la **primera vez** que aparecen en el curso (en P7 se usan a lo grande). Aquí toca **entender qué son** y **crear la tabla**. Los dos nodos que la usan (Find Similar / Log Expense) los detallamos uno a uno en la **sección 4** — que no son dos tablas: son dos nodos que usan **la misma** tabla.
 
 **Qué es una Data Table (dilo):**
 > *"Una Data Table es una **tabla de base de datos que vive DENTRO de n8n**. Filas y columnas, como una hoja de cálculo — pero pensada para que los nodos la lean y escriban. Y lo importante: **persiste**. Aunque cierres el workflow o reinicies n8n, los datos siguen ahí. Es la libreta donde el agente va apuntando los gastos."*

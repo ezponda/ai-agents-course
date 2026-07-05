@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_5_connect_your_app.html)\n## Connect Your App\n\n**Goal:** Expose an AI Agent as a webhook so your own app (Lovable / Replit) can call it.\n\n### Credentials needed\n- **OpenRouter API key** (Settings → Credentials)\n\n### The contract\nYour app POSTs JSON to `/webhook/chat`:\n`{ \"message\": \"...\", \"session_id\": \"...\", \"user_id\": \"...\" }`\nn8n responds:\n`{ \"reply\": \"...\", \"session_id\": \"...\" }`\n\n### Test it\nClick **Listen for Test Event**, then POST to the Test URL with curl (see the course page).\n\n### Before going public\nAdd **Max Iterations** and **Header Auth** — a public endpoint costs tokens on every call.\n",
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_6_connect_your_app.html)\n## Connect Your App\n\n**Goal:** Expose an AI Agent as a webhook so your own app (Lovable / Replit) can call it.\n\n### Credentials needed\n- **OpenRouter API key** (Settings → Credentials)\n\n### The contract\nYour app POSTs JSON to `/webhook/chat`:\n`{ \"message\": \"...\", \"session_id\": \"...\", \"user_id\": \"...\" }`\nn8n responds:\n`{ \"reply\": \"...\", \"session_id\": \"...\" }`\n\n### Test it\nClick **Listen for Test Event**, then POST to the Test URL with curl (see the course page).\n\n### Before going public\nAdd **Max Iterations** and **Header Auth** — a public endpoint costs tokens on every call.\n",
         "height": 460,
         "width": 880,
         "color": 4

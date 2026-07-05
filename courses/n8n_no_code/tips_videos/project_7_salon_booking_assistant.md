@@ -1,4 +1,4 @@
-# Guion — Project 6: Salon Booking Assistant (workflow `17_salon_booking_multiagent.json`)
+# Guion — Project 7: Salon Booking Assistant (workflow `17_salon_booking_multiagent.json`)
 
 ## Concepto clave
 Una recepcionista multiagente para una peluquería, por chat estilo WhatsApp. Solo sabe hacer **cuatro cosas** (reservar cita, cancelar, consultar agenda, informar de servicios/precios/horarios) — y todo lo demás lo **rechaza con una frase fija** y deja un **ticket** para la dueña. El calendario vive en **Data Tables de n8n**: persiste de verdad y no necesita ni Google ni Gmail. Es el patrón orchestrator-workers del Cap.10 aplicado a un negocio real, con el routing viviendo en el prompt.

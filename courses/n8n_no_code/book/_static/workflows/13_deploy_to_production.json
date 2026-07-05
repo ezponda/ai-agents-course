@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_4_deploy_to_production.html)\n## Deploy to Production\n**Goal:** A minimal chat-based AI workflow that you deploy to a server, making it accessible from anywhere.\n\n**How it works:** Opens a chat interface where users type questions. The LLM answers and the response appears in the chat.\n\n**Test locally:** Click the **Chat** button in the bottom-right corner of the n8n editor.\n\n**Test in production:** After deploying and activating, open `https://your-domain/webhook/chat-production` in any browser.",
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_5_deploy_to_production.html)\n## Deploy to Production\n**Goal:** A minimal chat-based AI workflow that you deploy to a server, making it accessible from anywhere.\n\n**How it works:** Opens a chat interface where users type questions. The LLM answers and the response appears in the chat.\n\n**Test locally:** Click the **Chat** button in the bottom-right corner of the n8n editor.\n\n**Test in production:** After deploying and activating, open `https://your-domain/webhook/chat-production` in any browser.",
         "height": 300,
         "width": 700,
         "color": 4
@@ -12,7 +12,10 @@
       "name": "NOTE — Deploy to Production",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [-200, -460]
+      "position": [
+        -200,
+        -460
+      ]
     },
     {
       "parameters": {
@@ -26,7 +29,10 @@
       "name": "When chat message received",
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.1,
-      "position": [-100, -100],
+      "position": [
+        -100,
+        -100
+      ],
       "webhookId": "d0000001-0001-4000-8000-00000000cc01"
     },
     {
@@ -46,7 +52,10 @@
       "name": "Answer Question",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
-      "position": [160, -100]
+      "position": [
+        160,
+        -100
+      ]
     },
     {
       "parameters": {
@@ -57,7 +66,10 @@
       "name": "OpenRouter Chat Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
-      "position": [60, 100]
+      "position": [
+        60,
+        100
+      ]
     },
     {
       "parameters": {
@@ -77,7 +89,10 @@
       "name": "Output",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [420, -100]
+      "position": [
+        420,
+        -100
+      ]
     }
   ],
   "connections": {

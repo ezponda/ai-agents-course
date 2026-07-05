@@ -1,4 +1,4 @@
-# Guion — Project 4: Deploy to Production (workflow `13_deploy_to_production.json`)
+# Guion — Project 5: Deploy to Production (workflow `13_deploy_to_production.json`)
 
 ## Concepto clave
 Llevar un workflow del portátil a un servidor que corre 24/7: cualquiera con el enlace chatea con tu IA. El workflow es mínimo a propósito (Chat Trigger → LLM → Output) porque la lección no es el workflow — es el **deploy**: publicar, `WEBHOOK_URL`, credenciales por instancia, y el historial de ejecuciones como debugger.

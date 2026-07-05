@@ -30,9 +30,10 @@ parts:
       - file: project_1_recipe_assistant
       - file: project_2_ask_your_data
       - file: project_3_expense_assistant
-      - file: project_4_deploy_to_production
-      - file: project_5_connect_your_app
-      - file: project_6_salon_booking_assistant
+      - file: project_4_daily_digest
+      - file: project_5_deploy_to_production
+      - file: project_6_connect_your_app
+      - file: project_7_salon_booking_assistant
   - caption: Appendices
     numbered: false
     chapters:

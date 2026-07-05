@@ -1,0 +1,195 @@
+{
+  "name": "18 — Daily Digest",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_4_daily_digest.html)\n## Daily Digest — a proactive (scheduled) agent\n**Goal:** No chat, no human. On a schedule, the agent pulls the day's top tech stories, writes a short briefing, and saves it — it works while you sleep.\n\n### Requirements\n- **n8n 1.113+** (Data Tables) and an **OpenRouter API key**. No other credentials — Hacker News' API is free.\n\n### Setup (before first run)\n1. Create a Data Table named `briefings` with columns (all String): `date`, `briefing`.\n2. Pick your model in **OpenRouter Chat Model** (`openai/gpt-4o-mini`).\n\n### Try it\n- Click **Execute workflow** to run it now (you don't have to wait for the schedule).\n- Open **Briefing Writer → Logs** to watch it read the stories (and maybe open one), then check the `briefings` table for the saved briefing.\n\nThe **Schedule Trigger** is what makes this different from every other project: it fires on its own — which is exactly why an agent like this needs to be **deployed** (Project 5).",
+        "height": 500,
+        "width": 760,
+        "color": 4
+      },
+      "id": "18000000-0000-4000-8000-000000000001",
+      "name": "NOTE — Daily Digest",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "18000000-0000-4000-8000-000000000002",
+      "name": "Every morning",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1040,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=10",
+        "options": {}
+      },
+      "id": "18000000-0000-4000-8000-000000000003",
+      "name": "Get Top Stories",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -780,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here are today's top Hacker News stories (JSON):\n{{ JSON.stringify($json.hits) }}",
+        "options": {
+          "systemMessage": "You write a short, friendly \"morning briefing\" from a list of today's top Hacker News stories. The list arrives as JSON — each story has: title, url, points, num_comments, objectID.\n\nWhat to do:\n1. Pick the 3-4 most notable stories — prefer AI, startups and software engineering; skip low-signal ones.\n2. For each, write ONE line: a plain-English title, then a short \"why it matters\".\n3. You MAY use the Story Details tool ONCE, on the single most interesting story (pass its objectID), to skim its discussion and add a sharper insight. Use it sparingly — never more than once.\n4. End with a one-line \"Today's theme:\" summarising the mood.\n\nStyle: concise and skimmable, like a good newsletter. Short bullets, plain text. No preamble such as \"Here is your briefing\" — output the briefing directly."
+        }
+      },
+      "id": "18000000-0000-4000-8000-000000000004",
+      "name": "Briefing Writer",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -500,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "18000000-0000-4000-8000-000000000005",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://hn.algolia.com/api/v1/items/' + $fromAI('story_id', 'The objectID of the story to look into, taken from the list', 'string') }}",
+        "toolDescription": "Fetches the full details and top comments of ONE Hacker News story by its objectID. Use it once, on the most interesting story, to add depth.",
+        "optimizeResponse": true,
+        "options": {}
+      },
+      "id": "18000000-0000-4000-8000-000000000006",
+      "name": "Story Details",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -440,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "briefings"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+            "briefing": "={{ $json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "18000000-0000-4000-8000-000000000007",
+      "name": "Save Briefing",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        -40
+      ]
+    }
+  ],
+  "connections": {
+    "Every morning": {
+      "main": [
+        [
+          {
+            "node": "Get Top Stories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Top Stories": {
+      "main": [
+        [
+          {
+            "node": "Briefing Writer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Briefing Writer": {
+      "main": [
+        [
+          {
+            "node": "Save Briefing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Briefing Writer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Story Details": {
+      "ai_tool": [
+        [
+          {
+            "node": "Briefing Writer",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

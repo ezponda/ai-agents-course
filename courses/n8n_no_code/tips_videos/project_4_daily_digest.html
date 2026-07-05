@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guion — Project 4: Daily Digest (workflow 18_daily_digest.json)</title>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#171a23; --panel2:#1e2230; --ink:#e8eaf0; --muted:#9aa3b2;
+    --line:#2a2f3e; --accent:#36a3ff; --say:#4aa3ff; --do:#36c98b; --warn:#ffb84d;
+    --quote:#c08bff; --code:#0b0d13; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+
+  aside{position:sticky;top:0;height:100vh;overflow:auto;background:var(--panel);
+    border-right:1px solid var(--line);padding:20px 16px}
+  aside h1{font-size:14px;margin:0 0 16px;line-height:1.4}
+  .nav a{display:block;color:var(--muted);text-decoration:none;padding:7px 11px;
+    border-radius:10px;font-size:13px;margin-bottom:2px;border:1px solid transparent;line-height:1.35}
+  .nav a.h3{padding-left:24px;font-size:12.5px}
+  .nav a:hover{background:var(--panel2);color:var(--ink)}
+  .nav a.active{background:var(--panel2);color:var(--ink);border-color:var(--line)}
+
+  main{padding:36px 48px;max-width:980px}
+  main h1{font-size:26px;margin:0 0 18px;line-height:1.3}
+  main h2{font-size:21px;margin:44px 0 14px;padding-top:22px;border-top:1px solid var(--line)}
+  main h3{font-size:17px;margin:30px 0 10px;color:var(--accent)}
+  main h4{font-size:15px;margin:22px 0 8px;color:var(--tip,#caa45a)}
+  main a{color:var(--accent)}
+  main blockquote{margin:12px 0;padding:10px 16px;border-left:3px solid var(--say);
+    background:var(--panel);border-radius:0 10px 10px 0;color:#cfe3ff}
+  main blockquote p{margin:0}
+  main strong{color:#d6f5e7}
+  main code{background:var(--code);border:1px solid var(--line);border-radius:6px;
+    padding:1px 6px;font-size:.9em}
+  main pre{position:relative;background:var(--code);border:1px solid var(--line);
+    border-radius:10px;padding:14px 16px;overflow-x:auto}
+  main pre code{background:none;border:0;padding:0;font-size:13.5px;line-height:1.55}
+  .copy{position:absolute;top:8px;right:8px;background:var(--panel2);color:var(--muted);
+    border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:12px;cursor:pointer}
+  .copy:hover{color:var(--ink)}
+  main table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14.5px}
+  main th,main td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+  main th{background:var(--panel2)}
+  main tr:nth-child(even) td{background:var(--panel)}
+  main hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+  main ul,main ol{padding-left:26px}
+  main li{margin:5px 0}
+
+  @media(max-width:860px){.wrap{grid-template-columns:1fr}aside{position:static;height:auto}main{padding:24px 20px}}
+  @media print{aside{display:none}.wrap{grid-template-columns:1fr}.copy{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<aside>
+  <h1>Guion — Project 4: Daily Digest (workflow 18_daily_digest.json)</h1>
+  <nav class="nav">
+    <a href="#concepto">Concepto</a>
+    <a href="#flujo-del-workflow">Flujo del workflow</a>
+    <a href="#los-nodos-de-un-vistazo-leelo-primero">🗺️ Los nodos de un vistazo (léelo primero)</a>
+    <a href="#preparacion-antes-de-grabar-checklist">🔧 Preparación ANTES de grabar (checklist)</a>
+    <a href="#urls-para-tener-a-mano">🔗 URLs para tener a mano</a>
+    <a href="#0-opcional-cold-open-el-gancho-20s">0 · (Opcional) Cold open — el gancho (20s)</a>
+    <a href="#1-la-idea-un-agente-proactivo-15-min">1 · La idea: un agente proactivo (1.5 min)</a>
+    <a href="#2-el-schedule-trigger-45s">2 · El Schedule Trigger (45s)</a>
+    <a href="#3-traer-las-noticias-45s">3 · Traer las noticias (45s)</a>
+    <a href="#4-el-agente-que-resume-2-min">4 · El agente que resume (2 min)</a>
+    <a href="#5-guardar-el-briefing-30s">5 · Guardar el briefing (30s)</a>
+    <a href="#6-demo-que-se-ejecute-solo-2-3-min">6 · DEMO — que se ejecute solo (2-3 min)</a>
+    <a class="h3" href="#ejecutalo-ahora">Ejecútalo ahora</a>
+    <a class="h3" href="#ensena-que-el-agente-piensa">Enseña que el agente PIENSA</a>
+    <a class="h3" href="#ensena-la-tabla">Enseña la tabla</a>
+    <a class="h3" href="#el-puente-al-deploy">El puente al deploy</a>
+    <a href="#7-variaciones-para-el-video-o-los-deberes">7 · Variaciones (para el vídeo o los deberes)</a>
+    <a href="#cierre-20s">Cierre (20s)</a>
+  </nav>
+</aside>
+<main>
+<h1 id="guion-project-4-daily-digest-workflow-18_daily_digestjson">Guion — Project 4: Daily Digest (workflow <code>18_daily_digest.json</code>)</h1>
+<h2 id="concepto">Concepto</h2>
+<p>Todos los proyectos anteriores <strong>te esperaban a ti</strong> (un chat, una foto, un formulario). Este <strong>se ejecuta solo</strong>, en un horario, sin nadie delante.
+Cada mañana, un <strong>Schedule Trigger</strong> despierta el workflow, trae los titulares tech del día, un agente los <strong>lee</strong> (y puede profundizar en uno), escribe un <strong>briefing</strong> corto y lo <strong>guarda</strong>. Te levantas con un resumen que nunca pediste — el "agente que trabaja mientras duermes".
+<strong>La capacidad nueva:</strong> un <strong>trigger programado</strong> → agentes <strong>proactivos</strong>. Y es el puente perfecto al deploy: un chat lo pruebas en tu portátil, pero algo <em>programado</em> solo se dispara si n8n está <strong>vivo 24/7</strong>.</p>
+<h2 id="flujo-del-workflow">Flujo del workflow</h2>
+<pre><code>Every morning ──▶ Get Top Stories ──▶ Briefing Writer ──▶ Save Briefing
+(Schedule)        (HTTP: Hacker News)  (Agente)             (Data Table)
+                                          ┊ sub-nodos
+                                  ┌───────┴────────┐
+                             Chat Model       Story Details
+                                            (HTTP tool, bajo demanda)
+</code></pre>
+<p><strong>Requisitos:</strong> OpenRouter (<code>gpt-4o-mini</code>) + <strong>n8n 1.113+</strong>. Sin más credenciales — la API de Hacker News es gratis y sin key.</p>
+<hr />
+<h2 id="los-nodos-de-un-vistazo-leelo-primero">🗺️ Los nodos de un vistazo (léelo primero)</h2>
+<p>Al importar, <strong>ya está todo conectado</strong>. Esto es lo que hay:</p>
+<table>
+<thead>
+<tr>
+<th>Nodo</th>
+<th>Qué es</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Every morning</strong></td>
+<td>El disparador: se ejecuta solo, cada día a las 8:00</td>
+</tr>
+<tr>
+<td><strong>Get Top Stories</strong></td>
+<td>Trae los titulares del día (HTTP a Hacker News, JSON)</td>
+</tr>
+<tr>
+<td><strong>Briefing Writer</strong></td>
+<td>El agente: lee la lista y escribe el briefing</td>
+</tr>
+<tr>
+<td><strong>OpenRouter Chat Model</strong></td>
+<td>El cerebro del agente</td>
+</tr>
+<tr>
+<td><strong>Story Details</strong></td>
+<td>Tool: abre UN artículo para profundizar (el agente decide)</td>
+</tr>
+<tr>
+<td><strong>Save Briefing</strong></td>
+<td>Guarda el briefing + fecha en la tabla <code>briefings</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Solo 2 cosas que hacer:</strong> <strong>(1)</strong> crear la tabla <code>briefings</code>, <strong>(2)</strong> poner tu modelo en OpenRouter Chat Model. Lo demás ya viene cableado.</p>
+<hr />
+<h2 id="preparacion-antes-de-grabar-checklist">🔧 Preparación ANTES de grabar (checklist)</h2>
+<ol>
+<li><strong>Importa</strong> el workflow (Import from URL): <code>https://raw.githubusercontent.com/ezponda/ai-agents-course/main/courses/n8n_no_code/book/_static/workflows/18_daily_digest.json</code></li>
+<li><strong>Crea la tabla <code>briefings</code></strong> (Overview → Data tables → Create Data Table):</li>
+<li><strong>⚡ Rápido:</strong> Import CSV con <code>briefings_template.csv</code> (repo, <code>_static/data/</code>) → crea las columnas solas.</li>
+<li><strong>✋ A mano:</strong> From scratch → 2 columnas <strong>String</strong>: <code>date</code> · <code>briefing</code>.</li>
+<li>El nodo <strong>Save Briefing</strong> ya apunta a ella <strong>por nombre</strong> → nada que seleccionar.</li>
+<li><strong>Modelo</strong> en OpenRouter Chat Model: <code>openai/gpt-4o-mini</code>.</li>
+<li><strong>No esperes a las 8:00:</strong> para probar, se pulsa <strong>Execute workflow</strong> y se dispara al momento.</li>
+</ol>
+<h2 id="urls-para-tener-a-mano">🔗 URLs para tener a mano</h2>
+<table>
+<thead>
+<tr>
+<th>Para qué</th>
+<th>URL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>n8n docs — Schedule Trigger</td>
+<td>https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.scheduletrigger/</td>
+</tr>
+<tr>
+<td>n8n docs — HTTP Request</td>
+<td>https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest/</td>
+</tr>
+<tr>
+<td>Hacker News Search API</td>
+<td>https://hn.algolia.com/api</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="guion-de-grabacion-de-arriba-abajo">🎬 GUION DE GRABACIÓN (de arriba abajo)</h1>
+<h2 id="0-opcional-cold-open-el-gancho-20s">0 · (Opcional) Cold open — el gancho (20s)</h2>
+<blockquote>
+<p>Grábalo al final. En pantalla: el workflow ejecutándose solo y un briefing recién guardado en la tabla.
+- <strong>Di:</strong> <em>"Este agente no espera a que yo le hable. Cada mañana se ejecuta solo, lee las noticias del día y me deja un resumen escrito. Un agente que trabaja mientras duermo. Vamos a montarlo."</em></p>
+</blockquote>
+<h2 id="1-la-idea-un-agente-proactivo-15-min">1 · La idea: un agente proactivo (1.5 min)</h2>
+<ul>
+<li><strong>Di:</strong> <em>"Hasta ahora todos los agentes eran </em><em>reactivos</em><em>: esperaban a que TÚ les hablaras. Hoy le damos la vuelta: un agente </em><em>proactivo</em><em>, que arranca solo, en un horario, y te entrega el resultado. Monitorización, informes diarios, avisos… un montón de la automatización real es así, y no hay ninguna ventana de chat."</em></li>
+<li><strong>Di (el puente al deploy):</strong> <em>"Y ojo: esto solo funciona si n8n está encendido. Un chat lo pruebas en tu portátil; algo programado tiene que vivir en un servidor 24/7. Por eso el siguiente proyecto es </em><em>desplegar</em><em> — este es el primero que DE VERDAD necesitas poner en producción."</em></li>
+</ul>
+<h2 id="2-el-schedule-trigger-45s">2 · El Schedule Trigger (45s)</h2>
+<ul>
+<li><strong>[Click en <code>Every morning</code>]</strong></li>
+<li><strong>Di:</strong> <em>"La estrella: el </em><em>Schedule Trigger</em><em>. En vez de esperar un mensaje, se dispara con un reloj. Aquí: </em><em>Trigger Interval = Days</em><em>, </em><em>Trigger at Hour = 8</em><em>. Cada día a las 8 de la mañana, se ejecuta solo. Podría ser cada hora, cada lunes, lo que quieras."</em></li>
+</ul>
+<h2 id="3-traer-las-noticias-45s">3 · Traer las noticias (45s)</h2>
+<ul>
+<li><strong>[Click en <code>Get Top Stories</code>]</strong></li>
+<li><strong>Di:</strong> <em>"Un </em><em>HTTP Request</em><em> normal a la API gratuita de Hacker News. Nos devuelve, en un JSON, los titulares de portada: título, enlace, puntos, comentarios. Sin credenciales, sin API key. Así metemos datos frescos del mundo dentro del workflow."</em></li>
+</ul>
+<h2 id="4-el-agente-que-resume-2-min">4 · El agente que resume (2 min)</h2>
+<ul>
+<li><strong>[Click en <code>Briefing Writer</code>]</strong></li>
+<li><strong>Di (la entrada):</strong> <em>"Al agente le pasamos la lista de noticias como texto — fijaos en el Prompt: <code>{{ JSON.stringify($json.hits) }}</code>, o sea, el JSON de titulares que trajo el paso anterior."</em></li>
+<li><strong>[Options → System Message]</strong> — recórrelo:</li>
+<li><strong>Elige</strong> las 3-4 noticias más relevantes (prefiere IA, startups, software).</li>
+<li><strong>Una línea por noticia:</strong> título en cristiano + "por qué importa".</li>
+<li><strong>Puede</strong> usar la tool <strong>Story Details</strong> UNA vez, en la más interesante, para profundizar. <em>Con moderación.</em></li>
+<li>Cierra con <strong>"Today's theme:"</strong>.</li>
+<li><strong>[Click en <code>Story Details</code>]</strong></li>
+<li><strong>Di (la tool):</strong> <em>"Esta herramienta abre UNA noticia por su <code>objectID</code> para leer su discusión. Fíjate en la URL: lleva un <code>$fromAI('story_id')</code> — el agente decide QUÉ noticia abrir y rellena el id. Es agente de verdad: no resume a lo bruto, edita y decide si merece la pena profundizar."</em></li>
+</ul>
+<h2 id="5-guardar-el-briefing-30s">5 · Guardar el briefing (30s)</h2>
+<ul>
+<li><strong>[Click en <code>Save Briefing</code>]</strong></li>
+<li><strong>Di:</strong> <em>"Al final, un nodo </em><em>Data Table</em><em> (Insert) guarda una fila en <code>briefings</code> con la </em><em>fecha</em><em> y el </em><em>texto</em><em>. Reutilizamos las Data Tables de antes. Día a día se va formando un archivo de briefings, sin ninguna credencial."</em></li>
+</ul>
+<hr />
+<h2 id="6-demo-que-se-ejecute-solo-2-3-min">6 · DEMO — que se ejecute solo (2-3 min)</h2>
+<p><strong>No esperes a las 8:00.</strong> Para la demo, lo disparas tú.</p>
+<h3 id="ejecutalo-ahora">Ejecútalo ahora</h3>
+<ul>
+<li>Pulsa <strong>Execute workflow</strong> (arriba en el canvas).<blockquote>
+<p><strong>Di:</strong> <em>"Normalmente esto pasaría solo a las 8. Yo lo fuerzo para enseñarlo."</em></p>
+</blockquote>
+</li>
+<li><strong>Qué esperar:</strong> al final aparece el briefing, y en la tabla <code>briefings</code> una fila nueva.</li>
+</ul>
+<h3 id="ensena-que-el-agente-piensa">Enseña que el agente PIENSA</h3>
+<ul>
+<li>Abre <strong>Briefing Writer → Logs</strong>.<blockquote>
+<p><strong>Di:</strong> <em>"Aquí está lo bueno: veis la lista de noticias que recibió, y —a veces— una llamada a </em><em>Story Details</em><em> con un <code>objectID</code>. Ha DECIDIDO abrir esa noticia. En un día flojo se salta la tool; en un día de noticia gorda, entra. Esa decisión es el agente haciendo su trabajo."</em></p>
+</blockquote>
+</li>
+</ul>
+<h3 id="ensena-la-tabla">Enseña la tabla</h3>
+<ul>
+<li>Abre <strong>Data tables → <code>briefings</code></strong>.<blockquote>
+<p><strong>Di:</strong> <em>"Ahí está el briefing guardado, con su fecha. Cada mañana añade una fila — un archivo de tu semana."</em></p>
+</blockquote>
+</li>
+</ul>
+<h3 id="el-puente-al-deploy">El puente al deploy</h3>
+<ul>
+<li>Pulsa <strong>Publish</strong> (arriba a la derecha).<blockquote>
+<p><strong>Di:</strong> <em>"Y ahora lo importante: le doy a Publish. A partir de aquí se dispararía cada mañana… </em><em>si n8n está encendido</em><em>. En mi portátil, solo mientras lo tengo abierto. Para que funcione DE VERDAD todos los días, hay que desplegarlo. Y eso es justo el siguiente proyecto."</em></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h2 id="7-variaciones-para-el-video-o-los-deberes">7 · Variaciones (para el vídeo o los deberes)</h2>
+<ul>
+<li><strong>Tu tema, tu fuente:</strong> cambia la URL del HTTP (o mete un nodo <strong>RSS Read</strong> de un blog) y adapta el prompt → briefing de LO TUYO, no de tech.</li>
+<li><strong>Entrégalo, no solo lo guardes:</strong> en vez de (o además de) la tabla, mándalo por <strong>Telegram</strong> (token de bot gratis) o <strong>Email (SMTP)</strong>.</li>
+<li><strong>Solo avísame si importa:</strong> que el agente devuelva <code>important: true/false</code> y un <strong>IF</strong> que solo entregue en días de noticia gorda. Un monitor, no una pesadez diaria.</li>
+<li><strong>Resumen semanal:</strong> un segundo workflow con Schedule semanal que lee la tabla <code>briefings</code> de los últimos 7 días y escribe un "week in review".</li>
+</ul>
+<h2 id="cierre-20s">Cierre (20s)</h2>
+<ul>
+<li><strong>Di:</strong> <em>"Mismo motor de siempre —un agente con una herramienta que guarda en una Data Table—, pero cambiando UNA cosa, el trigger, tienes un tipo de app completamente distinto: uno que trabaja solo. Y el siguiente paso natural es ponerlo en producción para que corra de verdad."</em></li>
+</ul>
+</main>
+</div>
+<script>
+// Botón "copiar" en cada bloque de código
+document.querySelectorAll('main pre').forEach(pre => {
+  const btn = document.createElement('button');
+  btn.className = 'copy'; btn.textContent = 'copiar';
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(pre.querySelector('code').innerText.trimEnd());
+    btn.textContent = '✓ copiado';
+    setTimeout(() => btn.textContent = 'copiar', 1500);
+  });
+  pre.appendChild(btn);
+});
+// Scrollspy: resalta en el sidebar la sección visible
+const links = [...document.querySelectorAll('.nav a')];
+const byId = Object.fromEntries(links.map(a => [a.getAttribute('href').slice(1), a]));
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(a => a.classList.remove('active'));
+      byId[e.target.id]?.classList.add('active');
+    }
+  });
+}, {rootMargin: '0px 0px -75% 0px'});
+document.querySelectorAll('main h2[id], main h3[id]').forEach(h => obs.observe(h));
+</script>
+</body>
+</html>
