@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guion clase — Intro al nodo AI Agent (Bloques 1-2)</title>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#171a23; --panel2:#1e2230; --ink:#e8eaf0; --muted:#9aa3b2;
+    --line:#2a2f3e; --accent:#7c5cff; --say:#4aa3ff; --do:#36c98b; --look:#caa45a;
+    --warn:#ffb84d; --quote:#c08bff; --code:#0b0d13; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+  aside{position:sticky;top:0;height:100vh;overflow:auto;background:var(--panel);border-right:1px solid var(--line);padding:20px 16px}
+  aside h1{font-size:15px;margin:0 0 4px}
+  aside .sub{color:var(--muted);font-size:12px;margin-bottom:18px}
+  .nav a{display:flex;justify-content:space-between;gap:8px;align-items:center;color:var(--muted);text-decoration:none;padding:9px 11px;border-radius:10px;font-size:13.5px;margin-bottom:4px;border:1px solid transparent}
+  .nav a:hover{background:var(--panel2);color:var(--ink)}
+  .nav a.active{background:var(--panel2);color:var(--ink);border-color:var(--line)}
+  .nav a .t{font-size:11px;color:var(--muted);background:#000;padding:2px 7px;border-radius:20px;border:1px solid var(--line)}
+  .legend{margin-top:14px;padding:12px;background:var(--panel2);border-radius:10px;font-size:12px;color:var(--muted);line-height:1.9}
+  .legend b{color:var(--ink)} .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  main{padding:34px 40px 120px;max-width:1000px}
+  .thesis{background:linear-gradient(135deg,#241c4d,#1a1d2b);border:1px solid #3a2f6b;border-radius:var(--radius);padding:20px 22px;margin-bottom:22px}
+  .thesis .k{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--quote);margin-bottom:6px}
+  .thesis p{margin:0;font-size:19px;font-weight:600;line-height:1.45}
+  .agenda{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--do);border-radius:var(--radius);padding:16px 20px;margin-bottom:26px}
+  .agenda h3{margin:0 0 6px;font-size:14px;text-transform:uppercase;letter-spacing:.6px;color:#bfc7d6}
+  .agenda ol{margin:6px 0 0;padding-left:20px} .agenda li{margin:4px 0}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:24px 26px;margin-bottom:22px;scroll-margin-top:18px;border-left:5px solid var(--accent)}
+  section.bridge{border-left-color:#c08bff} section.setup{border-left-color:#6b7280}
+  .head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+  .head h2{font-size:21px;margin:0}
+  .badge{font-size:12px;font-weight:700;padding:3px 11px;border-radius:20px;background:#000;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+  .badge.time{color:var(--accent);border-color:#3a3160}
+  .goal{color:var(--muted);font-size:14px;margin:0 0 14px}
+  .box{border-radius:12px;padding:14px 16px;margin:14px 0;border:1px solid var(--line);background:var(--panel2)}
+  .box .lbl{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+  .say{border-left:4px solid var(--say)} .say .lbl{color:var(--say)}
+  .do{border-left:4px solid var(--do)} .do .lbl{color:var(--do)}
+  .look{border-left:4px solid var(--look)} .look .lbl{color:var(--look)}
+  .warn{border-left:4px solid var(--warn)} .warn .lbl{color:var(--warn)}
+  .box p{margin:8px 0} .box ul,.box ol{margin:8px 0;padding-left:20px} .box li{margin:6px 0}
+  .script{color:#dbe7ff} .script em{color:#9fb6d8;font-style:italic}
+  .pop{font-size:18px;font-weight:600;color:#fff}
+  .flow{font:12.5px/1.5 "SF Mono",Menlo,Consolas,monospace;color:#cbd5e9;background:var(--code);border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow:auto;margin:10px 0}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--ink);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  code{background:#0b0d13;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font:13px "SF Mono",Menlo,Consolas,monospace;color:#cfe3ff}
+  .codewrap{position:relative;margin:8px 0}
+  .codewrap .cap{font-size:11px;color:var(--muted);padding:0 0 4px 2px}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font:13px/1.5 "SF Mono",Menlo,Consolas,monospace;color:#cfe3ff;margin:0;white-space:pre-wrap}
+  .copy{position:absolute;top:8px;right:8px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);font-size:11px;padding:4px 10px;border-radius:8px;cursor:pointer}
+  .copy:hover{color:var(--ink);border-color:var(--accent)} .copy.ok{color:var(--do);border-color:var(--do)}
+  .step{font-size:16px;margin:20px 0 6px;color:#fff;font-weight:600}
+  @media(max-width:860px){.wrap{grid-template-columns:1fr}aside{position:static;height:auto}}
+  @media print{aside{display:none}.wrap{grid-template-columns:1fr}.copy{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<aside>
+  <h1>🎬 Clase de hoy</h1>
+  <div class="sub">Intro al nodo AI Agent · Bloques 1–2 (el tool calling va aparte)</div>
+  <nav class="nav">
+    <a href="#b0"><span>0 · Antes de empezar</span><span class="t">2′</span></a>
+    <a href="#b1"><span>1 · Puente: Reflection</span><span class="t">4′</span></a>
+    <a href="#b2"><span>2 · El nodo AI Agent (Ex3)</span><span class="t">18′</span></a>
+    <a href="#b3"><span>3 · Tool calling: la descripción</span><span class="t">6′</span></a>
+    <a href="#b3r"><span>· Build: Trip Briefing (anillos)</span><span class="t">20′</span></a>
+    <a href="#cierre"><span>4 · Cierre</span><span class="t">5′</span></a>
+  </nav>
+  <div class="legend">
+    <span class="dot" style="background:var(--say)"></span><b>🗣️ Decir</b> (guion para hablar)<br>
+    <span class="dot" style="background:var(--do)"></span><b>🖱️ Hacer</b><br>
+    <span class="dot" style="background:var(--look)"></span><b>👀 Mirar</b> (en pantalla)<br>
+    <span class="dot" style="background:var(--warn)"></span><b>⚠️ Ojo</b>
+  </div>
+</aside>
+<main>
+  <div class="thesis">
+    <div class="k">Hilo de hoy</div>
+    <p>Ya usasteis un agente sin saberlo (en Reflection V2). Hoy <b>abrimos ese nodo</b>: qué es, qué partes tiene, cómo decide — y luego cómo usa herramientas.</p>
+  </div>
+
+  <div class="agenda">
+    <h3>📋 Qué veremos hoy (dilo al empezar, 30s)</h3>
+    <ol>
+      <li>Un recordatorio rápido del <b>Reflection Pattern</b> que vimos — para enlazar.</li>
+      <li><b>El nodo AI Agent por dentro</b>: sus piezas, cómo "piensa" y cómo recuerda.</li>
+      <li>Y luego, <b>cómo usa herramientas</b> (tool calling) para hacer cosas de verdad.</li>
+    </ol>
+  </div>
+
+  <!-- B0 -->
+  <section id="b0" class="setup">
+    <div class="head"><h2>0 · Antes de empezar</h2><span class="badge time">2 min</span></div>
+    <div class="box do"><div class="lbl">🖱️ Tener listo</div>
+      <ul>
+        <li>n8n abierto con <b>05 — Reflection Pattern</b> y <b>07 — AI Agent Chat (Ex3)</b> importados.</li>
+        <li>Credenciales OK: <b>OpenRouter</b> y <b>SerpAPI</b> (Ex3 usa Google Search).</li>
+        <li>Modo <b>Test</b> (no Activated) → control de coste. Pin data tras una buena ejecución.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- B1 -->
+  <section id="b1" class="bridge">
+    <div class="head"><h2>1 · Puente desde Reflection</h2><span class="badge time">~4 min</span></div>
+    <p class="goal">Objetivo: enlazar con lo que ya vieron y llegar a la frase "ese nodo es el de hoy". Recordatorio, no clase nueva.</p>
+
+    <div class="box say"><div class="lbl">🗣️ Qué es el Reflection Pattern (recuérdalo así)</div>
+      <p class="script">"Antes de meternos en el nodo de hoy, recordemos rápido la clase pasada, porque enlaza directamente. Vimos el <b>Reflection Pattern</b>: la idea de que el modelo no tiene que acertar a la primera. Igual que una persona, puede <b>escribir un borrador, mirarlo con ojo crítico, ver qué falla y corregirlo</b>, y repetir eso hasta que queda bien. En una frase: <b>generar → criticar → corregir → repetir</b>. Es un bucle de auto-mejora."</p>
+    </div>
+
+    <div class="box look"><div class="lbl">👀 El ejercicio que estábamos viendo</div>
+      <p class="script">"El ejercicio era a propósito difícil para un LLM: escribir la descripción de un producto —unos <b>auriculares Bluetooth</b>— que cumpliera varias restricciones a la vez:"</p>
+      <ul>
+        <li>exactamente <b>3 frases</b>,</li>
+        <li>entre <b>25 y 30 palabras</b>,</li>
+        <li>que contenga la palabra <b>"sound" dos veces</b>,</li>
+        <li>y que <b>no</b> use "music" ni "audio".</li>
+      </ul>
+      <p class="script">"Un modelo casi nunca clava todo eso de un tiro — por eso necesita el bucle de reflexión: lo intenta, comprueba, y vuelve a intentarlo."</p>
+    </div>
+
+    <div class="step">Las dos versiones (esto es lo que enlaza con hoy)</div>
+    <div class="box do"><div class="lbl">🖱️ Hacer · abre 05 y enseña las dos mitades</div>
+      <p class="script">"Lo montamos de <b>dos maneras</b>, una al lado de la otra. Mirad."</p>
+      <div class="flow">V1 (a mano):  Generate → Validate → Parse → [ If Done? ] ──sí──▶ Output
+                                              ▲                  └──no──▶ vuelve a Generate
+V2 (agente):  Input → [ AI Agent + Validator ] → Output   (un solo nodo lo hace todo)</div>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Decir · V1 vs V2</div>
+      <p class="script"><b>V1:</b> "Aquí el bucle lo cableamos <b>nosotros</b>: el modelo genera, otro paso valida si cumple las reglas, y este nodo <code>If Done?</code> decide — si cumple, sale; si no, vuelve atrás a reintentar. La condición de salida la pusimos a mano: <em>'para cuando cumpla todo o cuando llegue a 5 intentos'</em>. Nosotros diseñamos el bucle."</p>
+      <p class="script"><b>V2:</b> "Y aquí lo mismo… pero con <b>un solo nodo</b>: el <b>AI Agent</b>. Le damos el objetivo y una herramienta para validar, y <b>él decide solo</b> cuándo ha terminado: escribe, comprueba, corrige, y para cuando está bien. Donde en V1 había media docena de nodos, aquí hay uno."</p>
+    </div>
+
+    <div class="box say"><div class="lbl">🗣️ La frase-puente (remate hacia hoy)</div>
+      <p class="pop">"Ese nodo de V2 que lo hacía todo solo — el <b>AI Agent</b> — es justo el protagonista de hoy. Hasta ahora lo habéis usado como una cajita mágica; vamos a <b>abrirla</b> y entender qué tiene dentro y por qué funciona."</p>
+    </div>
+    <div class="box warn"><div class="lbl">⚠️ Ojo</div><p>No te metas a explicar el Validator ni a ejecutar el bucle entero (eso fue la clase de Reflection). Aquí solo es el trampolín. <b>Máximo 4 min.</b></p></div>
+  </section>
+
+  <!-- B2 -->
+  <section id="b2">
+    <div class="head"><h2>2 · El nodo AI Agent (Ejemplo 3)</h2><span class="badge time">~18 min</span></div>
+    <p class="goal">Abrir la "cajita": sus partes, el system message, cómo piensa (el bucle), la memoria y los guardarraíles.</p>
+
+    <div class="box do"><div class="lbl">🖱️ Hacer</div><p>Abre <b>07 — AI Agent Chat (Ex3)</b> (el nodo se llama <code>AI Agent — Salary Chat</code>). Es un asesor de salarios por chat.</p></div>
+    <div class="box say"><div class="lbl">🗣️ Presenta el ejemplo</div>
+      <p class="script">"Para verlo usamos un ejemplo concreto: un <b>asistente de salarios</b>. Le preguntas por chat cosas tipo '¿cuánto cobra un data scientist en España?' y te responde buscando datos reales y haciendo cuentas. Vamos a ver cómo está hecho por dentro."</p>
+    </div>
+
+    <div class="step">2.1 · ¿Qué hace exactamente el nodo? (ReAct + planning)</div>
+    <div class="box say"><div class="lbl">🗣️ Decir · qué hace por dentro</div>
+      <p class="script">"Antes de mirar las piezas: ¿qué hace este nodo exactamente? Por dentro sigue un patrón llamado <b>ReAct</b> — de <em>Reason + Act</em>, razonar y actuar. En vez de soltar la respuesta de un tirón, el agente <b>alterna pensar y hacer en un bucle</b>: piensa qué necesita, actúa (llama a una herramienta), observa el resultado, y vuelve a pensar — hasta que tiene la respuesta."</p>
+    </div>
+    <div class="flow">ReAct = Reason + Act, en bucle:
+
+  THINK    "necesito el sueldo medio en España"
+  ACT      Google Search("data scientist salary Spain")
+  OBSERVE  ~35.000 €
+  THINK    "ahora el neto al 24%"
+  ACT      Calculator(35000 * 0.76 / 12)
+  OBSERVE  ~2.216 €/mes
+  THINK    "ya tengo la respuesta"
+  FINAL    responde al usuario</div>
+    <div class="box say"><div class="lbl">🗣️ Planning + cómo procesa</div>
+      <p class="script">"El paso <b>THINK</b> es <b>planificación</b>: el agente se hace un plan antes de lanzarse (en Ex3 hay incluso una herramienta, <b>Think</b>, que lo hace explícito). Y cómo procesa: en <b>cada vuelta</b> el modelo recibe la pregunta + todo lo que las tools han devuelto hasta ese momento, y decide UNA cosa — <b>¿llamo a otra herramienta o ya respondo?</b>. Cuando decide que ya puede, sale del bucle."</p>
+    </div>
+    <div class="box look"><div class="lbl">👀 Diferencias (tenlo a mano · de la teoría del curso)</div>
+      <table>
+        <tr><th>Enfoque</th><th>¿Quién decide los pasos?</th><th>¿Las tools?</th><th>¿Bucle?</th></tr>
+        <tr><td><b>LLM simple</b> (Basic LLM Chain)</td><td>tú (un prompt)</td><td>sin tools</td><td>no</td></tr>
+        <tr><td><b>Workflow</b></td><td>tú (pasos fijos)</td><td>tú (al diseñar)</td><td>no</td></tr>
+        <tr><td><b>Agente</b></td><td>la IA (en runtime)</td><td>la IA (en runtime)</td><td><b>sí</b></td></tr>
+      </table>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Regla práctica + un detalle técnico</div>
+      <p class="script">"La regla de oro: <b>si puedes escribir todos los pasos por adelantado → workflow; si la IA tiene que averiguarlos → agente.</b> Y un detalle de n8n: un Basic LLM Chain devuelve su texto en el campo <code>text</code>; el AI Agent lo devuelve en <code>output</code> — porque no es una respuesta suelta, es el final de un bucle."</p>
+    </div>
+    <div class="box say"><div class="lbl">🔑 Clave (en una línea)</div>
+      <p class="pop">Agente = un LLM que, en bucle, DECIDE qué herramienta usar y cuándo parar. LLM normal = una pregunta, una respuesta.</p>
+    </div>
+
+    <div class="step">2.2 · Anatomía: el nodo y sus piezas (líneas de puntos)</div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div>
+      <p class="script">"Fijaos en lo que cuelga del nodo por <b>líneas de puntos</b>. Una pista de n8n: las líneas <b>sólidas</b> son flujo de datos ('pasa al siguiente paso'); las de <b>puntos</b> son capacidades ('esto el agente PUEDE usarlo'). El AI Agent no trabaja solo: tiene cuatro piezas."</p>
+    </div>
+    <table>
+      <tr><th>Pieza</th><th>En Ex3</th><th>Cómo lo explico</th></tr>
+      <tr><td><b>Chat Model</b></td><td>OpenRouter</td><td>"el cerebro — el LLM que razona"</td></tr>
+      <tr><td><b>Memory</b></td><td>Simple Memory (10)</td><td>"la memoria — recuerda los últimos mensajes de ESTA conversación"</td></tr>
+      <tr><td><b>Tools</b></td><td>Calculator · Google (SerpAPI) · Think</td><td>"las manos — lo que puede hacer o consultar"</td></tr>
+      <tr><td><b>System Message</b></td><td>(en Options)</td><td>"el briefing — quién es y qué reglas sigue"</td></tr>
+    </table>
+    <div class="box say"><div class="lbl">🗣️ Frase para fijar la idea</div><p class="pop">"Un agente = un LLM (cerebro) + memoria + herramientas (manos) + unas reglas. Eso es todo el misterio."</p></div>
+    <div class="box warn"><div class="lbl">⚠️ Dato n8n</div><p>Desde <b>v1.82</b> el AI Agent es siempre <b>"Tools Agent"</b> y necesita <b>≥1 tool</b> conectada. Si veis menús de "tipo de agente" en tutoriales viejos, ya no existen.</p></div>
+
+    <div class="step">2.3 · El System Message (ábrelo y léelo)</div>
+    <div class="box do"><div class="lbl">🖱️ Hacer</div><p>Abre el nodo → <b>Options → System Message</b>. Léelo en pantalla:</p></div>
+    <div class="codewrap"><div class="cap">System Message de Ex3</div><button class="copy">copiar</button><pre>You are a salary research assistant inside an n8n AI Agent workflow.
+Be concise.
+If the user asks about salaries, job markets, or company info, search Google first.
+If the user asks for arithmetic, use the Calculator tool.
+Use Think to plan multi-step research.
+If the user asks you to remember something, store it in memory and confirm briefly.
+If you don't know, say so.</pre></div>
+    <div class="box say"><div class="lbl">🗣️ Decir · recorre el prompt</div>
+      <p class="script">"Esto es el <b>briefing</b> del agente, y es donde está casi todo el trabajo. Mirad lo que le decimos: primero <b>quién es</b> ('asistente de investigación salarial') y que sea <b>conciso</b>. Luego <b>cuándo usar cada herramienta</b>: si preguntan por salarios o empresas, que busque en Google; si hay que calcular, que use la Calculadora; y que use Think para planificar antes de lanzarse. Le decimos también que <b>guarde en memoria</b> lo que le pidan recordar. Y una regla de oro contra invenciones: <b>'si no lo sabes, dilo'</b>."</p>
+      <p class="script">"Importante no confundir dos cosas: el <b>System Message</b> son las instrucciones <b>fijas</b> (siempre las mismas); el <b>Prompt</b> es el <b>mensaje del usuario</b> de cada turno — aquí viene del chat, con <code>{{ $json.chatInput }}</code>."</p>
+    </div>
+
+    <div class="step">2.4 · El bucle en vivo: verlo en los Logs</div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div>
+      <p class="script">"Ese bucle ReAct que acabamos de ver en teoría, ahora vamos a verlo <b>de verdad</b>. Lanzo una pregunta que obligue al agente a encadenar varias herramientas y abrimos los Logs para ver, paso a paso, lo que decide."</p>
+    </div>
+    <div class="box do"><div class="lbl">🖱️ Hacer · verlo en los Logs</div>
+      <p>Doble clic en el AI Agent → pestaña <b>Logs</b>. Lanza por chat una pregunta que obligue a usar varias tools:</p>
+      <div class="codewrap"><div class="cap">pregunta de prueba (chat)</div><button class="copy">copiar</button><pre>Search the average data scientist salary in Spain, then compute the monthly net after 24% tax.</pre></div>
+    </div>
+    <div class="box look"><div class="lbl">👀 Mirar en los Logs · y narrarlo</div>
+      <p class="script">"Mirad la secuencia de pasos que ha hecho él solo: primero <b>Think</b> — se hace un plan ('necesito buscar el sueldo y luego calcular el neto'); luego <b>Google Search</b> — busca y encuentra la cifra; luego <b>Calculator</b> — hace la cuenta del neto; y por fin redacta la respuesta. Cada paso con su entrada y su salida. <b>Esto es el bucle en acción</b> — y nadie le dijo el orden, lo decidió él."</p>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Gancho hacia tool calling</div>
+      <p class="script">"Y aquí surge la pregunta del millón: ha elegido las herramientas correctas él solo… <b>¿cómo sabe cuál usar?</b> Eso es lo que veremos en la segunda parte de la clase: el <b>tool calling</b>."</p>
+    </div>
+
+    <div class="step">2.5 · La memoria (demo en vivo que engancha)</div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div><p class="script">"La otra pieza era la memoria. Vamos a verla funcionar. Le digo algo y luego le pregunto sin repetirlo, a ver si se acuerda."</p></div>
+    <div class="box do"><div class="lbl">🖱️ Hacer · en el mismo chat, sin cerrarlo</div>
+      <div class="codewrap"><div class="cap">mensaje 1</div><button class="copy">copiar</button><pre>Remember that I'm interested in jobs in Berlin.</pre></div>
+      <div class="codewrap"><div class="cap">mensaje 2</div><button class="copy">copiar</button><pre>What city am I interested in?</pre></div>
+      <p>→ responde "Berlin". Ahora <b>abre un chat nuevo</b> y repite el mensaje 2 → ya no lo sabe.</p>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div>
+      <p class="script">"¿Veis? En la misma conversación se acuerda; en una ventana nueva, empieza de cero. La memoria va por <b>sesión</b> (un <code>sessionId</code>): misma sesión = misma conversación. Y un matiz importante para más adelante: <b>memoria ≠ conocimiento</b>. La memoria guarda lo que se ha dicho <b>en el chat</b>; no son tus documentos. Darle acceso a tus documentos es otra cosa (RAG), que veremos en su momento."</p>
+    </div>
+
+    <div class="step">2.6 · Guardarraíles (rápido pero no lo saltes)</div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div><p class="script">"Una última cosa antes de pasar a las herramientas: si un agente tiene poder y decide solo, necesita <b>límites</b>. El más básico está aquí, en las Options."</p></div>
+    <div class="box look"><div class="lbl">👀 Mirar · Options del AI Agent</div>
+      <table>
+        <tr><th>Guardarraíl</th><th>Dónde</th><th>Para qué</th></tr>
+        <tr><td><b>Max Iterations</b> (5-10)</td><td>Agent → Options</td><td>cortar un agente que se queda en bucle llamando tools sin parar (coste)</td></tr>
+        <tr><td><b>Reglas en el System Message</b></td><td>"si una tool falla, explícalo y para"</td><td>acotar cuánto trabajo dispara un mensaje</td></tr>
+        <tr><td><b>Modo Test + Pin data</b></td><td>la propia UI</td><td>no gastar tokens de más mientras pruebas</td></tr>
+      </table>
+      <p class="script">"<b>Max Iterations</b> es el más importante: pone un techo a cuántas vueltas puede dar el bucle. Si el agente se lía y llama una herramienta una y otra vez, esto lo frena antes de que se dispare la factura."</p>
+    </div>
+
+    <div class="step">2.7 · Checklist "qué mirar" (resúmelo en pantalla)</div>
+    <div class="box look"><div class="lbl">👀 Para depurar cualquier agente</div>
+      <ul>
+        <li>Los <b>sub-nodos</b> por línea de puntos: ¿tiene Chat Model? ¿Memory? ¿Tools?</li>
+        <li>La pestaña <b>Logs</b>: qué tool llamó, con qué input y qué devolvió.</li>
+        <li>El <b>System Message</b>: ¿dice cuándo usar cada tool?</li>
+        <li>El campo de salida se llama <code>output</code> (si no, el chat muestra JSON crudo).</li>
+      </ul>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Cierre del bloque</div><p class="script">"Resumiendo: un agente es un LLM con memoria, herramientas y unas reglas, que trabaja en bucle decidiendo qué hacer. Ya sabéis abrir la caja y ver qué hizo. Ahora vamos a lo bueno: <b>cómo usa las herramientas</b>."</p></div>
+  </section>
+
+  <!-- B3: tool calling concept -->
+  <section id="b3" class="bridge">
+    <div class="head"><h2>3 · Tool calling: ¿cómo elige una herramienta?</h2><span class="badge time">~6 min</span></div>
+    <p class="goal">Responder al gancho del bloque anterior: el agente elige leyendo la <b>descripción</b> de cada tool.</p>
+
+    <div class="box say"><div class="lbl">🗣️ Qué es una descripción de tool</div>
+      <p class="script">"En el bloque anterior el agente eligió las herramientas él solo. ¿Cómo sabe cuál usar? Por la <b>descripción</b> de cada una. La descripción es el texto que le dice al modelo <b>qué hace la tool y, sobre todo, cuándo usarla</b>. Es el <b>manual de instrucciones</b> que ve el modelo — para él, la herramienta <b>es</b> su descripción; lo que haya por dentro le da igual."</p>
+    </div>
+
+    <div class="box say"><div class="lbl">🗣️ Cómo llega al modelo (la duda típica)</div>
+      <p class="script">"¿Y eso dónde se mete, en el prompt? Buena pregunta. Cuando conectas tools al agente, n8n recoge de cada una su <b>nombre + descripción + qué parámetros recibe</b> y se los pasa al modelo como una <b>lista estructurada de 'herramientas disponibles' dentro de la propia llamada a la API</b> — no se pega como texto dentro de tu system prompt. No van 'arriba ni abajo' del prompt: van en un <b>campo aparte</b>. El modelo está entrenado para recibir esa lista y, en vez de contestar texto, responder 'llamo a la tool X con estos datos'. n8n ejecuta la tool y le devuelve el resultado."</p>
+    </div>
+    <div class="flow">Tu llamada al modelo lleva DOS cosas separadas:
+
+  • messages:  system message + el mensaje del usuario
+  • tools:     [ {name, description, parámetros}, ... ]   ← aquí van las descripciones
+
+El modelo responde:  "usar get_weather con city='Lisbon'"  → n8n la ejecuta → resultado → vuelve al modelo</div>
+
+    <div class="box look"><div class="lbl">👀 De dónde sale cada descripción</div>
+      <table>
+        <tr><th>Tipo de tool</th><th>Descripción</th><th>¿La escribes tú?</th></tr>
+        <tr><td><b>Nativa</b> (Wikipedia, Calculator)</td><td>fija, viene de fábrica</td><td>No</td></tr>
+        <tr><td><b>Custom</b> (HTTP Request, Code, AI Agent Tool)</td><td>un campo en la tool</td><td><b>Sí</b> — y ahí está el 80% del éxito</td></tr>
+      </table>
+      <p class="script">"Para las nativas no puedes tocar la descripción → si quieres orientar la elección, lo haces desde el <b>System Message</b> ('usa Google para info actual'). Para las custom, la descripción la escribes tú."</p>
+    </div>
+    <div class="box say"><div class="lbl">🔑 Clave (en una línea)</div>
+      <p class="pop">La descripción es la interfaz que ve el modelo. Buena descripción → elige bien; vaga → falla. Es el factor nº 1.</p>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Regla para escribirlas</div>
+      <p class="script">"La regla de oro: di <b>cuándo SÍ y cuándo NO</b> usar la tool, no solo qué hace. 'Busca en Wikipedia hechos sobre personas, lugares o eventos; NO la uses para noticias recientes.' 3-4 frases, como si se lo explicaras a alguien que entra nuevo."</p>
+    </div>
+  </section>
+
+  <!-- B3 build: rings -->
+  <section id="b3r">
+    <div class="head"><h2>3 · Build en vivo: Trip Briefing (por anillos)</h2><span class="badge time">~20 min</span></div>
+    <p class="goal">Construir un agente que prepara un mini-informe de viaje, añadiendo capacidades anillo a anillo. (Workflow: <code>09_tool_calling_trip_briefing</code>.)</p>
+
+    <div class="step">Antes del Anillo 1 · ¿Qué es una API? (la máquina de Coca-Colas)</div>
+    <div class="box say"><div class="lbl">🗣️ Decir · la analogía</div>
+      <p class="script">"Una de las tools llama a una <b>API</b>, así que dos minutos de qué es eso. Pensad en una <b>máquina de Coca-Colas</b>: haces una <b>petición</b> (metes la moneda y pulsas un botón) y la máquina te da una <b>respuesta</b> (la lata). Una API es igual pero por internet: tu workflow manda una petición a una <b>URL</b> y el servidor le devuelve <b>datos</b> (normalmente en JSON)."</p>
+    </div>
+    <div class="box look"><div class="lbl">👀 Las piezas de una petición</div>
+      <table>
+        <tr><th>Pieza</th><th>Máquina de Coca-Colas</th><th>API</th></tr>
+        <tr><td><b>URL / endpoint</b></td><td>la máquina concreta</td><td>la dirección a la que llamas (<code>https://wttr.in/Lisbon</code>)</td></tr>
+        <tr><td><b>Método</b></td><td>qué acción haces</td><td><b>GET</b> = pedir/leer datos · <b>POST</b> = enviar/crear algo</td></tr>
+        <tr><td><b>Parámetros</b></td><td>qué botón pulsas</td><td>afinan la petición (<code>?format=j1</code>, la ciudad…)</td></tr>
+        <tr><td><b>Respuesta</b></td><td>la lata que cae</td><td>los datos devueltos (JSON)</td></tr>
+      </table>
+      <p class="script">"Hoy solo hacemos <b>GET</b> (leer): pedir el tiempo. Un <b>POST</b> sería crear un pedido o enviar un mensaje — eso ya <b>cambia algo</b>, y lo que cambia el mundo necesita más cuidado (aprobación)."</p>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ La API que usamos: wttr.in</div>
+      <p class="script">"Usamos <b>wttr.in</b>: API del tiempo, <b>gratis y sin clave</b>. La URL se construye así: <code>https://wttr.in/CIUDAD</code> + <code>?format=j1</code> para que devuelva JSON. Ábrela en el navegador antes de clase para enseñar la 'lata' que cae."</p>
+      <div class="codewrap"><div class="cap">pruébalo en el navegador (esto es un GET)</div><button class="copy">copiar</button><pre>https://wttr.in/Lisbon?format=j1</pre></div>
+      <p class="script">Web de la API: <a href="https://github.com/chubin/wttr.in" style="color:#8fb4ff">github.com/chubin/wttr.in</a> · formatos: <a href="https://github.com/chubin/wttr.in#different-output-formats" style="color:#8fb4ff">output formats</a></p>
+    </div>
+    <div class="box look"><div class="lbl">👀 ¿Y el <code>format=j1</code>? (por si lo preguntan)</div>
+      <p class="script">wttr.in puede devolver el tiempo de varias formas. <b>Sin <code>format</code></b> devuelve un informe en <b>texto/ASCII</b> (bonito para humanos, ruidoso para el modelo) — por eso "funciona igual". Con <b><code>format=j1</code></b> devuelve <b>JSON estructurado</b> (limpio y fácil de leer para el agente). Otros: <code>format=3</code> (una línea), <code>format=4</code>. Para un agente, mejor <b>j1</b>."</p>
+      <div class="codewrap"><div class="cap">ábrelas una a una y compara lo que devuelve</div><button class="copy">copiar</button><pre>https://wttr.in/Lisbon
+https://wttr.in/Lisbon?format=3
+https://wttr.in/Lisbon?format=j1</pre></div>
+    </div>
+
+    <div class="step">Anillo 1 · get_weather (HTTP Request Tool + $fromAI)</div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div>
+      <p class="script">"Empezamos con una tool potente: una que llama a una <b>API de internet</b> cualquiera. Le damos al agente el tiempo en vivo. Lo nuevo aquí es el <b>HTTP Request Tool</b> — deja al agente llamar a una URL — y <code>$fromAI</code>, que es cómo el modelo <b>rellena los parámetros</b> de la llamada."</p>
+    </div>
+    <div class="box do"><div class="lbl">🖱️ Cómo encontrar / abrir el nodo</div>
+      <ul>
+        <li><b>Si ya existe:</b> clic en el nodo <code>get_weather</code> (cuelga del agente por la línea de puntos <b>Tool</b>) para abrirlo.</li>
+        <li><b>Para añadirlo desde cero:</b> en el AI Agent, clic en el <b>+</b> del conector <b>Tool</b> → busca <b>"HTTP Request"</b> → renómbralo <code>get_weather</code>.</li>
+      </ul>
+    </div>
+    <div class="box do"><div class="lbl">🖱️ Qué rellenar</div>
+      <table>
+        <tr><th>Campo</th><th>Valor</th></tr>
+        <tr><td><b>Method</b></td><td><code>GET</code></td></tr>
+        <tr><td><b>URL</b></td><td>la de abajo, en modo <b>Expression</b> (usa el botón <b>✨</b> para meter el <code>$fromAI</code>)</td></tr>
+        <tr><td><b>Send Query Parameters</b></td><td>ON → añade <code>format</code> = <code>j1</code></td></tr>
+        <tr><td><b>Optimize Response</b></td><td>ON (recorta el JSON → menos tokens)</td></tr>
+        <tr><td><b>Description</b></td><td>la de abajo — es lo que LEE el modelo para decidir usarla</td></tr>
+      </table>
+      <div class="codewrap"><div class="cap">URL (modo Expression)</div><button class="copy">copiar</button><pre>https://wttr.in/{{ $fromAI('city', 'The destination city in English, e.g. Lisbon', 'string') }}</pre></div>
+      <div class="codewrap"><div class="cap">Query parameter → Name</div><button class="copy">copiar</button><pre>format</pre></div>
+      <div class="codewrap"><div class="cap">Query parameter → Value</div><button class="copy">copiar</button><pre>j1</pre></div>
+      <div class="codewrap"><div class="cap">Description del tool</div><button class="copy">copiar</button><pre>Get the current weather for a city. Input: the destination city name in English. Use this when the user asks about the weather or what to pack. Do NOT use it for events, prices or general facts.</pre></div>
+    </div>
+    <div class="box look"><div class="lbl">👀 Mirar</div><p>La previsualización gris de la URL: aún no resuelve. Al ejecutar, el modelo pone <code>city=Lisbon</code> → <code>https://wttr.in/Lisbon</code>. Eso es <code>$fromAI</code>: el modelo rellena el hueco.</p></div>
+    <div class="box say"><div class="lbl">🗣️ Duda típica: ¿<code>$fromAI</code> llama otra vez al modelo? (anticípala)</div>
+      <p class="script">"No es una llamada extra ni magia de n8n. Cuando el agente decide usar <code>get_weather</code>, <b>ya está hablando con vuestro modelo de OpenRouter</b> — y en esa misma respuesta el <b>modelo</b> devuelve los <b>argumentos</b> de la herramienta, incluido <code>city='Lisbon'</code>. <code>$fromAI</code> solo le dice a n8n: 'este hueco lo rellena la IA'."</p>
+      <p class="script">Resumen: <b>el valor lo decide el modelo (OpenRouter)</b> como parte de su tool call; <b>n8n</b> coge ese valor, lo mete en la URL y hace la petición HTTP. <b>Mismo turno, sin coste de una llamada aparte.</b></p>
+    </div>
+    <div class="box warn"><div class="lbl">⚠️ Errores posibles</div>
+      <ul>
+        <li><b>El <code>$fromAI</code> no se rellena</b> → el campo URL debe estar en modo <b>Expression</b> (icono <code>fx</code>), no Fixed.</li>
+        <li><b>404 / "Unknown location"</b> → ciudad mal escrita o con espacios: "New York" → <code>New+York</code> (o usa "Paris", "Lisbon").</li>
+        <li><b>Respuesta enorme o lenta</b> → deja <b>Optimize Response</b> ON; si diera guerra, pruébalo OFF.</li>
+        <li><b>"Bad request" en el agente</b> → casi nunca es esta tool: mira si hay otra tool en ⚠️ (credencial) o el bug de <b>Think</b>.</li>
+      </ul>
+    </div>
+
+    <div class="step">Mini-ejercicio · SIN <code>$fromAI</code>: un Code Tool que recibe la ciudad como <code>query</code></div>
+    <div class="box warn"><div class="lbl">⚠️ Lo que comprobamos en clase (importante)</div>
+      <p class="script">Probamos a poner <code>{city}</code> en la URL del HTTP Request Tool y <b>NO funciona</b>: n8n avisa <i>"No parameters are set up to be filled by AI. Click on the ✨ button…"</i> y manda <code>{city}</code> <b>literal</b> (devuelve un sitio por defecto, no Lisboa). En el HTTP Tool, la ÚNICA forma de que el agente rellene un valor es <code>$fromAI</code> (botón ✨). Así que para hacerlo <b>sin <code>$fromAI</code></b> y que el agente igual pase la ciudad → usamos un <b>Code Tool</b>, donde el agente te pasa su texto en <code>query</code>.</p>
+    </div>
+    <div class="box look"><div class="lbl">👀 Los 3 estados (de más a menos ayuda al modelo)</div>
+      <table>
+        <tr><th>Estado</th><th>Cómo recibe la ciudad</th><th>¿Quién decide la ciudad?</th></tr>
+        <tr><td><b>1. <code>$fromAI</code> descrito</b> (HTTP Tool)</td><td><code>$fromAI('city', 'The destination city in English')</code></td><td>el modelo, guiado por la <b>descripción</b></td></tr>
+        <tr><td><b>2. Sin <code>$fromAI</code></b> (Code Tool)</td><td>la variable <code>query</code> en el código + reglas en el System Message</td><td>el modelo, guiado por <b>tu prompt</b> (más frágil)</td></tr>
+        <tr><td><b>3. Sin hueco</b></td><td><code>https://wttr.in/Lisbon</code> (fija)</td><td>nadie — <b>fija</b>; deja de ser agéntico</td></tr>
+      </table>
+      <p class="script">Hacemos el <b>estado 2</b> en vivo (el 1 ya está en el Anillo 1; el 3 es el ⚠️ de abajo).</p>
+    </div>
+    <div class="box do"><div class="lbl">🖱️ Hacer · qué cambiar (paso a paso)</div>
+      <p><b>Cambio 1 — usa un Code Tool en vez del HTTP Request Tool.</b> Borra <code>get_weather</code> (el HTTP) y añade un <b>Code Tool</b> (JavaScript), llámalo igual <code>get_weather</code>. El agente te pasa su texto en la variable <code>query</code> — <b>sin <code>$fromAI</code></b>. Pega este código:</p>
+      <div class="codewrap"><div class="cap">Code Tool · JavaScript</div><button class="copy">copiar</button><pre>const city = String(query).trim();
+const url = `https://wttr.in/${encodeURIComponent(city)}?format=j1`;
+const res = await this.helpers.httpRequest({ url, json: false });
+return String(res);</pre></div>
+
+      <p><b>Cambio 2 — el System Message del agente (el truco).</b> El parseo lo hace el agente: que extraiga la ciudad, la traduzca a inglés y pase SOLO eso como input del tool. Reemplaza el System Message por este:</p>
+      <div class="codewrap"><div class="cap">System Message completo (el agente parsea y pasa la ciudad)</div><button class="copy">copiar</button><pre>You are a travel weather assistant.
+
+When the user asks about the weather, call the get_weather tool. The tool needs the city prepared in a very specific way, so YOU must prepare it BEFORE calling:
+- Extract the city the user means.
+- Translate it to its English name (e.g. "Lisboa" -> "Lisbon", "Londres" -> "London").
+- Pass ONLY that city as the tool input — just the city name, no extra words, no "weather in", no punctuation, no country.
+
+Then read the tool's result and answer the user in plain language.</pre></div>
+
+      <p><b>Cambio 3 — la Description del Code Tool.</b> Dile al agente para qué es y qué pasarle:</p>
+      <div class="codewrap"><div class="cap">Description del Code Tool</div><button class="copy">copiar</button><pre>Returns the current weather for a city. Input: a single city name in English.</pre></div>
+
+      <p><b>Probar:</b> pregunta <i>"¿qué tiempo hace en Lisboa?"</i> y mira en los <b>Logs</b> qué pasó el agente como <code>query</code> → debería ser <code>Lisbon</code> (no "Lisboa", no "weather in Lisbon").</p>
+    </div>
+    <div class="box warn"><div class="lbl">⚠️ Ojo</div><p>El Code Tool necesita poder hacer la petición (<code>this.helpers.httpRequest</code>); en algunas versiones de n8n hay que probarlo. Si fallara, plan B: volver al HTTP Request Tool con <code>$fromAI</code> (✨).</p></div>
+    <div class="box look"><div class="lbl">👀 Qué cambia respecto al original</div>
+      <table>
+        <tr><th></th><th>HTTP Request Tool + <code>$fromAI</code></th><th>Code Tool + <code>query</code> (sin <code>$fromAI</code>)</th></tr>
+        <tr><td><b>Cómo recibe la ciudad</b></td><td><code>$fromAI('city', '…')</code> en la URL (botón ✨)</td><td>la variable <code>query</code> en el código</td></tr>
+        <tr><td><b>Quién guía el formato</b></td><td>la <b>descripción del parámetro</b></td><td><b>el System Message</b> (extraer / traducir / pasar solo la ciudad)</td></tr>
+        <tr><td><b>Quién hace la llamada</b></td><td>n8n (el nodo HTTP)</td><td>tu código (<code>httpRequest</code>)</td></tr>
+      </table>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ La moraleja</div>
+      <p class="pop">"En el HTTP Tool el agente solo rellena vía <code>$fromAI</code> (✨). Para hacerlo sin <code>$fromAI</code>, el Code Tool: el agente pasa la ciudad por <code>query</code> y el formateo lo defines TÚ en el system prompt."</p>
+      <p class="script">"Con <code>$fromAI</code> declaras el parámetro y su descripción guía al modelo; con el Code Tool, el 'contrato' de qué pasar lo pones en el prompt — más control, más frágil. Mismo resultado, distinto reparto del trabajo."</p>
+    </div>
+    <div class="box warn"><div class="lbl">⚠️ Estado 3 · ciudad fija (sin agente)</div>
+      <p class="script">Si en vez de <code>query</code> pones la ciudad fija en el código (o usas el HTTP Tool con la URL <code>https://wttr.in/Lisbon</code> sin <code>$fromAI</code>), el agente <b>ya no puede cambiar la ciudad</b> — siempre devuelve Lisboa. Deja de ser agéntico.</p>
+    </div>
+    <div class="box look"><div class="lbl">💡 Más ejercicios didácticos (elige)</div>
+      <ul>
+        <li><b>Romper <code>$fromAI</code>:</b> en el tool del agente, fija la ciudad en la URL (quita el <code>$fromAI</code>) y pregunta por OTRA ciudad → siempre devuelve la fija. Demuestra para qué sirve.</li>
+        <li><b>Otro idioma:</b> pregunta "¿qué tiempo hace en Lisboa?" → el modelo igualmente rellena <code>city=Lisbon</code>. Enseña que <code>$fromAI</code> no es copia-pega: el modelo interpreta.</li>
+        <li><b>Cambiar el format:</b> pon <code>format=3</code> y vuelve a preguntar → el agente recibe una línea en vez del JSON; comenta cómo la forma de la respuesta afecta a lo que puede hacer.</li>
+      </ul>
+    </div>
+
+    <div class="step">Anillo 2 · + Wikipedia + Google → el agente elige</div>
+    <div class="box do"><div class="lbl">🖱️ Hacer</div><p>Añade dos tools más: <b>Wikipedia</b> (hechos estables) y <b>Google Search/SerpAPI</b> (info actual). Pregunta: <em>"¿qué ver en Lisboa este finde?"</em></p></div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div>
+      <p class="script">"Ahora tiene tres herramientas y elige. Wikipedia y Google se parecen — las dos 'buscan'. ¿Cómo decide? Por la diferencia que marco: <b>hechos que no cambian → Wikipedia; cosas de AHORA → Google</b>. Como son nativas (descripción fija), eso lo guío desde el <b>System Message</b>."</p>
+    </div>
+
+    <div class="step">Anillo 3 · Romper y arreglar una descripción (el "aha")</div>
+    <div class="box do"><div class="lbl">🖱️ Hacer · demostrar la tesis</div>
+      <p>En <code>get_weather</code>, cambia la descripción por una vaga y re-ejecuta:</p>
+      <div class="codewrap"><div class="cap">descripción "mala"</div><button class="copy">copiar</button><pre>Checks the text.</pre></div>
+      <p>El agente duda o no la llama. Restaura la buena (la del Anillo 1) → vuelve a funcionar.</p>
+    </div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div>
+      <p class="pop">"Cambié UN campo de texto y el comportamiento cambia entero."</p>
+      <p class="script">"El nombre <code>get_weather</code> no basta: el modelo solo la conoce por su descripción. Por eso es el factor nº 1."</p>
+    </div>
+
+    <div class="step">Anillo 4 · Lectura vs escritura + aprobación</div>
+    <div class="box say"><div class="lbl">🗣️ Decir</div>
+      <p class="script">"Todas estas tools son de <b>solo lectura</b>: buscan, no cambian nada. El día que una tool <b>envíe un email</b> o <b>borre algo</b>, un error sale caro. Regla de oro: <b>si una tool cambia algo en el mundo real, necesita aprobación humana antes de ejecutarse</b>. Aquí lo vemos con un nodo <b>Wait</b> que pausa el flujo hasta que apruebas el informe."</p>
+    </div>
+    <div class="box look"><div class="lbl">👀 Mirar</div><p>El flujo se pausa en <code>Wait — Approval</code>; abres la Test URL, apruebas, y solo entonces sale el informe final.</p></div>
+  </section>
+
+  <!-- Cierre -->
+  <section id="cierre" class="setup">
+    <div class="head"><h2>4 · Cierre + Q&A</h2><span class="badge time">~5 min</span></div>
+    <div class="box say"><div class="lbl">🗣️ Recapitular</div>
+      <p class="script">"Resumiendo la clase de hoy: un <b>AI Agent</b> es un LLM con memoria, herramientas y reglas que trabaja en <b>bucle (ReAct)</b> decidiendo qué hacer. Usa las herramientas leyendo su <b>descripción</b> — el factor nº 1 — y rellena sus parámetros con <code>$fromAI</code>. Y lo que cambia el mundo (escribir, enviar) va siempre detrás de una <b>aprobación</b>."</p>
+    </div>
+    <div class="box look"><div class="lbl">🔑 Tres ideas para llevarse</div>
+      <ul>
+        <li>Agente = LLM + bucle + tools (decide y repite).</li>
+        <li>La <b>descripción</b> es la interfaz: decide qué tool usa.</li>
+        <li>Read-only se usa libre; <b>write</b> necesita aprobación.</li>
+      </ul>
+    </div>
+    <p class="goal">→ Q&A con el tiempo restante.</p>
+  </section>
+</main>
+</div>
+<script>
+  document.querySelectorAll('.copy').forEach(btn=>{
+    btn.addEventListener('click',()=>{const txt=btn.parentElement.querySelector('pre').innerText;
+      navigator.clipboard.writeText(txt).then(()=>{const o=btn.textContent;btn.textContent='✓ copiado';btn.classList.add('ok');setTimeout(()=>{btn.textContent=o;btn.classList.remove('ok')},1200);});});
+  });
+  const links=[...document.querySelectorAll('.nav a')];
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const a=map.get(e.target.id);if(a)a.classList.add('active');}});},{rootMargin:'-20% 0px -70% 0px'});
+  document.querySelectorAll('section[id]').forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>
