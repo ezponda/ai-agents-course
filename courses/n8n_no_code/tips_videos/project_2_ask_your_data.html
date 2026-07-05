@@ -62,6 +62,7 @@
   <nav class="nav">
     <a href="#concepto-clave">Concepto clave</a>
     <a href="#flujo-del-workflow">Flujo del workflow</a>
+    <a href="#urls-para-tener-a-mano">🔗 URLs para tener a mano</a>
     <a href="#preparacion-antes-de-grabar">🔧 Preparación ANTES de grabar</a>
     <a href="#parte-1-guion-paso-a-paso">🎬 PARTE 1 — Guion paso a paso</a>
     <a class="h3" href="#0-cold-open-opcional-40s">0. Cold open (opcional, 40s)</a>
@@ -73,6 +74,7 @@
     <a class="h3" href="#6-demo-de-preguntas-2-min">6. Demo de preguntas (2 min)</a>
     <a class="h3" href="#7-auto-correccion-el-agente-que-se-depura-solo-1-min">7. Auto-corrección — el agente que se depura solo (1 min)</a>
     <a class="h3" href="#8-cierre-30s">8. Cierre (30s)</a>
+    <a href="#analisis-del-prompt-final-y-como-empujarlo-mas-2-min">📋 Análisis del prompt final (y cómo empujarlo más, 2 min)</a>
     <a href="#parte-2-variaciones-para-alargar-el-video">🎬 PARTE 2 — Variaciones (para alargar el vídeo)</a>
     <a class="h3" href="#variacion-1-tablas-markdown-en-el-chat-2-min-1-linea-de-prompt">Variación 1 — Tablas Markdown en el chat (2 min, 1 línea de prompt)</a>
     <a class="h3" href="#variacion-2-forzar-la-auto-correccion-3-min-editar-prompt">Variación 2 — Forzar la auto-corrección (3 min, editar prompt)</a>
@@ -98,6 +100,42 @@
                         · devuelve SOLO lo que hace console.log()
 </code></pre>
 <p><strong>Credenciales necesarias:</strong> solo OpenRouter.</p>
+<hr />
+<h2 id="urls-para-tener-a-mano">🔗 URLs para tener a mano</h2>
+<table>
+<thead>
+<tr>
+<th>Para qué</th>
+<th>URL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>El CSV (tu repo)</strong> — enséñalo crudo en el navegador</td>
+<td>https://raw.githubusercontent.com/ezponda/ai-agents-course/main/courses/n8n_no_code/book/_static/data/spotify_2023.csv</td>
+</tr>
+<tr>
+<td><strong>Anthropic — Advanced Tool Use</strong> (el patrón, para el cierre)</td>
+<td>https://www.anthropic.com/engineering/advanced-tool-use</td>
+</tr>
+<tr>
+<td>Gapminder (variación 5)</td>
+<td>https://raw.githubusercontent.com/plotly/datasets/master/gapminder2007.csv</td>
+</tr>
+<tr>
+<td>Spoonacular (challenge del notebook)</td>
+<td>https://spoonacular.com/food-api</td>
+</tr>
+<tr>
+<td>n8n docs — Code Tool</td>
+<td>https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.toolcode/</td>
+</tr>
+<tr>
+<td>OpenRouter</td>
+<td>https://openrouter.ai</td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2 id="preparacion-antes-de-grabar">🔧 Preparación ANTES de grabar</h2>
 <ol>
@@ -151,6 +189,9 @@
 <p>"Esto tiene nombre oficial: Anthropic lo llama <em>Programmatic Tool Calling</em> con <em>Code Execution</em> en su guía de tool use avanzado — el modelo escribe código que hace el trabajo, y los datos intermedios no entran en su contexto. Reportan un ~37% de ahorro de tokens con este patrón. Nosotros lo tenemos en versión de juguete, pero es EXACTAMENTE la misma idea."</p>
 </blockquote>
 <p><strong>Dato interesante:</strong> "¿Y el error? Si el código del agente peta, el wrapper devuelve el mensaje de error como resultado. Guardad ese detalle — lo vamos a ver funcionar solo."</p>
+<blockquote>
+<p>🧠 <strong>Matiz de tokens (dilo, engancha):</strong> hay DOS cosas de tokens que la gente confunde. Una: <strong>los datos</strong> (las 953 filas) <strong>no entran</strong> en el modelo — solo la línea impresa. Eso es el ahorro del <em>programmatic tool calling</em> (~37% según Anthropic). PERO el <strong>agente sigue gastando</strong> por otro lado: es un bucle ReAct — escribe código → lo ejecuta → lee el resultado → razona → quizá reintenta. Cada vuelta es una llamada al modelo que reenvía el system prompt entero (¡y este es largo: esquema + fila de ejemplo + reglas!). O sea: los DATOS fuera de contexto, sí; el agente "gratis", no. Son dos palancas distintas.</p>
+</blockquote>
 <hr />
 <h3 id="5-la-historia-el-prompt-de-1-linea-a-25-5-min">5. LA HISTORIA: el prompt de 1 línea a 25 (5 min) ⭐</h3>
 <blockquote>
@@ -242,6 +283,24 @@ Use bracket notation for keys with special characters: row['artist(s)_name'], ro
 <li><strong>Decir "no puedo"</strong> es una feature, no un bug</li>
 <li><strong>El patrón es genérico</strong>: cambia el CSV y el prompt y tienes un analista para CUALQUIER dato — lo hacemos en las variaciones</li>
 </ul>
+<hr />
+<h2 id="analisis-del-prompt-final-y-como-empujarlo-mas-2-min">📋 Análisis del prompt final (y cómo empujarlo más, 2 min)</h2>
+<blockquote>
+<p>Ya viste el prompt crecer de 1 a 25 líneas. Ahora, con el final en pantalla, un análisis rápido de por qué funciona y qué le falta — criterio de prompt engineering.</p>
+</blockquote>
+<p><strong>Qué está muy bien:</strong>
+- <strong>La fila de ejemplo (few-shot) es la línea más rentable de todas.</strong> El modelo ve la <em>forma exacta</em> de un objeto — vale más que tres párrafos describiéndola.
+- <strong>"Todo son strings → Number()"</strong> y la <strong>notación de corchetes</strong>: reglas nacidas de fallos reales (los viste).
+- <strong>"Di que no puedes"</strong> (no hay género/duración): convierte una alucinación en una respuesta honesta.
+- <strong>"No hagas fetch"</strong>: acota la herramienta desde el prompt.</p>
+<p><strong>Qué mejoraría (buen material para "y si quisierais ir más lejos"):</strong>
+- <strong>Un segundo ejemplo, pero de CÓDIGO</strong> (pregunta → snippet de JS correcto). Ahora damos few-shot de los <em>datos</em>; dar few-shot del <em>código</em> dispara la fiabilidad del modelo pequeño.
+- <strong>"No hagas fetch" es solo persuasión</strong> — un prompt se burla. La capa dura es la regex del wrapper (Variación 4). Defense in depth.
+- <strong>Formato de salida:</strong> solo pide "frase corta". Para listas/comparaciones, la regla de tabla Markdown (Variación 1) mejora mucho la lectura.
+- <strong>Robustez del código:</strong> podrías pedir explícitamente "envuelve en try/catch y si algo es NaN, dilo" para que los errores sean legibles.</p>
+<blockquote>
+<p><strong>Meta-punto:</strong> "El prompt de un intérprete se afina con DOS herramientas: <strong>ejemplos</strong> (few-shot de datos y de código) para que acierte la forma, y <strong>reglas</strong> para lo binario (di que no, no hagas fetch). Y lo que es seguridad de verdad, al código — no al prompt."</p>
+</blockquote>
 <hr />
 <h2 id="parte-2-variaciones-para-alargar-el-video">🎬 PARTE 2 — Variaciones (para alargar el vídeo)</h2>
 <p>Cinco variaciones autocontenidas, de menos a más montaje. Recomendadas: <strong>1 + 4 + 5</strong> (~11 min extra). Si grabas variaciones, colócalas <strong>antes del cierre</strong>.</p>
@@ -398,7 +457,7 @@ Use bracket notation for keys with special characters: row['artist(s)_name'], ro
 <hr />
 <h2 id="cosas-a-tener-en-cuenta-durante-la-grabacion">⚠️ Cosas a tener en cuenta durante la grabación</h2>
 <ol>
-<li><strong>El CSV se descarga en cada llamada a la tool</strong> (106KB, sub-segundo). Sin internet no hay demo, y la primera llamada del día puede tardar un pelín más.</li>
+<li><strong>El CSV se descarga en cada llamada a la tool</strong> (106KB, sub-segundo). Sin internet no hay demo, y la primera llamada del día puede tardar un pelín más. La descarga usa <code>this.helpers.httpRequest</code> dentro del Code Tool — está soportado en el sandbox de n8n (verificado), así que funciona. <strong>Plan B si tu instancia lo bloqueara:</strong> baja el CSV con un nodo HTTP Request normal ANTES del agente y pásalo, o embebe una muestra de filas directamente en el <code>jsCode</code>.</li>
 <li><strong>eval() ejecuta cualquier cosa:</strong> no publiques este workflow (Make Public / producción) sin el guardrail de la variación 4. Dilo a cámara si enseñas la parte pública.</li>
 <li><strong>V1 a veces acierta:</strong> con modelos buenos, el prompt naive puede responder bien la primera pregunta. Ten la de Bad Bunny y la del género preparadas (fallan más) y explica que es probabilístico — por eso se ponen las reglas.</li>
 <li><strong>Respuestas largas del chat:</strong> si el agente imprime arrays crudos es que falta la regla 3 — úsalo como momento didáctico en vez de esconderlo.</li>

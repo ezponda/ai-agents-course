@@ -20,7 +20,7 @@
     {
       "parameters": {
         "public": true,
-        "mode": "webhook",
+        "mode": "hostedChat",
         "options": {
           "responseMode": "lastNode"
         }
@@ -28,7 +28,7 @@
       "id": "f6000000-0000-4000-8000-000000000002",
       "name": "When chat message received",
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
-      "typeVersion": 1.1,
+      "typeVersion": 1.3,
       "position": [
         -1140,
         0

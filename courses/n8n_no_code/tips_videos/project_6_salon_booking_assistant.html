@@ -62,6 +62,7 @@
   <nav class="nav">
     <a href="#concepto-clave">Concepto clave</a>
     <a href="#flujo-del-workflow">Flujo del workflow</a>
+    <a href="#urls-para-tener-a-mano">🔗 URLs para tener a mano</a>
     <a href="#preparacion-antes-de-grabar">🔧 Preparación ANTES de grabar</a>
     <a href="#guion-paso-a-paso">🎬 Guion paso a paso</a>
     <a class="h3" href="#1-cold-open-demo-desde-el-movil-1-min">1. Cold open — Demo desde el móvil (1 min)</a>
@@ -71,9 +72,12 @@
     <a class="h3" href="#5-agenda-agent-el-especialista-con-las-llaves-25-min">5. Agenda Agent — El especialista con las llaves (2.5 min)</a>
     <a class="h3" href="#6-info-agent-el-prompt-es-la-base-de-conocimiento-1-min">6. Info Agent — El prompt ES la base de conocimiento (1 min)</a>
     <a class="h3" href="#7-escalate-to-lola-declina-escala-1-min">7. Escalate to Lola — Declina + escala (1 min)</a>
+    <a class="h3" href="#7b-de-donde-vive-cada-comportamiento-mapa-mental-2-min">7b. 🧭 De dónde vive cada comportamiento (mapa mental, 2 min)</a>
     <a class="h3" href="#8-demo-completa-los-cinco-escenarios-4-min">8. DEMO completa — Los cinco escenarios (4 min)</a>
     <a class="h3" href="#9-make-public-el-modo-whatsapp-1-min">9. Make Public — El modo WhatsApp (1 min)</a>
     <a class="h3" href="#10-cierre-30s">10. Cierre (30s)</a>
+    <a href="#analisis-de-los-tres-prompts-y-mejoras-3-min">📋 Análisis de los tres prompts (y mejoras, 3 min)</a>
+    <a href="#control-de-tokens-y-si-fuera-con-basic-llm-chains-4-5-min">🧠 Control de tokens: ¿y si fuera con Basic LLM Chains? (4-5 min) ⭐</a>
     <a href="#para-la-clase-en-directo-despues-del-video-o-en-sesion">🏫 Para la clase en directo (después del vídeo o en sesión)</a>
     <a href="#textos-de-prueba-copy-paste-para-el-chat">🧪 Textos de prueba (copy-paste para el chat)</a>
     <a href="#cosas-a-tener-en-cuenta-durante-la-grabacion">⚠️ Cosas a tener en cuenta durante la grabación</a>
@@ -97,6 +101,42 @@ Chat Model   Memory   Escalate to Lola   Info Agent   Agenda Agent
 </code></pre>
 <p><strong>Credenciales necesarias:</strong> solo OpenRouter.
 <strong>Requisito:</strong> n8n <strong>1.113 o superior</strong> (Data Tables).</p>
+<hr />
+<h2 id="urls-para-tener-a-mano">🔗 URLs para tener a mano</h2>
+<table>
+<thead>
+<tr>
+<th>Para qué</th>
+<th>URL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>n8n docs — <strong>Data Tables</strong></td>
+<td>https://docs.n8n.io/data-tables/</td>
+</tr>
+<tr>
+<td>n8n docs — AI Agent Tool (agente como herramienta)</td>
+<td>https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.agent/</td>
+</tr>
+<tr>
+<td>Anthropic — Building effective agents (orchestrator-workers)</td>
+<td>https://www.anthropic.com/engineering/building-effective-agents</td>
+</tr>
+<tr>
+<td>OpenAI — CS Agents demo (patrón triage + frase fija)</td>
+<td>https://github.com/openai/openai-cs-agents-demo</td>
+</tr>
+<tr>
+<td>OpenRouter</td>
+<td>https://openrouter.ai</td>
+</tr>
+<tr>
+<td>Railway (para servir el chat público en clase)</td>
+<td>https://railway.com/deploy/n8n</td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2 id="preparacion-antes-de-grabar">🔧 Preparación ANTES de grabar</h2>
 <ol>
@@ -201,6 +241,52 @@ Chat Model   Memory   Escalate to Lola   Info Agent   Agenda Agent
 <p>"Esto sustituye al típico 'mandar un email': mismo patrón, cero credenciales. En producción cambiarías este nodo por Gmail o Slack y no tocarías nada más."</p>
 </blockquote>
 <hr />
+<h3 id="7b-de-donde-vive-cada-comportamiento-mapa-mental-2-min">7b. 🧭 De dónde vive cada comportamiento (mapa mental, 2 min)</h3>
+<blockquote>
+<p>En un multiagente es fácil perderse. Este mapa deja claro qué se toca para cada cosa — y evita el error clásico de "meter todo en un prompt".</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Lo que hace el sistema</th>
+<th>Dónde vive</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rutar, catálogo cerrado, frase fija de rechazo, confirmar antes de escribir, delegación silenciosa</td>
+<td><strong>System prompt de la Receptionist</strong></td>
+</tr>
+<tr>
+<td>Servicios, precios, horarios, dirección (el conocimiento)</td>
+<td><strong>System prompt del Info Agent</strong> (el texto ES la base de datos)</td>
+</tr>
+<tr>
+<td>Reglas del calendario (horario, citas de 1h, "ocupado si status booked", leer-antes-de-escribir)</td>
+<td><strong>System prompt del Agenda Agent</strong></td>
+</tr>
+<tr>
+<td>Las citas de verdad (persisten)</td>
+<td><strong>Data Table <code>appointments</code></strong></td>
+</tr>
+<tr>
+<td>Los tickets para Lola</td>
+<td><strong>Data Table <code>tickets</code></strong></td>
+</tr>
+<tr>
+<td>Quién es María, cuál es "la" cita</td>
+<td><strong>Simple Memory</strong> (SOLO en la Receptionist)</td>
+</tr>
+<tr>
+<td>Quién puede TOCAR qué (status fijo <code>booked</code>, <code>id</code> obligatorio para cancelar)</td>
+<td><strong>Config de los nodos Data Table</strong>, no el prompt</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Regla mnemotécnica:</strong> <strong>los prompts gobiernan comportamiento y conocimiento · las Data Tables guardan el estado que persiste · la Memory guarda el contexto de la charla · la config de los nodos gobierna los permisos.</strong> Cuando el double-booking ocurre (clase), es porque una GARANTÍA (unicidad) está en el sitio equivocado: no pertenece al prompt, pertenece a la base de datos.</p>
+</blockquote>
+<hr />
 <h3 id="8-demo-completa-los-cinco-escenarios-4-min">8. DEMO completa — Los cinco escenarios (4 min)</h3>
 <p><strong>Abrir el chat del editor. Ir escenario a escenario, enseñando los Logs del agente entre medias.</strong></p>
 <p><strong>Escenario 1 — Info (sin tocar la agenda):</strong></p>
@@ -262,6 +348,41 @@ Chat Model   Memory   Escalate to Lola   Info Agent   Agenda Agent
 <p>"Y un aviso honesto: la regla 'never double-book' vive en un prompt. En clase vamos a romperla a propósito — porque hay garantías que no pertenecen al prompt, pertenecen a la base de datos. Ese es el reto 3."</p>
 </blockquote>
 <hr />
+<h2 id="analisis-de-los-tres-prompts-y-mejoras-3-min">📋 Análisis de los tres prompts (y mejoras, 3 min)</h2>
+<blockquote>
+<p>Abre los tres System Messages a la vez. Es un capstone de prompt engineering multiagente.</p>
+</blockquote>
+<p><strong>Receptionist — bien:</strong> catálogo cerrado; frase fija de rechazo; confirmar antes de escribir; delegación silenciosa; <code>{{ $now }}</code> para fechas relativas; responde en el idioma del cliente.
+<strong>Mejoras:</strong> la frase de rechazo es solo prompt → un ejemplo (few-shot) de un caso fuera de catálogo la clava más; "recoge TODO y llama una vez" a veces igual sub-llama → un ejemplo de recogida ayuda; conviene un límite de vueltas de aclaración.</p>
+<p><strong>Agenda Agent — bien:</strong> modelo del mundo (horario, 1h, "ocupado si booked") + protocolo (check antes de book, cancel por id). Mínimo privilegio en los nodos.
+<strong>Mejoras:</strong> <strong>"never double-book" vive en el prompt</strong> — es la garantía que la clase rompe (la BD no tiene constraint de unicidad); la fecha la calcula la Receptionist, así que asegúrate de que llega ya en <code>YYYY-MM-DD</code>; no cubre disponibilidad parcial ("solo me vale por la tarde").</p>
+<p><strong>Info Agent — bien:</strong> conocimiento cerrado; frase fija "I don't have that information".
+<strong>Mejoras:</strong> EUR y horario <strong>hardcodeados</strong> → parametriza si cambias de negocio; si el catálogo creciera, esto es un RAG (Cap. 9). Y ojo: <strong>no tiene herramientas</strong> — eso lo hace el candidato perfecto para la siguiente sección.</p>
+<blockquote>
+<p><strong>Meta-punto:</strong> reglas para lo binario (catálogo, rechazo), ejemplos (few-shot) para lo sutil (cuándo escalar), y las <strong>garantías duras fuera del prompt</strong> (unicidad → base de datos; permisos → config del nodo).</p>
+</blockquote>
+<hr />
+<h2 id="control-de-tokens-y-si-fuera-con-basic-llm-chains-4-5-min">🧠 Control de tokens: ¿y si fuera con Basic LLM Chains? (4-5 min) ⭐</h2>
+<blockquote>
+<p>Pregunta que sale siempre: "esto de tres agentes, ¿no gasta un montón?". Sí. Y aquí se aprende cuándo un <strong>agente</strong> es caro de más y cuándo un <strong>Basic LLM Chain</strong> (o nodos normales) hace lo mismo por mucho menos.</p>
+</blockquote>
+<p><strong>Por qué un multiagente gasta tanto.</strong> Cada mensaje puede disparar: la Receptionist (bucle ReAct) → llama a un worker, que es OTRO agente con SU bucle → que llama a 1-2 tools. Son <strong>4-6 llamadas al modelo</strong>, y en cada una se reenvía el system prompt entero + el historial + los resultados de las tools. Un <strong>agente</strong> es caro porque <strong>itera</strong> (decide → actúa → observa → repite). Un <strong>Basic LLM Chain</strong> hace <strong>UNA</strong> llamada, sin bucle, sin reenvíos.</p>
+<p><strong>La regla:</strong> <em>un agente solo se gana su coste cuando NECESITA iterar. Si no hay bucle, usa un chain (o nodos normales).</em></p>
+<p><strong>Dónde recortar, de más fácil a más radical:</strong></p>
+<p><strong>1. El Info Agent NO tiene herramientas → es un agente disfrazado de una sola llamada.</strong> Es el recorte más claro. Dos opciones:
+   - <strong>La más barata: absorber la info en la Receptionist.</strong> Las preguntas de info se responden en la MISMA llamada, sin invocar un segundo agente. Copia y pega este bloque en el System Message de la Receptionist (y desconecta el Info Agent):
+     <code>Salon info (answer these yourself, do not delegate):
+     - Services &amp; prices (1 hour each): Haircut 15 EUR, Coloring 45 EUR, Styling 25 EUR, Keratin treatment 60 EUR.
+     - Hours: Tuesday to Saturday, 10:00–18:00. Closed Sunday and Monday.
+     - Address: 24 Rosemary Street. Payment: cash and card.</code>
+     &gt; "Una pregunta de precio ahora cuesta UNA llamada en vez de dos. Trade-off: el prompt de la Receptionist crece y mezcla responsabilidades — por eso en el diseño 'de libro' lo separamos. Para ahorrar tokens, se fusiona."
+   - <strong>Caveat honesto (dilo):</strong> un Basic LLM Chain <strong>no</strong> se puede enchufar directamente como <code>ai_tool</code> — los chains no son herramientas. Así que "Info como chain colgando de la Receptionist" no es un plug-and-play; las vías reales son fusionarlo (arriba) o un sub-workflow como tool.</p>
+<p><strong>2. La reserva NO necesita un LLM en el bucle → nodos deterministas.</strong> Las mecánicas (mirar hueco → si libre → insertar) son lógica fija. Podrías sustituir el <em>Agenda Agent</em> por: <strong>Data Table Get</strong> (por fecha) → <strong>IF</strong> hueco libre → <strong>Data Table Insert</strong>. Casi cero tokens para el calendario; la Receptionist sigue poniendo el lenguaje natural. Trade-off: menos flexible, pero más barato, más fiable, y aquí es donde metes el <strong>check de unicidad</strong> que arregla de verdad el double-booking.</p>
+<p><strong>3. El router, con un Text Classifier + Switch.</strong> Si no quieres que la Receptionist itere sobre tools, un nodo <strong>Text Classifier</strong> (una llamada → categoría) + un <strong>Switch</strong> enruta a la rama correcta. Más barato y predecible, pero rígido: peor para recoger datos a lo largo de varios turnos.</p>
+<blockquote>
+<p><strong>Cierre de la idea:</strong> "El coste de un agente es el bucle. Cuenta las llamadas: un agente ≈ (tools que usa + 1) llamadas con contexto creciente; un chain, una y fija. Baja a chain —o a nodos— todo lo que no necesite iterar. El Info Agent es el ejemplo perfecto." (Esto conecta con el pendiente del curso de definir el bucle ReAct una sola vez.)</p>
+</blockquote>
+<hr />
 <h2 id="para-la-clase-en-directo-despues-del-video-o-en-sesion">🏫 Para la clase en directo (después del vídeo o en sesión)</h2>
 <ol>
 <li><strong>Todos al chat (5 min):</strong> comparte la URL pública (instancia de Railway o <code>n8n start --tunnel</code> si es local). Cada alumno reserva desde su móvil. Proyecta la pestaña Data Tables y ve las filas aparecer en directo. Señala que cada alumno es un <code>sessionId</code> distinto — conversaciones aisladas, memoria aislada.</li>
@@ -307,7 +428,7 @@ Chat Model   Memory   Escalate to Lola   Info Agent   Agenda Agent
 <hr />
 <h2 id="cosas-a-tener-en-cuenta-durante-la-grabacion">⚠️ Cosas a tener en cuenta durante la grabación</h2>
 <ol>
-<li><strong>Valida ANTES el nodo Data Table como tool:</strong> el JSON del curso está escrito sin haberlo probado contra una instancia viva. Importa, selecciona las tablas y haz una reserva completa antes de grabar nada. Si un nodo Data Table sale desconfigurado, reconfíguralo desde el paso 9 del build-from-scratch (y actualiza el JSON del curso con tu export).</li>
+<li><strong>Los nodos Data Table están verificados contra el código de n8n</strong> (operaciones, filtros <code>keyName/condition/keyValue</code>, <code>columns</code> como resource mapper, y <code>id</code> como columna de sistema filtrable → cancelar funciona). Lo único que SÍ tienes que hacer al importar: <strong>seleccionar tu tabla</strong> en cada uno de los 4 nodos (los IDs son por instancia). Haz una <strong>reserva completa de prueba</strong> para confirmar el comportamiento en ejecución (que <code>$fromAI</code> rellena las columnas y que el agente pasa el <code>id</code> bien). El Chat Trigger ya viene en modo <strong>Hosted Chat</strong> — es lo que hace que el "Make Public" sirva la página pública para el móvil.</li>
 <li><strong>Siembra la agenda:</strong> con <code>appointments</code> vacía, la demo de "hueco ocupado" y la de disponibilidad no lucen. 2-3 citas sembradas a mano bastan.</li>
 <li><strong>Las fechas relativas:</strong> "mañana" y "el viernes" funcionan gracias al <code>$now</code> del system message — pero si grabas en domingo/lunes, "mañana" puede caer en día cerrado y la demo cambia de guion. Elige los textos según el día real de grabación.</li>
 <li><strong>La frase fija:</strong> compruébala una vez antes de grabar. Si el modelo la parafrasea, endurece la línea del prompt ("reply exactly") o baja la temperatura — es la línea que más luce cuando sale palabra por palabra.</li>
