@@ -1,297 +1,473 @@
 # Guion — Project 1: Recipe Assistant (workflow `10_recipe_assistant.json`)
 
 ## Concepto clave
-Un workflow completo que combina todo lo visto en el curso: agent con tools, memoria, formulario de revisión humana, branching condicional, y un segundo agent que busca precios reales en Google.
+Un asistente de recetas conversacional montado en n8n sin código. Lo importante no es la receta: es el **patrón**. El agente:
+1. busca recetas reales en internet (API pública + Google de fallback),
+2. propone **UNA** receta y te deja **refinarla hablando** ("otra", "más occidental"),
+3. y cuando confirmas, un **segundo agente** monta la lista de la compra con precios reales.
+
+La pieza que lo une y que quiero que quede grabada: **el agente devuelve un JSON pequeño en cada turno** (`reply`, `recipe`, `build_shopping_list`) y un nodo **IF** lee ese JSON para decidir el camino. El LLM no solo "responde": **dirige la lógica del workflow**.
 
 ## Flujo del workflow
 ```
-Chat Trigger → Recipe Search Agent → Review Recipe (Form) → Want Prices? (IF)
-                    ┊                                           │
-         ┌──────────┼──────────┐                   Yes ─────────┼──▶ Shopping List Agent → Output — With Prices
-         ┊          ┊     ┊    ┊                                │         ┊
-    Chat Model  Memory  HTTP  SerpAPI              No ──────────┼──▶ Output — Recipe Only
-                      (MealDB) (fallback)                            ┊
-                                                              Chat Model + Price Search (SerpAPI)
+                       output = { reply, recipe, build_shopping_list }
+                                    │
+Chat Trigger ─▶ Recipe Agent ─▶ Want Prices? (IF) ──true──▶ Shopping List Agent ─▶ Reply — With Prices
+ (lastNode)   (+ Output Parser)        │                          ┊
+        ┌────────┬─────┬─────┬──────┐  └────false────▶ Reply — Recipe Only
+   Chat Model  Memory HTTP Google Output                (muestra el 'reply')
+                    (MealDB)(fallb.) Parser
 ```
 
 **Credenciales necesarias:** OpenRouter + SerpAPI
+
+**Idea de fondo:** cada mensaje del chat lanza el workflow entero **una vez**. La conversación se sostiene con la **memoria**. Mientras eliges o refinas, `build_shopping_list` va en `false` y solo se te responde; cuando confirmas y pides precios, se pone en `true` y se dispara el segundo agente.
+
+---
+
+## 🔗 URLs para tener a mano (abrir en pestañas antes de grabar)
+
+| Para qué | URL |
+|----------|-----|
+| **TheMealDB — documentación de la API** (enséñala) | https://www.themealdb.com/api.php |
+| **TheMealDB — búsqueda de ejemplo** (enséñala en el navegador) | https://www.themealdb.com/api/json/v1/1/search.php?s=chicken |
+| TheMealDB — receta aleatoria (Variación) | https://www.themealdb.com/api/json/v1/1/random.php |
+| **SerpAPI — dashboard** (cuota antes de grabar) | https://serpapi.com/dashboard |
+| OpenRouter — modelos y créditos | https://openrouter.ai |
+| n8n docs — **Structured Output Parser** | https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.outputparserstructured/ |
+| n8n docs — Chat Trigger | https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-langchain.chattrigger/ |
+| n8n docs — HTTP Request Tool | https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.toolhttprequest/ |
+
+> 💡 **Tip:** abre `search.php?s=chicken` en el navegador y enseña el JSON crudo 5 s. Así el alumno **ve** de dónde salen los datos — no es magia, es una API pública que devuelve JSON.
 
 ---
 
 ## 🔧 Preparación ANTES de grabar
 
-1. **Cuota SerpAPI:** entra en tu dashboard de serpapi.com y comprueba las búsquedas que te quedan este mes — cada demo con lista de compras gasta 1-2.
-2. **Ejecución completa de prueba** (receta → formulario → lista con precios): calienta el flujo y confirma que las credenciales funcionan antes de grabar.
-3. **TheMealDB en 10 segundos:** `curl "https://www.themealdb.com/api/json/v1/1/search.php?s=chicken"` — te evita descubrir en directo que la API está caída.
-4. **Durabilidad — modelos:** no te recrees en `gpt-4o-mini` a cámara; di "un modelo rápido y barato — el que tengáis configurado". Los nombres de modelos caducan antes que el vídeo.
-5. **Durabilidad — UI:** nombra funciones, no posiciones ("el botón **Chat** del editor", no "abajo a la derecha"); n8n mueve botones entre versiones. Verifica también los nombres de nodo en TU versión (la memoria hoy se llama **Simple Memory**; antes *Window Buffer Memory*).
+1. **Chat Trigger:** ábrelo y confirma **Options → Response Mode = When Last Node Finishes** (lo explicas en la sección 2). Es el modo por defecto, pero verifícalo.
+2. **Cuota SerpAPI:** entra en https://serpapi.com/dashboard — cada demo con lista de compras gasta 1-2 búsquedas.
+3. **Ejecución completa de prueba** (buscar → refinar → confirmar → lista): calienta el flujo y confirma credenciales.
+4. **TheMealDB vivo:** abre `search.php?s=chicken` — te evita descubrir en directo que la API está caída.
+5. **Durabilidad — modelos:** no te recrees en `gpt-4o-mini` a cámara; di "un modelo rápido y barato — el que tengáis". Los nombres caducan antes que el vídeo.
+6. **Durabilidad — UI:** nombra funciones, no posiciones ("el botón **Open Chat** del editor"). Verifica nombres de nodo en TU versión (memoria = **Simple Memory**; antes *Window Buffer Memory*).
 
 ---
 
-## 🎬 Guion paso a paso (comentando el workflow importado)
+## 🧠 Bloque teórico OBLIGATORIO — Los modos del Chat Trigger (3-4 min)
+
+> Esta sección es la que más valor da al vídeo. Explícala **antes** de la demo, con el nodo abierto a cámara. Es un concepto que confunde a TODO el mundo y casi nadie lo explica bien.
+
+### Primero: el modelo de ejecución (dibújalo)
+
+> "Lo primero que hay que entender de un chat en n8n: **cada mensaje que escribes lanza el workflow ENTERO, de arriba abajo, una vez.** No es una ejecución larga que dura toda la conversación. Son muchas ejecuciones cortas, una por mensaje, **pegadas por la memoria**."
+
+**Dibuja esto en pantalla o en una diapo:**
+```
+Mensaje 1  →  [ejecución completa]  →  respuesta 1
+Mensaje 2  →  [ejecución completa]  →  respuesta 2   (la memoria le recuerda el mensaje 1)
+Mensaje 3  →  [ejecución completa]  →  respuesta 3
+```
+
+> "Esto es clave para entender por qué el agente devuelve su JsON de control **en cada turno**: porque en cada turno el IF tiene que decidir de nuevo."
+
+### Segundo: ¿dónde se toca? (enséñalo)
+
+**Abre el Chat Trigger → Options → Response Mode.** Despliega el dropdown a cámara.
+
+> "Aquí, en Options del Chat Trigger, está **Response Mode**. Define **cómo y cuándo** el chat te responde. Hay tres opciones, y elegir bien es la diferencia entre que funcione y que no."
+
+### Tercero: las tres formas de responder un chat (tabla visual)
+
+| Modo | Qué hace | Qué nodos necesitas | Cuándo usarlo | Pega / cuidado |
+|------|----------|--------------------|--------------|----------------|
+| **When Last Node Finishes** (`lastNode`) — **el que usamos** | El chat muestra lo que el **último** nodo ponga en el campo `output` | Ninguno extra. El último nodo DEBE emitir `{ output: "..." }` | Cuando **post-procesas** la respuesta: ramificar, reshapear, correr un 2º agente | Si un nodo se queda colgado esperando (p. ej. un formulario), la conexión caduca a los ~90 s |
+| **Streaming** (`streaming`) | El agente **escribe la respuesta directa** en el chat, palabra a palabra, tipo ChatGPT | Ninguno; el agente es el nodo final | Cuando la respuesta **cruda** del agente ES el mensaje final | No puedes tocar la respuesta después. No sirve si el agente devuelve JSON que hay que enrutar |
+| **Using Response Nodes** (`responseNodes`) | **Nada** llega al chat salvo que tú lo mandes con un nodo **Chat** | 1 o más nodos **Chat** (Send / Send & Wait) | Cuando quieres control total: **aprobación con botones**, varios mensajes, HITL | Más nodos, y es lo más **nuevo** (menos veterano) |
+
+### Cuarto: por qué en ESTE proyecto usamos `lastNode`
+
+> "Nosotros usamos **When Last Node Finishes**. ¿Por qué? Porque el agente NO devuelve el mensaje final directamente: devuelve un **JSON** que todavía tenemos que **enrutar** con el IF, y a veces pasar por un segundo agente. Necesitamos **post-procesar** antes de decidir qué mostrar. Por eso:
+> - **Streaming NO vale**: escribiría el JSON crudo en el chat. Streaming solo sirve cuando la respuesta del agente es, tal cual, lo que quieres mostrar.
+> - **Response Nodes sería overkill** aquí: no necesitamos botones ni varios mensajes. Lo veremos en una variación, para cuando SÍ quieras una aprobación con botones.
+>
+> Con `lastNode`, la regla es simple: **el último nodo que se ejecute tiene que dejar el texto en un campo llamado `output`**, y eso es lo que ve el chat. Por eso las dos ramas terminan en un nodo Set que escribe `output`."
+
+**Dato de durabilidad (dilo):** "`When Last Node Finishes` es el modo más antiguo y estable de n8n — lleva ahí desde el principio. Streaming y Response Nodes son más recientes. Para algo que quiero que dure, tiro de lo veterano."
+
+**(Opcional) El otro ajuste, `Mode`:** "Ojo, no confundir con **Mode**, justo arriba: `Hosted Chat` (el chat que hospeda n8n, el que usamos) vs `Embedded Chat` (para embeberlo en tu web). Eso es *dónde* vive el chat; Response Mode es *cómo* responde."
+
+---
+
+## 🎬 PARTE 1 — Guion paso a paso (comentando el workflow importado)
 
 ### 0. Cold open (opcional, 40s)
 
-**Empezar con el resultado final de una ejecución anterior en pantalla: la receta + la lista de la compra con precios.**
+**Empieza con una conversación ya hecha en pantalla: propuesta de receta → "dame otra" → receta nueva → "sí, con la lista" → lista con precios.**
 
-> "Esto es un asistente de recetas montado en n8n sin una línea de código: busca recetas reales en internet, me deja revisarlas en un formulario y, si quiero, me genera la lista de la compra con precios reales sacados de Google. Vamos a verlo por dentro, nodo a nodo."
-
----
-
-### 1. Introducción — Qué vamos a ver (30s)
-
-> "Este es el Project 1 del curso. Combina casi todo lo que habéis visto: un agent con herramientas, memoria, un formulario para que el humano revise, y un segundo agent que busca precios reales por internet. Vamos a recorrer el workflow nodo a nodo."
-
-**Abrir el workflow importado y hacer zoom out para que se vea entero.**
+> "Esto es un asistente de recetas en n8n, sin código. Le pido pollo, me propone una receta; le digo que quiero otra más occidental, me la cambia; y cuando digo que sí, me monta la lista de la compra con precios reales de Google. Todo hablando, en un chat. Vamos a verlo por dentro."
 
 ---
 
-### 2. Chat Trigger — El punto de entrada (30s)
+### 1. Introducción — Qué vamos a construir (45s)
+
+> "Este es el Project 1: el proyecto que junta casi todo. Seis piezas: un **agente** con herramientas, **memoria**, una **herramienta HTTP** que llama a una API de recetas, una **estrategia de fallback** a Google, **salida estructurada en JSON** que dirige la lógica, y un **segundo agente** para los precios. Lo recorremos nodo a nodo."
+
+**Abre el workflow y haz zoom out. Señala: buscar/proponer → IF → lista.**
+
+---
+
+### 2. Chat Trigger (ya explicado en el bloque teórico, 20s)
 
 **Click en "When chat message received".**
 
-> "A diferencia de los workflows anteriores que usaban Manual Trigger, aquí usamos Chat Trigger. Esto habilita el botón **Chat** del editor, que abre una ventanita donde podemos escribir como si fuera ChatGPT. Cada mensaje que enviamos genera una ejecución."
-
-**Dato interesante:** "Como tiene `responseMode: lastNode`, el chat espera a que el ÚLTIMO nodo del flujo devuelva la respuesta. Si elegimos generar la lista de compras, el chat no responde hasta que TODO el flujo termina."
+> "Ya hemos hablado de esto: es la entrada del chat, en modo **When Last Node Finishes**, porque vamos a post-procesar la respuesta del agente. Recordad: el último nodo tiene que dejar el texto en `output`."
 
 ---
 
-### 3. Recipe Search Agent — El cerebro del workflow (2 min)
+### 3. Recipe Agent — El cerebro (4 min)
 
-**Click en "Recipe Search Agent". Mostrar las 4 conexiones de abajo: Chat Model, Memory, Recipe Search, Google Search.**
+**Click en "Recipe Agent". Señala las 5 conexiones de abajo: Chat Model, Memory, Recipe Search, Google Search y — la nueva — el Output Parser.**
 
-> "Este agent tiene cuatro cosas conectadas por debajo. Vamos a verlas una a una."
+> "Este agente tiene cinco cosas conectadas por debajo. Cuatro ya las conocéis; la quinta, el **Output Parser**, es la novedad del proyecto."
 
 #### 3a. System Message
 
-**Click en Options → System Message.**
+**Click en Options → System Message.** Recórrelo:
 
-> "El system message le dice al agent tres cosas importantes:"
+1. **Traducción a inglés:** "Convierte la petición a inglés antes de buscar — TheMealDB solo entiende inglés. 'quiero pollo' → busca 'chicken'."
+2. **Fallback:** "Primero TheMealDB; solo Google si devuelve `meals: null`."
+3. **UNA receta y conversación:** "Fíjate en esta regla: 'presenta UNA sola receta, nunca una lista', y 'después pregunta siempre si quiere esta, otra, o la lista de la compra'. Esto es lo que hace que se pueda **refinar hablando**."
+4. **Los tres campos del JSON:** "Y lo más importante: le decimos que SIEMPRE responda con tres campos — `reply`, `recipe` y `build_shopping_list`. Esto conecta con el Output Parser."
 
-1. **Traducción automática:** "Convierte la petición a inglés antes de buscar. Si el alumno escribe 'quiero pollo', el agent busca 'chicken'. TheMealDB solo entiende inglés."
+#### 3b. Chat Model y Memory
 
-2. **Estrategia de fallback:** "Usa primero Recipe Search (TheMealDB), que devuelve datos estructurados. Solo usa Google Search si TheMealDB no encuentra nada — o sea, si `meals` es `null`."
+**Click en OpenRouter Chat Model:** "El motor. Un modelo rápido y barato."
 
-3. **Formato de respuesta:** "Le damos un formato exacto: nombre, categoría, ingredientes con cantidades, instrucciones. Esto es importante porque luego el segundo agent necesita leer esos ingredientes para la lista de compras."
+**Click en Simple Memory:** "Las últimas 10 interacciones, con `sessionId` del Chat Trigger. Esto es lo que permite decir 'dame otra' sin repetir contexto — el agente recuerda qué propuso."
 
-#### 3b. Memory
+#### 3c. HTTP Request Tool — Recipe Search (campo por campo, despacio)
 
-**Click en Simple Memory.**
+**Click en Recipe Search.**
 
-> "Simple Memory — el Window Buffer de toda la vida — con 10 mensajes. Gracias a esto podemos tener una conversación: 'busca pollo', luego 'ahora dame una receta de pasta', y el agent recuerda el contexto."
+> "La primera vez que usamos el **HTTP Request Tool**: le permite al agente llamar a cualquier URL. Vamos campo por campo."
 
-**Dato interesante:** "El Session ID usa `$json.sessionId`, que viene del Chat Trigger. Cada ventana de chat tiene su propia conversación."
+- **URL:** `https://www.themealdb.com/api/json/v1/1/search.php`
+  > "URL base fija. Fíjate que NO lleva `?s=...` incrustado. El `1` de la ruta es la API key de prueba que TheMealDB regala — sin registro ni pago."
+- **Send Query Parameters: ON**, parámetro `s`:
+  > "Activamos 'Send Query Parameters' y añadimos uno que se llama `s` — en TheMealDB significa 'search'. Una API REST recibe estos parámetros en la URL tras un interrogante: `search.php?s=chicken`."
+- **Valor del parámetro — `$fromAI()`:**
+  > "El valor NO lo escribimos nosotros: ponemos `$fromAI('query', 'un término de comida en inglés', 'string')`. Le decimos al agente: 'este hueco lo rellenas tú'. Si el usuario pide pollo, pone `chicken`, y la URL final es `search.php?s=chicken`. Tres argumentos: nombre, descripción y tipo."
+- **Tool Description:** "La descripción le enseña CUÁNDO usarla y qué esperar: '...si sale `meals:null`, no hay resultados — prueba Google'. Esa frase le enseña el fallback."
+- **Optimize Response: ON:** "Recorta el JSON de respuesta para gastar menos tokens."
 
-#### 3c. HTTP Request Tool — Recipe Search
+**Enseña el JSON real** en el navegador (`search.php?s=chicken`), 5 s.
 
-**Click en Recipe Search. Mostrar la configuración.**
+#### 3d. Google Search (SerpAPI) — el plan B
 
-> "Esta es la primera vez que usamos el HTTP Request Tool. Permite que el agent llame a cualquier API de internet."
+**Click en Google Search:** "El fallback. Si TheMealDB no tiene la receta, el agente se va a Google. Ya lo montamos en el capítulo de AI Agents."
 
-**Señalar estos campos:**
+#### 3e. Recipe Format — el Output Parser (2 min, la novedad)
 
-- **URL:** `https://www.themealdb.com/api/json/v1/1/search.php` — "La URL es fija, sin parámetros."
-- **Query Parameters:** "Aquí está la magia. El parámetro `s` tiene un valor con `$fromAI()`. Esto le dice al agent: 'tú decides qué valor poner aquí'. Si el usuario pide chicken, el agent rellena `s=chicken` y la URL final es `search.php?s=chicken`."
-- **Tool Description:** "Importante: la descripción le dice al agent CUÁNDO usar esta herramienta y QUÉ esperar. Fíjaos que dice 'If the response contains meals:null, no recipes were found'. Esto le ayuda a decidir si probar Google."
-- **Optimize Response:** "Reduce el JSON de respuesta para gastar menos tokens."
+**Click en el nodo "Recipe Format" (Structured Output Parser). Y en el agente, señala el toggle "Require Specific Output Format" en ON.**
 
-**Dato interesante:** "TheMealDB es gratis y no necesita API key. El `1` en la URL es la key de prueba que ellos proporcionan."
+> "Aquí está lo nuevo. Por defecto, un agente responde con **texto libre**, un párrafo. Pero un párrafo es dificilísimo de enrutar con un IF. Así que **obligamos al agente a responder en JSON**. Dos cosas lo hacen posible:
+> 1. En el agente, activamos **'Require Specific Output Format'**.
+> 2. Conectamos un **Structured Output Parser** — este nodo 'Recipe Format' — y le damos un **ejemplo** del JSON que queremos."
 
-#### 3d. Google Search (SerpAPI) — Fallback
+**Abre el nodo y enseña el JSON de ejemplo:**
+```json
+{
+  "reply": "Here's a great option — Chicken Handi ... Would you like this recipe, a different one, or a shopping list with price estimates?",
+  "recipe": "RECIPE: Chicken Handi\nCategory: Chicken | Cuisine: Indian\nINGREDIENTS:\n- 500g chicken\n...",
+  "build_shopping_list": false
+}
+```
 
-**Click en Google Search.**
+> "De este ejemplo, n8n deduce el esquema y obliga a que TODAS las respuestas tengan estos tres campos:
+> - **`reply`**: lo que ve el usuario en el chat.
+> - **`recipe`**: la receta limpia, guardada para el segundo agente.
+> - **`build_shopping_list`**: `true` solo cuando el usuario confirma Y pide precios."
 
-> "SerpAPI es el plan B. Si TheMealDB no tiene la receta (por ejemplo, un plato muy específico), el agent busca en Google. Esto ya lo vimos en el capítulo de AI Agents."
+**El punto que lo cambia todo:**
+> "Y aquí está la magia: con el parser conectado, `$json.output` **ya no es un texto — es un objeto**. Por eso el siguiente nodo, el IF, puede leer `$json.output.build_shopping_list`. Sin parser, `output` sería un string y no habría nada que enrutar."
+
+**Auto-Fix — la red de seguridad (importante, dilo a cámara):**
+> "Un detalle clave de robustez: los modelos pequeños a veces devuelven el JSON un poco roto — con markdown de más, o mal escapado. Para eso el parser tiene **Auto-Fix Format** activado: si el JSON no cuadra, n8n hace **una llamada extra al modelo para repararlo**. Por eso el parser tiene también un **Chat Model conectado** (el mismo OpenRouter). Es lo que hace que esto no se rompa. Y para ayudar, le pedimos al agente un `reply` **corto** y la receta completa solo en `recipe` — un solo texto grande en el JSON en vez de dos, que es mucho más fácil de generar bien."
+
+> ⚠️ **Al montarlo desde cero:** activa **Auto-Fix Format** en el parser y **arrastra el OpenRouter Chat Model también al conector Model del parser**. Sin ese modelo, Auto-Fix da error de configuración.
 
 ---
 
-### 4. Review Recipe — El formulario humano (1.5 min)
-
-**Click en "Review Recipe".**
-
-> "Después de que el agent encuentra la receta, el workflow se PAUSA aquí. Este es un Wait node configurado como formulario. Es el mismo patrón de Human-in-the-Loop que vimos antes, pero con un formulario web."
-
-**Señalar los campos del formulario:**
-
-- **Recipe (HTML):** "Muestra la receta en formato legible. Usa `$json.output` que es la respuesta del agent."
-- **Generate shopping list? (Dropdown):** "Aquí el humano decide: quiero lista de compras con precios, o solo la receta."
-
-> "Para probarlo: cuando ejecutéis el workflow, el chat no va a responder inmediatamente. Tenéis que ir al nodo Review Recipe en el panel de ejecución, copiar la Test URL, y abrirla en el navegador. Ahí veréis el formulario."
-
-**Dato interesante:** "Este patrón es súper útil en producción: el AI draft, el humano revisa. Nunca dejéis que un agent envíe algo directamente sin revisión humana."
-
----
-
-### 5. Want Prices? — Branching condicional (30s)
+### 4. Want Prices? — El IF lee el JSON (45s)
 
 **Click en "Want Prices?".**
 
-> "Un IF simple. Si el usuario eligió 'Yes, with price estimates', va por arriba hacia el Shopping List Agent. Si eligió 'No', va directamente al Output — Recipe Only."
+> "Un IF que lee un booleano del JSON del agente:"
 
-**Señalar la expresión:** `$json["Generate shopping list?"]`
+**Señala:** `{{ $json.output.build_shopping_list }}` — Type: Boolean — **is true**.
 
-> "Fíjaos que el nombre del campo del formulario se usa tal cual como clave del JSON. Los espacios y el interrogante son parte del nombre."
+> "Si el agente puso `true` (confirmaste y pediste precios), va por la rama de arriba al Shopping List Agent. Si no, va directo a devolver el `reply`. El agente actúa como un **router**: su flag decide el camino, en cada turno."
+
+**Dato interesante — el gotcha del `$json`:** "Acordaos: cada mensaje es una ejecución nueva. En el turno donde eliges receta, el flag es `false` y solo se responde. En el turno donde confirmas, es `true`. Mismo workflow, decisión distinta según el JSON."
 
 ---
 
-### 6. Shopping List Agent — Precios reales (1.5 min)
+### 5. Shopping List Agent — Precios reales (2 min)
 
 **Click en "Shopping List Agent".**
 
-> "Aquí es donde se pone interesante. Esto NO es un Basic LLM Chain como los que hemos visto antes. Es un SEGUNDO agent, con su propia herramienta: SerpAPI para buscar precios en Google."
+> "Segundo agente, con una sola herramienta: SerpAPI para precios. Y fíjate: este NO lleva Output Parser — su respuesta es texto plano, la lista, y con eso nos vale."
 
-#### 6a. Por qué un agent y no un LLM Chain
+#### 5a. Su entrada
 
-> "Un LLM Chain simplemente genera texto. Si le pides precios, se los inventa — 'realistic estimates based on 2024 averages'. Un agent puede BUSCAR esos precios en Google, así que son datos reales."
+**Señala Prompt:** `{{ $json.output.recipe }}`
+> "Su entrada es el campo `recipe` del JSON del agente anterior. Como el IF deja pasar el item tal cual, aquí `$json.output.recipe` sigue disponible."
 
-#### 6b. System Message
+#### 5b. Por qué un agente y no un chain
+> "Un chain se inventaría los precios. Un agente los **busca** en Google. (En una variación lo veremos fallar en directo.)"
 
-**Click en Options → System Message.**
-
-> "El prompt le dice al agent algo clave: que agrupe los ingredientes en UNA sola búsqueda. En vez de buscar 'price chicken', 'price tomatoes', 'price onions' — una búsqueda por ingrediente, que gastaría mucha API — busca 'grocery store prices chicken breast tomatoes onions' todo junto. Máximo 2 búsquedas."
-
-**Señalar:** "Los ingredientes que no encuentra los marca con `≈` para que el usuario sepa cuáles son estimados y cuáles son reales."
-
-#### 6c. Prompt — Referencia a otro nodo
-
-**Señalar la expresión del prompt:** `$('Recipe Search Agent').first().json.output`
-
-> "Esto es importante: después del Wait node, `$json` contiene los datos del formulario, NO la receta. Para acceder a la receta tenemos que referenciar el nodo del agent anterior por nombre. Esta expresión dice: 've al Recipe Search Agent, coge su primer output, y dame el campo output'."
-
-#### 6d. Price Search (SerpAPI)
-
-**Click en Price Search.**
-
-> "Misma herramienta SerpAPI que ya tenéis configurada. El agent la usa para buscar precios actuales de supermercado."
+#### 5c. System Message
+> "Le pide agrupar todos los ingredientes en UNA búsqueda para ahorrar API, máximo 2, y marcar con `≈` lo que estima."
 
 ---
 
-### 7. Output nodes (30s)
+### 6. Reply nodes — Dar forma a `output` (1 min)
 
-**Click en "Output — With Prices".**
+> "Recordad: en modo `lastNode`, el chat muestra lo que el último nodo deje en `output`. Cada rama termina en un Set que escribe ese campo."
 
-> "Si se generó lista de compras, este nodo combina la receta original con la lista. Usa la misma expresión `$('Recipe Search Agent')` para la receta, y `$json.output` para la lista del Shopping List Agent."
+**Click en "Reply — Recipe Only" (rama false):**
+> "Devuelve la receta seguida del `reply` corto del agente. La expresión es un ternario: si hay receta, muestra `recipe` + `reply`; si aún no hay (un saludo inicial), solo el `reply`. Eso es lo que ve el usuario mientras elige."
 
-**Click en "Output — Recipe Only".**
-
-> "Si el usuario dijo que no quería lista de compras, simplemente pasa la receta tal cual."
+**Click en "Reply — With Prices" (rama true):**
+> "Combina la receta con la lista. Y aquí, OTRO gotcha: después del Shopping List Agent, `$json.output` ya es la LISTA (un texto), no el objeto. Así que para recuperar la receta la pedimos por nombre: `$('Recipe Agent').first().json.output.recipe`. Referenciar un nodo anterior por su nombre, saltándonos lo que hay en medio."
 
 ---
 
-### 8. DEMO en vivo (3 min)
+### 6b. 🧭 De dónde sale cada comportamiento (mapa mental, 2 min)
 
-> "Vamos a probarlo. Click en el botón **Chat** del editor."
+> Este es el momento en que se entiende TODO. El comportamiento del asistente vive en **tres sitios distintos**, y hay que saber cuál toca para cada cosa. Explícalo con el Recipe Agent abierto.
 
-**Escribir en el chat:**
+**1. System prompt del Recipe Agent = el COMPORTAMIENTO (qué dice y cuándo).** Casi todo vive aquí:
 
+| Comportamiento que ves | Regla en el system prompt |
+|------------------------|---------------------------|
+| Propone UNA receta, no una lista | *"Present ONE recipe at a time — never a list"* (How to behave) |
+| **Te pregunta "¿esta, otra, o la lista de la compra?"** | *"After showing a recipe, ALWAYS ask whether they want THIS, a DIFFERENT one, or a SHOPPING LIST"* (How to behave) ← **esta es la pregunta que mencionas** |
+| Si dices "otra" / "más occidental", busca de nuevo | *"If the user asks for a different or more specific recipe... search again"* (How to behave) |
+| Solo saca precios cuando confirmas | La regla del campo `build_shopping_list`: *"true ONLY when the user confirmed AND asked for prices"* |
+| No se inventa recetas | *"Never invent recipes — only present what you find from the tools"* (Rules). **Ojo:** *cómo* rechaza lo imposible (lapiceros) NO está fijado en el base → lo pulimos en directo en el Reel (sección 8b) |
+
+**2. Recipe Format (Output Parser) = la FORMA, no las palabras.** Solo obliga a que la salida sea `{ reply, recipe, build_shopping_list }`. **No decide qué dice ni cuándo.** Si quitaras el parser, el agente se comportaría igual, pero devolvería texto suelto y el IF no podría leer el flag.
+
+**3. Simple Memory = el CONTEXTO.** Es lo que permite el "dame otra": el agente recuerda qué propuso. Sin memoria, "¿otra de qué?".
+
+> **Regla mnemotécnica:** **el prompt dice QUÉ · el parser dice CON QUÉ FORMA · la memoria dice QUÉ RECUERDA.**
+>
+> Así que la pregunta "¿esta u otra?" **ya está puesta, en el system prompt** — no hay que tocar nada. El parser solo garantiza que, diga lo que diga, venga empaquetado en ese JSON que el IF sabe leer.
+
+---
+
+### 7. DEMO en vivo (3 min)
+
+**Click en Open Chat.** Escribe:
 ```
 I want a chicken recipe
 ```
 
-**Mientras trabaja (mirad el canvas, no el chat):**
-> "Ojo: el chat se va a quedar 'pensando' y no va a decir nada todavía — está configurado para responder solo cuando TODO el flujo termina. El progreso lo vemos aquí en el canvas: el agent está llamando a TheMealDB con 'chicken'."
+**Cuando responde con UNA receta y la pregunta:**
+> "Fijaos: UNA sola receta, y me pregunta si quiero esta, otra, o la lista. Abro el output del Recipe Agent en el panel... mirad el JSON: `build_shopping_list` en `false`. Por eso solo me ha respondido, no ha buscado precios."
 
-**Cuando la ejecución se pausa en Review Recipe:**
-> "El workflow se ha parado en el formulario. Fijaos: la receta NO está en el chat — la vamos a ver dentro del formulario."
+**Refina — escribe:**
+```
+Give me a more Western one
+```
+> "Sin reiniciar nada, me propone otra. La memoria le dice de qué hablábamos. Sigue en `false`."
 
-**Ir al nodo Review Recipe → copiar la Test URL → abrirla en el navegador.** (En versiones recientes n8n abre el formulario automáticamente al llegar al nodo — si lo hace, mejor.)
-
-> "Aquí está la receta, dentro del formulario. Voy a elegir 'Yes, with price estimates' y pulsar Continue."
-
-**Volver a n8n y esperar el resultado final.**
-
-> "Ahora el Shopping List Agent está buscando precios en Google... Y aquí tenemos la lista de compras con precios reales."
-
-**Volver al chat: ahora sí aparece la respuesta completa (receta + lista con precios) — la primera y única respuesta del chat en toda la ejecución.**
+**Confirma — escribe:**
+```
+Perfect, add the shopping list with prices
+```
+> "Ahora sí. Mirad el JSON: `build_shopping_list` en `true`. El IF dispara el segundo agente, que busca precios en Google... y aquí está la lista. Fijaos qué natural: proponer, refinar, confirmar — todo hablando."
 
 ---
 
-### 9. Demo — Follow-up con memoria (1 min)
-
-**Escribir en el chat (sin cerrar la sesión):**
-
-```
-Now find me a pasta recipe
-```
-
-> "Gracias a la memoria, el agent recuerda que estamos buscando recetas. No hace falta repetir contexto."
-
----
-
-### 10. Demo — Fallback a Google (opcional, 1 min)
-
-**Escribir en el chat:**
+### 8. Demo — Fallback a Google (opcional, 1 min)
 
 ```
 How do I make Spanish fabada asturiana?
 ```
-
-> "Fabada asturiana probablemente no está en TheMealDB, que tiene unas 300 recetas en inglés. Vamos a ver si el agent activa el fallback a Google..."
-
-**Expandir execution details para ver qué tools se usaron.**
-
-> "Veis: primero intentó TheMealDB, recibió `meals: null`, y luego buscó en Google. Eso es la estrategia de fallback funcionando."
+> "La fabada probablemente no está en TheMealDB. Expandimos la ejecución... veis: primero TheMealDB, `meals: null`, luego Google. El fallback funcionando."
 
 ---
 
-### 11. Cierre — Qué combina este proyecto (30s)
+### 8b. 🎥 Reel de demos (casos con chicha, 5-6 min)
 
-> "Recapitulemos lo que habéis visto:"
+> Después del happy path, tira estos casos: unos para lucir que funciona, otros para **provocar un fallo y arreglarlo EN DIRECTO**. Los arreglos son líneas que **pegas online en el System Message del Recipe Agent** para demostrarlo — **no los dejes en el JSON del curso**, revierte al acabar.
 
-- **HTTP Request Tool** — el agent llama a una API real (TheMealDB)
-- **`$fromAI()`** — el agent rellena los parámetros dinámicamente
-- **Fallback strategy** — primero TheMealDB, luego Google
-- **Memoria** — conversación multi-turno
-- **Wait + Form** — humano revisa antes de continuar
-- **IF branching** — camino diferente según la elección del usuario
-- **Segundo agent con búsqueda** — precios reales, no inventados
-- **`$('Node').first().json.output`** — referenciar nodos anteriores después de un Wait
+| Caso | Escribe en el chat | Qué esperar | Momento |
+|------|--------------------|-------------|---------|
+| **Refinado** | (tras una receta) `No, give me a more Western one` | cambia de receta; `build_shopping_list` sigue `false` | "funciona: memoria + la regla de buscar otra" |
+| **Confirmación ambigua** | (tras una receta) `ok` | **NO** dispara la lista | "el guardarraíl del flag: exige confirmación explícita, no un 'ok' suelto" |
+| **Lo imposible** | `I want a recipe for pencils` | intenta buscar, no encuentra; puede improvisar | "esto lo arreglamos en directo ↓" |
+| **Fuera de tema** | `What's the weather in Madrid?` | el base **puede** contestar (no hay regla de scope) | "otro arreglo en directo ↓" |
+| **Idioma** | `Quiero una receta con pollo` | busca en inglés y **responde en inglés** | "arreglo de idioma ↓" |
 
-> "Es el workflow más completo del curso. Combina casi todos los patrones que habéis aprendido en un solo proyecto funcional."
+**Cómo hacer los arreglos:** abre el **System Message** del Recipe Agent, añade la línea en la sección **Rules**, guarda, y vuelve a lanzar el mismo mensaje. El "antes → después" en directo es lo que engancha.
+
+**Arreglo A — lo imposible / no encontrado.** Copia y pega en Rules:
+```
+- If neither tool returns a real dish (for example the request is not food, like "a pencil recipe"), do NOT invent one: set "recipe" to "", "build_shopping_list" to false, and in "reply" say you couldn't find that recipe and suggest 2-3 real dishes they might like instead.
+```
+> "Vuelvo a pedir 'receta de lapiceros'... y ahora me dice con elegancia que eso no existe y me propone tres platos reales. He convertido un fallo en una buena experiencia con UNA línea."
+
+*(Variante divertida, si quieres personalidad — pega esta en su lugar):*
+```
+- If the request is not real food, do NOT invent a recipe: reply with a friendly one-line joke that you only cook real dishes, then suggest a popular recipe. Keep "recipe" empty and "build_shopping_list" false.
+```
+
+**Arreglo B — fuera de tema (scope).** Copia y pega en Rules:
+```
+- You ONLY help with recipes and shopping lists. If asked anything else (weather, math, general chat), politely say that's all you can help with; set "recipe" to "" and "build_shopping_list" to false.
+```
+> "Le pregunto por el tiempo y ahora, en vez de improvisar, me recuerda educadamente que solo hace recetas. Esto en un asistente real es oro: acota qué sabe hacer."
+
+**Arreglo C — idioma.** Copia y pega en Rules:
+```
+- Always write "reply" in the same language the user wrote in (keep searching in English internally).
+```
+> "Le pido en español y ahora me contesta en español, aunque por dentro siga buscando 'chicken' en inglés. El usuario ni se entera del truco."
+
+> 💡 **El patrón, en voz alta:** "Fijaos qué he hecho tres veces seguidas: he visto un comportamiento que no me gusta, y he añadido UNA regla. No he tocado ni un nodo. Así se endurece un prompt en producción — observas, añades la excepción, repites." (Estos tres, recopilados, son también la **Variación 1**.)
+
+**Revertir:** quita las líneas que añadiste, o reimporta el JSON limpio del curso.
+
+---
+
+### 8c. 📋 Análisis de los prompts (y mejoras potenciales, 3 min)
+
+> Un hueco perfecto para enseñar criterio de prompt engineering. Abre los dos System Messages en pantalla.
+
+**Recipe Agent — qué está bien:** tarea clara; estrategia de fallback explícita; regla de "UNA receta"; los tres campos del JSON bien descritos; traducción a inglés antes de buscar; "never invent".
+
+**Recipe Agent — qué mejoraría:**
+- **Sin regla de scope, de no-encontrado ni de idioma** — a propósito: son las que demuestras añadiendo en el Reel (8b).
+- **`build_shopping_list` con un "sí" ambiguo:** las reglas ayudan, pero para lo sutil (¿cuándo EXACTAMENTE es true?) un par de **ejemplos (few-shot)** de turnos con su JSON serían más fiables que solo texto.
+- **Formato de `recipe` en prosa:** un **ejemplo relleno** dentro del prompt mejora la consistencia del modelo pequeño.
+- **`reply` sin límite de longitud:** puede enrollarse; añade "1-2 frases".
+- **Depende del parser + Auto-Fix** para el JSON válido (bien, pero es una llamada LLM extra cuando falla — ver la nota de tokens).
+
+**Shopping List Agent — qué está bien:** agrupa todo en 1 búsqueda (ahorra API); máximo 2; marca `≈` lo estimado; agrupa por sección; "solo la lista".
+
+**Shopping List Agent — qué mejoraría:**
+- **"US grocery prices" y "$" acoplados** → parametriza país/moneda si tu público no es de EEUU (un cambio toca dos sitios).
+- **Puede alucinar precios** si la búsqueda no trae nada → refuerza "si de verdad no encuentras un precio, márcalo `≈` y dilo, no lo maquilles".
+- **No hace cuentas** de cantidades (2×500 g) → si quieres totales exactos, pídeselo explícitamente.
+
+> **Meta-punto (dilo):** "Un prompt de producción no nace perfecto: nace con lo básico y se endurece. **Reglas** para lo binario (scope, idioma, no inventar); **ejemplos (few-shot)** para lo sutil (cuándo exactamente poner un flag). Y siempre una red de seguridad — aquí, Auto-Fix para el JSON."
+
+---
+
+### 9. Cierre — Qué combina este proyecto (45s)
+
+- **HTTP Request Tool** + **`$fromAI()`** — el agente llama a una API y rellena la URL
+- **Fallback** — TheMealDB, luego Google
+- **Memoria** — refinar hablando
+- **Structured Output Parser** — el agente responde en JSON
+- **IF sobre el JSON** — el LLM dirige el flujo
+- **Segundo agente** — precios reales
+- **`$('Node').first().json.output.field`** — referenciar nodos anteriores
+
+> "El workflow más completo del curso, y con la experiencia de un chat de verdad."
 
 ---
 
 ## 🎬 PARTE 2 — Variaciones (para alargar el vídeo)
 
-Cinco variaciones autocontenidas, ordenadas de menos a más montaje. Elige las que quieras — con la **2 + 3 + 4** añades ~12 min de vídeo con chicha. Si grabas variaciones, colócalas **antes del cierre** (sección 11) y guarda el cierre para el final.
+Seis variaciones autocontenidas, de menos a más montaje. Colócalas **antes del cierre** (sección 9).
 
-> ⚠️ **Al terminar de grabar:** las variaciones ensucian el workflow. Revierte o reimporta el JSON limpio del curso, que es el que descargan los alumnos.
-
----
-
-### Variación 1 — ¿Qué pasa sin memoria? (2 min, sin config)
-
-**Qué enseña:** qué hace la memoria de verdad, mostrándolo por ausencia.
-
-**Pasos:**
-1. **Desconecta** el nodo Simple Memory del agent (borra la línea de puntos; no borres el nodo).
-2. En el chat: `I want a chicken recipe` → responde normal.
-3. En el mismo chat: `What recipe did you just give me?`
-
-> "Sin memoria, cada mensaje es una conversación nueva. El agent no tiene ni idea de qué le acabo de preguntar — no es que 'se le olvide': es que nunca lo supo."
-
-4. **Reconecta** la memoria y repite la segunda pregunta → ahora sí.
-
-> "Esto es todo lo que hace la memoria: reinyectar los últimos mensajes en cada llamada. Sin ella no hay conversación, hay preguntas sueltas."
-
-**Revertir:** ya está revertido al reconectar.
+> ⚠️ **Al terminar de grabar:** revierte o reimporta el JSON limpio del curso, que es el que descargan los alumnos.
 
 ---
 
-### Variación 2 — Agent vs Basic LLM Chain: los precios inventados (4 min)
+### Variación 1 — Más prompt engineering por excepciones (4 min, solo prompt) ⭐
 
-**Qué enseña:** POR QUÉ el Shopping List es un agent y no un chain — viéndolo fallar. Es la demostración práctica de la sección 6a.
+**Qué enseña:** completa lo del **Reel (8b)** con dos excepciones más. El mensaje es el mismo: un prompt bueno se **endurece** a base de reglas, cada una nacida de un fallo real. (En el Reel ya provocaste y arreglaste: no-encontrado, fuera de tema e idioma. Aquí van dos que se ven mejor "rompiendo" el prompt actual.)
+
+**Fallo A — Devuelve varias recetas.** Abre el System Message del Recipe Agent y **quita temporalmente** la línea "Present ONE recipe at a time...". Demo: `I want a chicken recipe`.
+> "Sin esa regla, mirad: me suelta cuatro recetas de golpe. Confuso. Lo arreglamos volviendo a añadir la excepción:"
+Vuelve a poner — copia y pega como primera regla de "How to behave":
+```
+- Present ONE recipe at a time — the best match — never a list. If the search returns several, pick one and say you can suggest another if they prefer.
+```
+
+**Fallo B — Dispara los precios sin confirmar.** Demo: tras una receta, escribe algo ambiguo como `sure` o `vale`.
+> "A veces con un 'ok' pone `build_shopping_list` en true antes de tiempo y gasta SerpAPI sin querer. Endurecemos la condición — sustituye la línea del campo por:"
+```
+- "build_shopping_list": true ONLY when the user EXPLICITLY confirms a specific recipe AND asks for the shopping list or prices. A vague "ok" or "yes" without mentioning the list is NOT enough — ask them to clarify.
+```
+
+> "El patrón, otra vez: observo un fallo, añado una regla, sin tocar un nodo. Reglas para lo binario; ejemplos (few-shot) para lo sutil — como en el análisis de prompts."
+
+**Revertir:** restaura el System Message original (está en el notebook y en el JSON).
+
+---
+
+### Variación 2 — Añadir un campo al JSON: `difficulty` (4 min)
+
+**Qué enseña:** que el esquema de salida es tuyo — puedes añadir campos y reaccionar a ellos.
 
 **Pasos:**
-1. Añade un nodo **Basic LLM Chain** → renómbralo `Shopping List (Chain)`.
-2. Conéctale el **OpenRouter Chat Model** existente (línea de puntos).
-3. Configúralo:
+1. Abre **Recipe Format** (Output Parser) y añade `"difficulty": "easy"` al JSON de ejemplo — copia y pega el ejemplo entero:
+   ```json
+   {
+     "reply": "Here's a great option — Chicken Handi ... Would you like this recipe, a different one, or a shopping list with price estimates?",
+     "recipe": "RECIPE: Chicken Handi\nCategory: Chicken | Cuisine: Indian\nINGREDIENTS:\n- 500g chicken\n...",
+     "build_shopping_list": false,
+     "difficulty": "easy"
+   }
+   ```
+2. En el System Message del agente, añade en Rules — copia y pega:
+   ```
+   - "difficulty": estimate the recipe difficulty as "easy", "medium" or "hard".
+   ```
+3. Demo: pide una receta y abre el output → ahora hay un campo `difficulty`.
+
+> "El esquema lo mando yo. Con un campo más, el agente ya clasifica dificultad, y podría enrutarlo con otro IF o un Switch. La salida estructurada es lo que convierte al LLM en una pieza de lógica, no solo un generador de texto."
+
+**Revertir:** quita el campo del ejemplo y la regla.
+
+---
+
+### Variación 3 — Sin memoria: se rompe el refinado (2 min, sin config)
+
+**Qué enseña:** qué hace la memoria, por ausencia.
+
+**Pasos:**
+1. **Desconecta** Simple Memory del Recipe Agent (borra la línea de puntos).
+2. `I want a chicken recipe` → propone una.
+3. `Give me another one`
+
+> "Sin memoria, no sabe de qué le hablo — 'otra ¿de qué?'. El refinado depende 100% de la memoria: es lo que le reinyecta lo que ya propuso."
+
+4. **Reconecta** y repite → ahora sí.
+
+**Revertir:** ya está al reconectar.
+
+---
+
+### Variación 4 — Agent vs Basic LLM Chain: los precios inventados (4 min)
+
+**Qué enseña:** por qué el Shopping List es un agente y no un chain — viéndolo fallar.
+
+**Pasos:**
+1. Añade un **Basic LLM Chain** → `Shopping List (Chain)`. Conéctale el **OpenRouter Chat Model**.
+2. Configúralo:
    - **Source for Prompt:** `Define below`
    - **Prompt** (Expression) — copia y pega:
      ```
-     {{ $('Recipe Search Agent').first().json.output }}
+     {{ $json.output.recipe }}
      ```
-   - Añade un **System Message** (Add prompt → System) — copia y pega:
+   - **System Message** — copia y pega:
      ```
      You are a shopping assistant. From the recipe provided, create a complete shopping list with estimated US grocery prices.
 
@@ -301,199 +477,102 @@ Cinco variaciones autocontenidas, ordenadas de menos a más montaje. Elige las q
      - End with an estimated total
      - Output ONLY the shopping list
      ```
-4. **Recablea temporalmente:** desconecta la salida **true** de `Want Prices?` del Shopping List Agent y conéctala a `Shopping List (Chain)`.
-5. Demo: `I want a chicken recipe` → formulario → `Yes, with price estimates`.
-6. Abre el output del chain en el panel:
+3. **Recablea temporalmente:** salida **true** del IF → `Shopping List (Chain)` → `Reply — With Prices`. En `Reply — With Prices` cambia `$json.output` por `$json.text` (el chain responde en `text`).
+4. Demo: receta → confirma con lista.
 
-> "Fijaos: lista perfecta, precios de aspecto razonable... e inventados TODOS. Un chain no puede buscar — no tiene herramientas. Genera texto plausible, que es justo lo peligroso. El agent de verdad, con SerpAPI, va a Google y trae precios reales."
+> "Lista perfecta, precios razonables... e inventados TODOS. Un chain no tiene herramientas, no puede buscar. Genera texto plausible, que es lo peligroso. El agente de verdad va a Google."
 
-7. Señala de paso el campo de salida: "Y otro detalle: el chain deja su respuesta en `text`, no en `output` — si dejáramos esto conectado, el nodo Output se rompería. Chain → `text`, Agent → `output`. Os lo dije en Core Concepts y aquí muerde de verdad."
+5. Señala: "Y ojo: el chain responde en `text`, el agente en `output`. Por eso hubo que cambiar la expresión. Chain → `text`, Agent → `output`."
 
-**Revertir:** reconecta la salida true del IF al **Shopping List Agent** (el chain puede quedarse desconectado en el canvas o borrarse).
+**Revertir:** reconecta el IF true → **Shopping List Agent** → `Reply — With Prices` (con `$json.output`).
 
-**Bonus:** esta variación no gasta SerpAPI.
+**Bonus:** no gasta SerpAPI.
 
 ---
 
-### Variación 3 — Nueva herramienta: Random Recipe (4 min)
+### Variación 5 — Aprobación con botones dentro del chat (Human-in-the-Loop) (6 min)
 
-**Qué enseña:** añadir una herramienta a un agent existente y ver cómo DECIDE usarla (es el Challenge 1 del notebook — díselo a los alumnos).
+**Qué enseña:** el modo **Using Response Nodes** y el nodo **Chat (Send & Wait)** — cuando quieres un **portón explícito** antes de una acción cara (aquí, gastar SerpAPI). Conecta con el bloque teórico de modos.
 
 **Pasos:**
-1. En el **Recipe Search Agent** → **+ Tool** → **HTTP Request Tool** → renómbrala `Random Recipe`.
-2. Configúrala:
+1. En el **Chat Trigger** → Options → **Response Mode** → cámbialo a **Using Response Nodes**.
+2. Entre el Recipe Agent y el IF, mete un nodo **Chat** → `Confirm Spend`:
+   - **Operation:** `Send and Wait for Response`
+   - **Message** (Expression) — copia y pega:
+     ```
+     {{ $json.output.reply }}
+     ```
+   - **Response Type:** `Approval` → **Approve and Disapprove**
+   - **Approve Button Label:** `Yes, shopping list` · **Disapprove Button Label:** `No, just the recipe`
+3. Cambia la condición del IF a — copia y pega en Left Value, tipo Boolean, is true:
+   ```
+   {{ $json.data.approved }}
+   ```
+4. Como ahora estás en Response Nodes, las ramas ya no muestran nada solas: cambia los dos `Reply` (Set) por nodos **Chat** con **Operation: Send Message** y el mismo texto en **Message**.
+
+> "Aquí el humano aprueba con un botón, dentro del chat, antes de que gastemos búsquedas. Esto es 'Using Response Nodes': nada llega al chat salvo que un nodo Chat lo mande, y el Send & Wait pausa de verdad, sin el timeout de 90 s del modo lastNode. Es el modo para HITL con botones. Más nodos, pero control total."
+
+**Revertir:** Response Mode → **When Last Node Finishes**; quita `Confirm Spend`; IF a `{{ $json.output.build_shopping_list }}`; vuelve a los Set `Reply`. (O reimporta el JSON limpio.)
+
+---
+
+### Variación 6 — Nueva herramienta: Random Recipe (4 min)
+
+**Qué enseña:** añadir una herramienta y ver cómo el agente DECIDE usarla (Challenge 1 del notebook).
+
+**Pasos:**
+1. En **Recipe Agent** → **+ Tool** → **HTTP Request Tool** → `Random Recipe`.
 
 | Campo | Valor |
 |-------|-------|
 | **Method** | `GET` |
 | **URL** | `https://www.themealdb.com/api/json/v1/1/random.php` |
-| **Send Query Parameters** | OFF (no necesita parámetros — esa es la gracia) |
+| **Send Query Parameters** | OFF |
 | **Optimize Response** | ON |
 
-3. **Description** — copia y pega:
+2. **Description** — copia y pega:
    ```
    Returns one random recipe from TheMealDB. Takes no input. Use this only when the user asks to be surprised or wants a random recipe.
    ```
-4. En el **System Message** del agent, añade esta línea como punto 4 de la sección "Searching for recipes" — copia y pega:
+3. En el System Message, añade en "How to behave" — copia y pega:
    ```
-   4. If the user asks to be surprised or wants a random pick, use Random Recipe (it takes no input)
+   - If the user asks to be surprised or wants a random pick, use Random Recipe (it takes no input).
    ```
-5. Demo: `Surprise me!`
+4. Demo: `Surprise me!` → usa Random Recipe. Contraste: `I want a chicken recipe` → usa Recipe Search (míralo en los logs).
 
-> "No he tocado ni una línea de lógica — le he dado una herramienta nueva con una buena descripción y una regla en el prompt. El agent solo elige Random Recipe cuando la petición es 'sorpréndeme'. Miradlo en los logs: para 'I want chicken' sigue usando la búsqueda normal."
-
-6. Segunda demo de contraste: `I want a chicken recipe` → en los logs, verifica que usa Recipe Search y NO Random Recipe.
-
-**Revertir:** opcional — esta variación puede quedarse (coincide con el Challenge 1); si la dejas, deja también la línea 4 del prompt.
-
----
-
-### Variación 4 — Cambiar un nodo por otro: IF → Switch, con tercera opción (5-6 min)
-
-**Qué enseña:** el Switch como generalización del IF (capítulo de Routing), y cuándo basta un chain (sin herramientas, no gasta SerpAPI).
-
-**Pasos:**
-1. En el formulario **Review Recipe**, añade una tercera opción al dropdown `Generate shopping list?` — copia y pega:
-   ```
-   Just the list, no prices
-   ```
-2. Añade un nodo **Switch** → renómbralo `Route Choice`. Tres reglas, todas sobre la misma expresión — copia y pega en **Left Value** de cada regla:
-   ```
-   {{ $json["Generate shopping list?"] }}
-   ```
-
-| Regla | Operación | Right Value (copia y pega) | Renombra la salida |
-|-------|-----------|---------------------------|--------------------|
-| 1 | equals | `Yes, with price estimates` | `prices` |
-| 2 | equals | `Just the list, no prices` | `list` |
-| 3 | equals | `No, just the recipe` | `recipe` |
-
-3. Añade un **Basic LLM Chain** → renómbralo `Shopping List — No Prices`. Conéctale el **OpenRouter Chat Model** (línea de puntos). Configuración:
-   - **Source for Prompt:** `Define below`
-   - **Prompt** (Expression) — copia y pega:
-     ```
-     {{ $('Recipe Search Agent').first().json.output }}
-     ```
-   - **System Message** — copia y pega:
-     ```
-     You are a shopping assistant. From the recipe provided, extract a complete shopping list.
-
-     Rules:
-     - Include exact quantities from the recipe
-     - Group items by store section (Produce, Meat / Fish, Dairy, Pantry)
-     - Skip items most kitchens already have (salt, pepper, cooking oil)
-     - No prices
-     - Output ONLY the shopping list
-     ```
-4. Añade un **Edit Fields** → renómbralo `Output — List Only`, con un campo String:
-   - `output` (Expression) — copia y pega:
-     ```
-     {{ $('Recipe Search Agent').first().json.output + '\n\n---\n\n' + $json.text }}
-     ```
-5. **Recablea:** `Review Recipe` → `Route Choice`; salida `prices` → Shopping List Agent; salida `list` → `Shopping List — No Prices` → `Output — List Only`; salida `recipe` → Output — Recipe Only. (El IF `Want Prices?` queda desconectado — no lo borres hasta el final del vídeo.)
-6. Demo: receta → formulario → elige `Just the list, no prices`.
-
-> "Tres decisiones ya no caben en un IF — para eso está el Switch: mismas expresiones, N salidas. Y fijaos en la rama nueva: para extraer la lista SIN precios no hace falta buscar nada, así que basta un Basic LLM Chain — más barato y más rápido que un agent. Herramientas solo cuando hacen falta."
-
-7. Señala el `$json.text` del Output — List Only: "el chain responde en `text`, por eso este Output es distinto de los otros dos."
-
-**Revertir:** vuelve a conectar `Review Recipe` → `Want Prices?` y quita la tercera opción del formulario (o reimporta el JSON limpio).
-
----
-
-### Variación 5 — El prompt manda: formato y idioma (3 min, solo prompt)
-
-**Qué enseña:** cambiar el comportamiento sin tocar ni un nodo — solo el system message.
-
-**Pasos:**
-1. Abre el **System Message** del Recipe Search Agent y sustitúyelo ENTERO por este — copia y pega:
-   ```
-   You are a friendly recipe assistant that helps users find recipes.
-
-   Searching for recipes:
-   1. Convert the user's request to a simple English search term for the tool (e.g. "quiero pollo" → search for "chicken", "pasta con tomate" → search for "tomato pasta")
-   2. Use Recipe Search (TheMealDB) first — it returns structured, reliable data
-   3. Only use Google Search if TheMealDB returns no results (meals is null)
-
-   Presenting recipes — use this format:
-   RECIPE: [name]
-   Category: [category] | Cuisine: [cuisine]
-   Difficulty: [easy/medium/hard] | Time: [estimated total minutes]
-
-   INGREDIENTS:
-   - [quantity] [ingredient]
-   - [quantity] [ingredient]
-   ...
-
-   INSTRUCTIONS:
-   1. [step]
-   2. [step]
-   ...
-
-   Rules:
-   - Never invent recipes — only present what you find from tools
-   - Include ALL ingredients with exact quantities from the source
-   - If no results, suggest alternative search terms
-   - Always reply in the same language the user wrote in (translate the recipe if needed)
-   ```
-   (Son dos cambios sobre el original: la línea `Difficulty/Time` en el formato, y la última regla de idioma.)
-2. Demo en español: `Quiero una receta con pollo`
-
-> "Mismo workflow, mismos nodos. He añadido dos líneas al prompt: ahora estima dificultad y tiempo, y responde en el idioma del usuario — busca en inglés por dentro, pero me contesta en español. El 80% de estos sistemas es el prompt."
-
-**Ojo:** `Difficulty` y `Time` los estima el modelo (TheMealDB no los trae) — dilo en voz alta, conecta con la lección de 'datos reales vs generados'.
-
-**Revertir:** restaura el system message original (está en el notebook y en el JSON del curso).
+**Revertir:** opcional (coincide con el Challenge 1).
 
 ---
 
 ## 🧪 Textos de prueba (copy-paste para el chat)
 
-**Pollo (demo principal):**
 ```
 I want a chicken recipe
 ```
-
-**Pasta (follow-up para demostrar memoria):**
 ```
-Now find me a pasta recipe
+Give me a more Western one
 ```
-
-**Plato específico:**
 ```
-How do I make beef stroganoff?
+Perfect, add the shopping list with prices
 ```
-
-**Postre:**
-```
-Find me a chocolate dessert
-```
-
-**Fallback a Google (plato que no está en TheMealDB):**
 ```
 How do I make Spanish fabada asturiana?
 ```
-
-**En español (para demostrar traducción automática):**
 ```
-Quiero hacer algo con pescado
+Quiero algo con pescado
 ```
-
-**Aleatorio/vago (el agent elige):**
 ```
-Surprise me with something Italian
+Surprise me!
 ```
 
 ---
 
 ## ⚠️ Cosas a tener en cuenta durante la grabación
 
-1. **El formulario tarda:** Después de que el agent responde, hay que ir al nodo Review Recipe, copiar la Test URL y abrirla en el navegador. Esto puede parecer lento en el vídeo — avisa a los alumnos de que es normal. (En versiones recientes n8n abre el formulario solo al llegar al nodo.)
-
-2. **SerpAPI tiene límite:** el free tier tiene un tope mensual de búsquedas (100/mes al escribir esto — compruébalo en tu dashboard). Cada ejecución del Shopping List Agent usa 1-2 búsquedas. Si haces muchas demos seguidas, puedes llegar al límite.
-
-3. **TheMealDB es limitada:** ~300 recetas en inglés. Si buscas algo muy específico o en otro idioma, probablemente caerá al fallback de Google.
-
-4. **Los precios del Shopping List Agent:** Son reales pero aproximados — vienen de resultados de Google, no de una API de supermercado. El agent marca con `≈` los que estima por su cuenta.
-
-5. **Dos credenciales SerpAPI:** El workflow usa SerpAPI en DOS sitios (Google Search como fallback del Recipe Agent, y Price Search para el Shopping List Agent). Ambos usan la misma credencial, pero cuentan como búsquedas separadas.
+1. **Abre el output del Recipe Agent** en el panel durante la demo — ver el JSON (`build_shopping_list` cambiando de false a true) es lo que hace clic en la cabeza del alumno. Es el corazón del proyecto.
+2. **`When Last Node Finishes`:** si el chat no muestra nada, revisa que el último nodo de cada rama deja el texto en un campo llamado `output`.
+3. **Error "Model output doesn't fit required format":** significa que el modelo devolvió el JSON roto. Verifica que **Auto-Fix Format** está ON en el parser **y** que tiene un **Chat Model conectado**. Con eso, n8n repara el JSON solo. (Si aún falla mucho, prueba un modelo un pelín mejor para el parser.)
+3. **SerpAPI tiene límite:** free tier ~100/mes (mira https://serpapi.com/dashboard). Cada lista gasta 1-2 búsquedas.
+4. **TheMealDB es limitada:** ~300 recetas en inglés. Lo muy específico o en otro idioma cae al fallback de Google.
+5. **Precios aproximados:** vienen de Google, no de una API de supermercado. El agente marca con `≈` lo que estima.
+6. **Dos usos de SerpAPI:** Google Search (fallback) y Price Search. Misma credencial, búsquedas separadas.

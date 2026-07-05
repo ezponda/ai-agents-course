@@ -3,9 +3,9 @@
   "nodes": [
     {
       "parameters": {
-        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_1_recipe_assistant.html)\n## Recipe Assistant\n**Goal:** Chat with an AI that searches real recipes online, review them via a form, and optionally generate a shopping list with real price estimates.\n\n**Tools:** Recipe Search (TheMealDB API) + Google Search (SerpAPI fallback) + Price Search (SerpAPI)\n**Memory:** Conversation history so you can ask follow-up questions.\n**Approval:** A form lets you review the recipe and choose whether to generate a shopping list.\n\n**How to run:** Click **Chat** in the bottom-right corner and type your request. Then open the form URL shown in the Wait node.",
-        "height": 340,
-        "width": 700,
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_1_recipe_assistant.html)\n## Recipe Assistant\n**Goal:** Chat with an AI that searches real recipes online. It proposes ONE recipe, lets you refine it (\"another one\", \"more Western\"), and — when you confirm — builds a shopping list with real price estimates.\n\n**How it works:** the agent returns a small JSON every turn — `reply`, `recipe`, `build_shopping_list`. An **IF** reads `build_shopping_list` and only then runs the price agent. No forms, no waiting.\n\n**Tools:** Recipe Search (TheMealDB) + Google Search (SerpAPI fallback) + Price Search (SerpAPI)\n**Memory:** Conversation history so you can refine across turns.\n\n**How to run:** Click **Open Chat** and type a request (e.g. \"I want a chicken recipe\"). Reply in the chat to pick a recipe or ask for the shopping list.",
+        "height": 360,
+        "width": 720,
         "color": 4
       },
       "id": "a0000001-0001-4000-8000-000000000001",
@@ -20,7 +20,7 @@
     {
       "parameters": {
         "public": false,
-        "mode": "webhook",
+        "mode": "hostedChat",
         "options": {
           "responseMode": "lastNode"
         }
@@ -28,7 +28,7 @@
       "id": "a0000001-0001-4000-8000-000000000002",
       "name": "When chat message received",
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
-      "typeVersion": 1.1,
+      "typeVersion": 1.3,
       "position": [
         -760,
         -200
@@ -39,59 +39,33 @@
       "parameters": {
         "promptType": "define",
         "text": "={{ $json.chatInput }}",
+        "hasOutputParser": true,
         "options": {
-          "systemMessage": "You are a friendly recipe assistant that helps users find recipes.\n\nSearching for recipes:\n1. Convert the user's request to a simple English search term for the tool (e.g. \"quiero pollo\" → search for \"chicken\", \"pasta con tomate\" → search for \"tomato pasta\")\n2. Use Recipe Search (TheMealDB) first — it returns structured, reliable data\n3. Only use Google Search if TheMealDB returns no results (meals is null)\n\nPresenting recipes — use this format:\nRECIPE: [name]\nCategory: [category] | Cuisine: [cuisine]\n\nINGREDIENTS:\n- [quantity] [ingredient]\n- [quantity] [ingredient]\n...\n\nINSTRUCTIONS:\n1. [step]\n2. [step]\n...\n\nRules:\n- Never invent recipes — only present what you find from tools\n- Include ALL ingredients with exact quantities from the source\n- If no results, suggest alternative search terms"
+          "systemMessage": "You are a friendly recipe assistant. You chat with the user to find ONE recipe they like, then optionally build a shopping list with real prices.\n\nHow to search:\n- Convert the user's request to a simple English search term (e.g. \"quiero pollo\" → \"chicken\").\n- Use Recipe Search (TheMealDB) first. Only use Google Search if TheMealDB returns meals: null.\n\nHow to behave in the conversation:\n- Present ONE recipe at a time — the best match — never a list. If the search returns several, pick one and say you can suggest another if they prefer.\n- After showing a recipe, ALWAYS ask whether they want THIS recipe, a DIFFERENT one, or a SHOPPING LIST with price estimates.\n- If the user asks for a different or more specific recipe (e.g. \"something more Western\", \"vegetarian\"), search again and propose a new one.\n- Only offer the shopping list once you have shown a real recipe.\n\nYou ALWAYS answer with these three fields:\n- \"reply\": a SHORT, friendly message the user sees. Introduce the recipe by name and ask the question above. Do NOT paste the full ingredient list or steps here — those go in \"recipe\".\n- \"recipe\": the full recipe in this exact plain format:\n    RECIPE: [name]\n    Category: [category] | Cuisine: [cuisine]\n    INGREDIENTS:\n    - [quantity] [ingredient]\n    INSTRUCTIONS:\n    1. [step]\n  Always keep the CURRENT proposed recipe here, even on later turns. Use an empty string only if you have not proposed a recipe yet.\n- \"build_shopping_list\": true ONLY when the user has confirmed a recipe AND asked for the shopping list or prices. Otherwise false.\n\nRules:\n- Never invent recipes — only present what you find from the tools.\n- Include ALL ingredients with exact quantities from the source.\n- Output valid JSON only — no markdown code fences, no text before or after."
         }
       },
       "id": "a0000001-0001-4000-8000-000000000005",
-      "name": "Recipe Search Agent",
+      "name": "Recipe Agent",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3,
       "position": [
-        -400,
+        -380,
         -200
       ]
     },
     {
       "parameters": {
-        "resume": "form",
-        "formTitle": "Recipe Found",
-        "formDescription": "The agent found a recipe. Review it below and choose whether to generate a shopping list with price estimates.",
-        "formFields": {
-          "values": [
-            {
-              "fieldLabel": "Recipe",
-              "fieldType": "html",
-              "html": "=<pre style='white-space:pre-wrap;max-height:500px;overflow-y:auto;background:#f8f9fa;padding:16px;border-radius:8px;font-family:system-ui,sans-serif;font-size:14px;line-height:1.6;border:1px solid #dee2e6;'>{{ $json.output }}</pre>"
-            },
-            {
-              "fieldLabel": "Generate shopping list?",
-              "fieldType": "dropdown",
-              "requiredField": true,
-              "fieldOptions": {
-                "values": [
-                  {
-                    "option": "Yes, with price estimates"
-                  },
-                  {
-                    "option": "No, just the recipe"
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "options": {
-          "buttonLabel": "Continue"
-        }
+        "schemaType": "fromJson",
+        "jsonSchemaExample": "{\n  \"reply\": \"Here's a great option \\u2014 Chicken Handi (Indian). Would you like this recipe, a different one, or a shopping list with price estimates?\",\n  \"recipe\": \"RECIPE: Chicken Handi\\nCategory: Chicken | Cuisine: Indian\\nINGREDIENTS:\\n- 500g chicken\\n- 2 onions\\n- 3 tomatoes\\nINSTRUCTIONS:\\n1. Saut\\u00e9 the onions\\n2. Add spices and chicken\\n3. Simmer with tomatoes\",\n  \"build_shopping_list\": false\n}",
+        "autoFix": true
       },
-      "id": "a0000001-0001-4000-8000-000000000006",
-      "name": "Review Recipe",
-      "type": "n8n-nodes-base.wait",
-      "typeVersion": 1.1,
+      "id": "a0000001-0001-4000-8000-000000000021",
+      "name": "Recipe Format",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
       "position": [
-        -60,
-        -200
+        -80,
+        40
       ]
     },
     {
@@ -99,16 +73,19 @@
         "conditions": {
           "options": {
             "caseSensitive": true,
-            "leftValue": ""
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
           },
           "conditions": [
             {
               "id": "a0000001-0001-4000-8000-000000000007",
-              "leftValue": "={{ $json[\"Generate shopping list?\"] }}",
-              "rightValue": "Yes, with price estimates",
+              "leftValue": "={{ $json.output.build_shopping_list }}",
+              "rightValue": "",
               "operator": {
-                "type": "string",
-                "operation": "equals"
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
               }
             }
           ],
@@ -121,14 +98,14 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        200,
+        40,
         -200
       ]
     },
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ $('Recipe Search Agent').first().json.output }}",
+        "text": "={{ $json.output.recipe }}",
         "options": {
           "systemMessage": "You are a shopping assistant that creates shopping lists with real prices.\n\nFrom the recipe provided, create a complete shopping list with current US grocery prices.\n\nSteps:\n1. Extract the ingredient list from the recipe\n2. Search for current grocery prices — batch multiple ingredients into ONE search query (e.g. \"grocery store prices chicken breast tomatoes onions\")\n3. Use at most 2 searches total to conserve API usage\n4. For any ingredient you cannot find a price for, estimate based on your knowledge and mark it with ≈\n\nFormat:\n## Shopping List\n\n### Produce\n- [quantity] [item] — ~$[price]\n\n### Meat / Fish\n- [quantity] [item] — ~$[price]\n\n### Dairy\n- [quantity] [item] — ~$[price]\n\n### Pantry\n- [quantity] [item] — ~$[price]\n\n---\n**Estimated Total: ~$[total]**\n\nBudget Tips:\n- [tip 1]\n- [tip 2]\n\nRules:\n- Include exact quantities from the recipe\n- Skip items most kitchens already have (salt, pepper, cooking oil)\n- Group items by store section\n- Mark searched prices with $ and estimated prices with ≈$\n- Output ONLY the shopping list — no recipe repetition"
         }
@@ -138,8 +115,8 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3,
       "position": [
-        440,
-        -350
+        300,
+        -340
       ]
     },
     {
@@ -150,19 +127,19 @@
               "id": "a0000001-0001-4000-8000-000000000010",
               "name": "output",
               "type": "string",
-              "value": "={{ $('Recipe Search Agent').first().json.output + '\\n\\n---\\n\\n' + $json.output }}"
+              "value": "={{ $('Recipe Agent').first().json.output.recipe + '\\n\\n---\\n\\n' + $json.output }}"
             }
           ]
         },
         "options": {}
       },
       "id": "a0000001-0001-4000-8000-000000000012",
-      "name": "Output — With Prices",
+      "name": "Reply — With Prices",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        700,
-        -350
+        600,
+        -340
       ]
     },
     {
@@ -173,19 +150,19 @@
               "id": "a0000001-0001-4000-8000-000000000013",
               "name": "output",
               "type": "string",
-              "value": "={{ $('Recipe Search Agent').first().json.output }}"
+              "value": "={{ $json.output.recipe ? $json.output.recipe + '\\n\\n' + $json.output.reply : $json.output.reply }}"
             }
           ]
         },
         "options": {}
       },
       "id": "a0000001-0001-4000-8000-000000000014",
-      "name": "Output — Recipe Only",
+      "name": "Reply — Recipe Only",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        440,
-        -50
+        300,
+        -40
       ]
     },
     {
@@ -213,7 +190,7 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        -400,
+        -440,
         40
       ]
     },
@@ -238,7 +215,7 @@
       "type": "n8n-nodes-base.httpRequestTool",
       "typeVersion": 4.2,
       "position": [
-        -240,
+        -320,
         40
       ]
     },
@@ -249,7 +226,7 @@
       "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
       "typeVersion": 1,
       "position": [
-        -80,
+        -200,
         40
       ]
     },
@@ -263,8 +240,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        440,
-        -150
+        300,
+        -140
       ]
     },
     {
@@ -274,8 +251,8 @@
       "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
       "typeVersion": 1,
       "position": [
-        600,
-        -150
+        460,
+        -140
       ]
     }
   ],
@@ -284,25 +261,14 @@
       "main": [
         [
           {
-            "node": "Recipe Search Agent",
+            "node": "Recipe Agent",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Recipe Search Agent": {
-      "main": [
-        [
-          {
-            "node": "Review Recipe",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Review Recipe": {
+    "Recipe Agent": {
       "main": [
         [
           {
@@ -324,7 +290,7 @@
         ],
         [
           {
-            "node": "Output — Recipe Only",
+            "node": "Reply — Recipe Only",
             "type": "main",
             "index": 0
           }
@@ -335,7 +301,7 @@
       "main": [
         [
           {
-            "node": "Output — With Prices",
+            "node": "Reply — With Prices",
             "type": "main",
             "index": 0
           }
@@ -346,7 +312,12 @@
       "ai_languageModel": [
         [
           {
-            "node": "Recipe Search Agent",
+            "node": "Recipe Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Recipe Format",
             "type": "ai_languageModel",
             "index": 0
           }
@@ -357,7 +328,7 @@
       "ai_memory": [
         [
           {
-            "node": "Recipe Search Agent",
+            "node": "Recipe Agent",
             "type": "ai_memory",
             "index": 0
           }
@@ -368,7 +339,7 @@
       "ai_tool": [
         [
           {
-            "node": "Recipe Search Agent",
+            "node": "Recipe Agent",
             "type": "ai_tool",
             "index": 0
           }
@@ -379,19 +350,19 @@
       "ai_tool": [
         [
           {
-            "node": "Recipe Search Agent",
+            "node": "Recipe Agent",
             "type": "ai_tool",
             "index": 0
           }
         ]
       ]
     },
-    "Price Search": {
-      "ai_tool": [
+    "Recipe Format": {
+      "ai_outputParser": [
         [
           {
-            "node": "Shopping List Agent",
-            "type": "ai_tool",
+            "node": "Recipe Agent",
+            "type": "ai_outputParser",
             "index": 0
           }
         ]
@@ -403,6 +374,17 @@
           {
             "node": "Shopping List Agent",
             "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Price Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Shopping List Agent",
+            "type": "ai_tool",
             "index": 0
           }
         ]
