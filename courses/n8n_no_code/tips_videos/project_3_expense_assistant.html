@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guion — Project 3: AI Expense Assistant (workflow 12_expense_assistant.json)</title>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#171a23; --panel2:#1e2230; --ink:#e8eaf0; --muted:#9aa3b2;
+    --line:#2a2f3e; --accent:#36a3ff; --say:#4aa3ff; --do:#36c98b; --warn:#ffb84d;
+    --quote:#c08bff; --code:#0b0d13; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+
+  aside{position:sticky;top:0;height:100vh;overflow:auto;background:var(--panel);
+    border-right:1px solid var(--line);padding:20px 16px}
+  aside h1{font-size:14px;margin:0 0 16px;line-height:1.4}
+  .nav a{display:block;color:var(--muted);text-decoration:none;padding:7px 11px;
+    border-radius:10px;font-size:13px;margin-bottom:2px;border:1px solid transparent;line-height:1.35}
+  .nav a.h3{padding-left:24px;font-size:12.5px}
+  .nav a:hover{background:var(--panel2);color:var(--ink)}
+  .nav a.active{background:var(--panel2);color:var(--ink);border-color:var(--line)}
+
+  main{padding:36px 48px;max-width:980px}
+  main h1{font-size:26px;margin:0 0 18px;line-height:1.3}
+  main h2{font-size:21px;margin:44px 0 14px;padding-top:22px;border-top:1px solid var(--line)}
+  main h3{font-size:17px;margin:30px 0 10px;color:var(--accent)}
+  main h4{font-size:15px;margin:22px 0 8px;color:var(--tip,#caa45a)}
+  main a{color:var(--accent)}
+  main blockquote{margin:12px 0;padding:10px 16px;border-left:3px solid var(--say);
+    background:var(--panel);border-radius:0 10px 10px 0;color:#cfe3ff}
+  main blockquote p{margin:0}
+  main strong{color:#d6f5e7}
+  main code{background:var(--code);border:1px solid var(--line);border-radius:6px;
+    padding:1px 6px;font-size:.9em}
+  main pre{position:relative;background:var(--code);border:1px solid var(--line);
+    border-radius:10px;padding:14px 16px;overflow-x:auto}
+  main pre code{background:none;border:0;padding:0;font-size:13.5px;line-height:1.55}
+  .copy{position:absolute;top:8px;right:8px;background:var(--panel2);color:var(--muted);
+    border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:12px;cursor:pointer}
+  .copy:hover{color:var(--ink)}
+  main table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14.5px}
+  main th,main td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+  main th{background:var(--panel2)}
+  main tr:nth-child(even) td{background:var(--panel)}
+  main hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+  main ul,main ol{padding-left:26px}
+  main li{margin:5px 0}
+
+  @media(max-width:860px){.wrap{grid-template-columns:1fr}aside{position:static;height:auto}main{padding:24px 20px}}
+  @media print{aside{display:none}.wrap{grid-template-columns:1fr}.copy{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<aside>
+  <h1>Guion — Project 3: AI Expense Assistant (workflow 12_expense_assistant.json)</h1>
+  <nav class="nav">
+    <a href="#concepto">Concepto</a>
+    <a href="#flujo-del-workflow">Flujo del workflow</a>
+    <a href="#los-nodos-de-un-vistazo-leelo-primero">🗺️ Los nodos de un vistazo (léelo primero)</a>
+    <a href="#preparacion-antes-de-grabar-checklist">🔧 Preparación ANTES de grabar (checklist)</a>
+    <a href="#urls-para-tener-a-mano">🔗 URLs para tener a mano</a>
+    <a href="#0-opcional-cold-open-el-gancho-20s">0 · (Opcional) Cold open — el gancho (20s)</a>
+    <a href="#1-la-idea-le-damos-ojos-15-min">1 · La idea: le damos ojos (1.5 min)</a>
+    <a href="#2-el-chat-trigger-que-acepta-fotos-45s">2 · El Chat Trigger que acepta fotos (45s)</a>
+    <a href="#3-el-agente-que-ve-25-min">3 · El agente que ve (2.5 min)</a>
+    <a href="#3b-que-es-una-data-table-y-crea-la-tuya">3b · ¿Qué es una Data Table? (y crea la tuya) 🗄️</a>
+    <a href="#4-los-dos-nodos-que-ves-al-ejecutar-2-min">4 · Los dos nodos + qué ves al ejecutar (2 min)</a>
+    <a class="h3" href="#find-similar-expenses-lee-detecta-duplicados">🔍 Find Similar Expenses — LEE (detecta duplicados)</a>
+    <a class="h3" href="#log-expense-escribe-guarda-el-gasto">💾 Log Expense — ESCRIBE (guarda el gasto)</a>
+    <a href="#5-demo-los-cuatro-recibos-paso-a-paso-4-5-min">5 · DEMO — los cuatro recibos, paso a paso (4-5 min)</a>
+    <a class="h3" href="#recibo-1-limpio-se-registra">Recibo 1 · Limpio → se registra ✅</a>
+    <a class="h3" href="#recibo-2-el-mismo-otra-vez-duplicado">Recibo 2 · El mismo otra vez → duplicado 🟡</a>
+    <a class="h3" href="#recibo-3-ilegible-te-pide-otra-foto">Recibo 3 · Ilegible → te pide otra foto 🔴</a>
+    <a class="h3" href="#recibo-4-rompe-politica-a-revision">Recibo 4 · Rompe política → a revisión 🟠</a>
+    <a href="#6-de-donde-vive-cada-cosa-mapa-mental-1-min">6 · 🧭 De dónde vive cada cosa (mapa mental, 1 min)</a>
+    <a href="#7-cierre-30s">7 · Cierre (30s)</a>
+    <a href="#analisis-del-prompt-y-mejoras-2-min">📋 Análisis del prompt (y mejoras, 2 min)</a>
+    <a href="#variacion-1-pregunta-a-tus-gastos-4-min">Variación 1 — "Pregunta a tus gastos" (4 min) ⭐</a>
+    <a href="#variacion-2-botones-de-aprobarrechazar-hitl-real-5-min">Variación 2 — Botones de Aprobar/Rechazar (HITL real) (5 min) 🛡️</a>
+    <a href="#variacion-3-digest-semanal-5-min">Variación 3 — Digest semanal (5 min)</a>
+    <a href="#variacion-4-facturas-en-pdf-3-min">Variación 4 — Facturas en PDF (3 min)</a>
+    <a href="#variacion-5-tu-propia-politica-3-min-solo-prompt">Variación 5 — Tu propia política (3 min, solo prompt)</a>
+    <a href="#recibos-de-prueba-en-el-repo-_staticdatareceipts">🧪 Recibos de prueba (en el repo, _static/data/receipts/)</a>
+    <a href="#avisos-de-grabacion">⚠️ Avisos de grabación</a>
+  </nav>
+</aside>
+<main>
+<h1 id="guion-project-3-ai-expense-assistant-workflow-12_expense_assistantjson">Guion — Project 3: AI Expense Assistant (workflow <code>12_expense_assistant.json</code>)</h1>
+<h2 id="concepto">Concepto</h2>
+<p>Le has dado al agente <strong>herramientas</strong> (P1) y un <strong>intérprete de código</strong> (P2). Ahora le das <strong>ojos.</strong>
+Sueltas la <strong>foto de un recibo</strong> en el chat y el agente lo <strong>lee</strong> (comercio, fecha, importe, categoría), comprueba que se ve bien, que no es un duplicado y que cumple la política, y lo <strong>registra</strong> — hablándote si algo está mal ("no leo el total, súbela más clara" / "esto parece un duplicado, ¿lo registro?").
+<strong>La capacidad nueva:</strong> entrada <strong>multimodal</strong>. Y es un agente de verdad: <strong>ve</strong>, <strong>decide</strong> qué herramienta usar (buscar duplicados / guardar) y <strong>conversa</strong>.</p>
+<h2 id="flujo-del-workflow">Flujo del workflow</h2>
+<pre><code>When chat message received ──▶ Expense Agent ──▶ (responde en el chat)
+ (Chat Trigger, uploads ON)   (ve la foto, comprueba, registra)
+                                    ┊ sub-nodos
+                    ┌───────────────┼──────────────┬───────────────┐
+               Chat Model        Memory      Find Similar      Log Expense
+              (multimodal)                  (Data Table get)  (Data Table insert)
+</code></pre>
+<p><strong>Requisitos:</strong> OpenRouter con modelo <strong>multimodal</strong> (<code>gpt-4o-mini</code>) + <strong>n8n 1.113+</strong>. Sin Google/Gmail.</p>
+<hr />
+<h2 id="los-nodos-de-un-vistazo-leelo-primero">🗺️ Los nodos de un vistazo (léelo primero)</h2>
+<p>Al importar el workflow, <strong>ya está todo conectado</strong>. Esto es lo que hay:</p>
+<table>
+<thead>
+<tr>
+<th>Nodo</th>
+<th>Qué es</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>When chat message received</strong></td>
+<td>La entrada: el usuario sube la foto y escribe</td>
+</tr>
+<tr>
+<td><strong>Expense Agent</strong></td>
+<td>El cerebro: ve la foto y decide qué hacer</td>
+</tr>
+<tr>
+<td><strong>OpenRouter Chat Model</strong></td>
+<td>El modelo con "ojos" (multimodal)</td>
+</tr>
+<tr>
+<td><strong>Simple Memory</strong></td>
+<td>Recuerda la conversación (re-subir, confirmar)</td>
+</tr>
+<tr>
+<td><strong>Find Similar Expenses</strong></td>
+<td><strong>LEE</strong> la tabla → busca duplicados</td>
+</tr>
+<tr>
+<td><strong>Log Expense</strong></td>
+<td><strong>ESCRIBE</strong> en la tabla → guarda el gasto</td>
+</tr>
+</tbody>
+</table>
+<p>La <strong>tabla <code>expenses</code></strong> (la creas tú) = la libreta donde se guardan los gastos. <strong>Find Similar</strong> y <strong>Log Expense</strong> NO son dos tablas: son dos nodos que usan <strong>esa misma tabla</strong> (uno lee, otro escribe).</p>
+<p><strong>Solo tienes que hacer 2 cosas para que funcione</strong> (todo lo demás ya viene cableado): <strong>(1)</strong> crear la tabla <code>expenses</code>, <strong>(2)</strong> poner tu modelo en OpenRouter Chat Model. Ambas están abajo, en Preparación.</p>
+<hr />
+<h2 id="preparacion-antes-de-grabar-checklist">🔧 Preparación ANTES de grabar (checklist)</h2>
+<ol>
+<li><strong>Importa</strong> el workflow (Import from URL): <code>https://raw.githubusercontent.com/ezponda/ai-agents-course/main/courses/n8n_no_code/book/_static/workflows/12_expense_assistant.json</code></li>
+<li><strong>🔴 CREA LA TABLA (obligatorio, una sola vez).</strong> Las Data Tables NO viajan en el JSON — viven en tu n8n, así que hay que crearla:</li>
+<li><strong>Overview → pestaña Data Tables → Create Data Table.</strong></li>
+<li>Nombre <strong>exactamente</strong> <code>expenses</code> (minúsculas).</li>
+<li>6 columnas, <strong>todas tipo String</strong>: <code>vendor</code> · <code>expense_date</code> · <code>total</code> · <code>currency</code> · <code>category</code> · <code>status</code>.</li>
+<li>Los nodos <strong>Find Similar</strong> y <strong>Log Expense</strong> ya apuntan a ella <strong>por nombre</strong> → NO hay que seleccionar nada. <strong>Si no la creas, esos dos nodos salen en rojo</strong> ("Data table not found").</li>
+<li><strong>Modelo multimodal</strong> en OpenRouter Chat Model: <code>openai/gpt-4o-mini</code> (lee imágenes). Con un modelo de solo texto NO ve nada.</li>
+<li><strong>Ya activado en el JSON:</strong> <em>Allow File Uploads</em> (Chat Trigger → Parameters → Options) y <em>Automatically Passthrough Binary Images</em> (agente → Options). Confírmalo si quieres.</li>
+<li><strong>Los 4 recibos</strong> están en el repo → ábrelos con <code>open courses/n8n_no_code/book/_static/data/receipts/</code> y déjalos a mano: <code>receipt_cafe_valid.png</code>, <code>receipt_cafe_duplicate.png</code>, <code>receipt_incomplete.png</code>, <code>receipt_dinner_policy.png</code>.</li>
+<li><strong>Ejecución de prueba</strong> con el café válido para calentar.</li>
+</ol>
+<blockquote>
+<p>⚠️ <strong>Cómo se envía una foto en el chat de n8n:</strong> NO puedes mandar solo el archivo. Tienes que <strong>adjuntar la imagen (clip 📎) Y escribir una línea de texto</strong> (aunque sea "aquí tienes") y pulsar Enviar. El agente ignora ese texto y trabaja con la imagen.</p>
+</blockquote>
+<h2 id="urls-para-tener-a-mano">🔗 URLs para tener a mano</h2>
+<table>
+<thead>
+<tr>
+<th>Para qué</th>
+<th>URL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>n8n docs — Chat Trigger (file uploads)</td>
+<td>https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-langchain.chattrigger/</td>
+</tr>
+<tr>
+<td>n8n docs — AI Agent</td>
+<td>https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.agent/</td>
+</tr>
+<tr>
+<td>n8n docs — Data Tables</td>
+<td>https://docs.n8n.io/data-tables/</td>
+</tr>
+<tr>
+<td>OpenRouter (modelos multimodales)</td>
+<td>https://openrouter.ai/models</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="guion-de-grabacion-de-arriba-abajo">🎬 GUION DE GRABACIÓN (de arriba abajo)</h1>
+<h2 id="0-opcional-cold-open-el-gancho-20s">0 · (Opcional) Cold open — el gancho (20s)</h2>
+<blockquote>
+<p>Grábalo al final. En pantalla: una foto de recibo ya soltada en el chat y la respuesta "Registrado: Café Central, 12,40 € (Meals) ✅".
+- <strong>Di:</strong> <em>"He soltado la foto de un recibo en un chat y se ha registrado solo — comercio, fecha, importe, categoría. Sin teclear nada. El agente lo ha LEÍDO. Vamos a montarlo."</em></p>
+</blockquote>
+<h2 id="1-la-idea-le-damos-ojos-15-min">1 · La idea: le damos ojos (1.5 min)</h2>
+<ul>
+<li><strong>Di:</strong> <em>"Hasta ahora el agente usaba herramientas y escribía código. Hoy le damos </em><em>ojos</em><em>: un modelo multimodal que lee imágenes. Y el caso perfecto son los recibos — porque un recibo es una FOTO, y teclear los datos a mano es justo el rollo que queremos quitar."</em></li>
+<li><strong>Di (por qué chat y no formulario):</strong> <em>"¿Por qué un chat y no un formulario de subir archivo? Porque un formulario es de un solo tiro: no te puede decir 'oye, esta foto está borrosa, súbela otra vez' ni '¿seguro? esto parece un duplicado'. Un agente con memoria SÍ — ve, juzga, te habla, y tú resuelves en la misma conversación."</em></li>
+</ul>
+<h2 id="2-el-chat-trigger-que-acepta-fotos-45s">2 · El Chat Trigger que acepta fotos (45s)</h2>
+<ul>
+<li><strong>[Click en <code>When chat message received</code> → Options]</strong></li>
+<li><strong>Di:</strong> <em>"El Chat Trigger de siempre, con una opción clave: </em><em>Allow File Uploads</em><em>. Con eso, en el chat aparece un clip para adjuntar. La foto que subes llega al workflow como </em><em>binario</em><em>."</em></li>
+</ul>
+<h2 id="3-el-agente-que-ve-25-min">3 · El agente que ve (2.5 min)</h2>
+<ul>
+<li><strong>[Click en <code>Expense Agent</code> → Options]</strong></li>
+<li><strong>Di (la opción que da los ojos):</strong> <em>"Aquí está la magia, y es un solo toggle: </em><em>Automatically Passthrough Binary Images</em><em>. Si el mensaje trae una imagen, el agente la reenvía al modelo. No hay nodo de OCR, no hay que parsear nada — el agente lee el recibo como lo leerías tú. Eso sí: el Chat Model tiene que ser </em><em>multimodal</em><em> (gpt-4o-mini vale; uno de solo texto no ve nada)."</em></li>
+<li><strong>[Options → System Message]</strong> — recórrelo como un checklist:</li>
+<li><strong>LEER:</strong> comercio, fecha, total, moneda, categoría.</li>
+<li><strong>VALIDAR:</strong> <em>"si no puedes leer el total o el comercio, NO lo registres — di qué falta y pide una foto mejor."</em> ← el camino de "vuelve a subirla".</li>
+<li><strong>DUPLICADOS:</strong> <em>"llama a Find Similar con el comercio; si hay una con misma fecha e importe, pide confirmación."</em></li>
+<li><strong>POLÍTICA:</strong> <em>"comidas &gt;50 piden justificación; alcohol no se reembolsa; &gt;200 va a revisión → status review."</em></li>
+<li><strong>REGISTRAR:</strong> <em>"solo cuando esté limpio, llama a Log Expense y confirma en una línea."</em></li>
+<li><strong>Di:</strong> <em>"Fijaos: no hay ningún truco de 'saca exactamente una palabra'. El agente habla normal, y los datos estructurados viajan en la </em><em>llamada a la herramienta</em><em> de registrar."</em></li>
+</ul>
+<h2 id="3b-que-es-una-data-table-y-crea-la-tuya">3b · ¿Qué es una Data Table? (y crea la tuya) 🗄️</h2>
+<blockquote>
+<p>Es la <strong>primera vez</strong> que aparecen en el curso (en P6 se usan a lo grande). Aquí toca <strong>entender qué son</strong> y <strong>crear la tabla</strong>. Los dos nodos que la usan (Find Similar / Log Expense) los detallamos uno a uno en la <strong>sección 4</strong> — que no son dos tablas: son dos nodos que usan <strong>la misma</strong> tabla.</p>
+</blockquote>
+<p><strong>Qué es una Data Table (dilo):</strong></p>
+<blockquote>
+<p><em>"Una Data Table es una </em><em>tabla de base de datos que vive DENTRO de n8n</em><em>. Filas y columnas, como una hoja de cálculo — pero pensada para que los nodos la lean y escriban. Y lo importante: </em><em>persiste</em><em>. Aunque cierres el workflow o reinicies n8n, los datos siguen ahí. Es la libreta donde el agente va apuntando los gastos."</em></p>
+</blockquote>
+<p><strong>Características (menciónalas):</strong>
+- Tú defines las <strong>columnas</strong> y su <strong>tipo</strong> (Texto, Número, Booleano, Fecha). Nosotros usamos <strong>todo Texto</strong> por simplicidad.
+- Cada fila insertada recibe un <strong><code>id</code> automático</strong>.
+- Se lee y escribe con nodos <strong>Data Table</strong>, que además pueden ser <strong>herramientas de un agente</strong> — justo lo que hacemos: <em>Find Similar</em> lee, <em>Log Expense</em> escribe.</p>
+<p><strong>Por qué ESTO y no otra cosa (la parte que da criterio):</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Google Sheets / Airtable</th>
+<th>Base de datos real (Postgres…)</th>
+<th><strong>Data Tables de n8n</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Credenciales</td>
+<td>OAuth de Google / API key</td>
+<td>Servidor + conexión</td>
+<td><strong>Ninguna</strong></td>
+</tr>
+<tr>
+<td>Montaje</td>
+<td>Cuenta externa</td>
+<td>Instalar / hostear</td>
+<td><strong>Cero — ya está en n8n</strong></td>
+</tr>
+<tr>
+<td>Persiste (reinicios)</td>
+<td>Sí</td>
+<td>Sí</td>
+<td><strong>Sí</strong></td>
+</tr>
+<tr>
+<td>Para el alumno</td>
+<td>En otra app</td>
+<td>Técnico</td>
+<td><strong>En la misma pantalla de n8n</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><em>"Podríamos guardar los gastos en Google Sheets, pero eso pide conectar tu cuenta de Google. O en una base de datos de verdad, pero eso es montar un servidor. Las Data Tables son el punto dulce: </em><em>cero credenciales, cero montaje, y persisten</em><em> — perfectas para 'la pequeña base de datos de una app'."</em></p>
+</blockquote>
+<p><strong>Lo honesto (limitaciones, dilo):</strong> <em>"No son para millones de filas ni para consultas complejas con joins, y no se leen desde un nodo Code. Para eso irías a una BD de verdad. Pero para gastos, citas o un registro, van sobradas."</em></p>
+<p><strong>Crear la tabla (solo una vez):</strong></p>
+<ol>
+<li>Barra lateral izquierda → <strong>Overview</strong> → abajo, pestaña <strong>Data tables</strong> → botón <strong>Create Data Table</strong>.</li>
+<li>En el diálogo <em>Create new data table</em>: <strong>Data table name</strong> = <code>expenses</code> (minúsculas). Ahora eliges cómo poner las columnas:</li>
+</ol>
+<p><strong>⚡ Rápido (recomendado) — Import CSV:</strong> marca <strong>Import CSV</strong>, sube <code>expenses_template.csv</code> (en el repo, <code>_static/data/</code>) → te crea las <strong>6 columnas de golpe</strong> → <strong>Create</strong>.</p>
+<p><strong>✋ A mano — From scratch:</strong> marca <strong>From scratch</strong> → <strong>Create</strong> → luego <strong>Add Column</strong> seis veces, todas <strong>String</strong>: <code>vendor</code> · <code>expense_date</code> · <code>total</code> · <code>currency</code> · <code>category</code> · <code>status</code>.</p>
+<ol>
+<li><strong>Listo — para siempre</strong> (se guarda sola).</li>
+</ol>
+<blockquote>
+<p>✅ <strong>Comprueba:</strong> vuelve al workflow → abre <strong>Find Similar Expenses</strong> → el rojo <em>"Error fetching options"</em> ha <strong>desaparecido</strong> y en <strong>Column</strong> ya puedes elegir <code>vendor</code>. Ese error solo salía porque la tabla no existía; los nodos la encuentran por su nombre.</p>
+<p><em>"Y fijaos: NO hay que tocar los nodos. Find Similar y Log Expense ya apuntan a la tabla <code>expenses</code> por su nombre — con crearla, se conectan solos."</em></p>
+<p>💡 Si ya la creaste en la preparación, aquí solo la <strong>enseñas</strong> ya hecha y explicas. Si quieres el momento "crear en vivo" a cámara, bórrala antes y recréala aquí.</p>
+</blockquote>
+<hr />
+<h2 id="4-los-dos-nodos-que-ves-al-ejecutar-2-min">4 · Los dos nodos + qué ves al ejecutar (2 min)</h2>
+<p>Los dos usan la <strong>misma tabla <code>expenses</code></strong> — uno LEE, otro ESCRIBE.</p>
+<h3 id="find-similar-expenses-lee-detecta-duplicados">🔍 Find Similar Expenses — LEE (detecta duplicados)</h3>
+<ul>
+<li><strong>Qué hace:</strong> consulta la tabla filtrando por comercio (operación <em>Get</em>).</li>
+<li><strong>Cuándo se dispara:</strong> cuando el agente quiere saber si ese gasto ya existe.</li>
+<li><strong>Qué ves al ejecutar:</strong> en <strong>Expense Agent → Logs</strong>, una llamada a <em>Find Similar Expenses</em> con el <code>vendor</code> que buscó y, debajo, las filas que devolvió (vacío si no hay).</li>
+<li><strong>Di:</strong> <em>"Antes de guardar, el agente mira en la tabla: '¿tengo algo de este comercio?'. Detecta duplicados con datos reales, no adivinando."</em></li>
+</ul>
+<h3 id="log-expense-escribe-guarda-el-gasto">💾 Log Expense — ESCRIBE (guarda el gasto)</h3>
+<ul>
+<li><strong>Qué hace:</strong> inserta una fila nueva (operación <em>Insert</em>); el agente rellena cada columna con <code>$fromAI()</code>.</li>
+<li><strong>Cuándo se dispara:</strong> solo cuando el recibo es válido, no duplicado y con la política resuelta.</li>
+<li><strong>Qué ves al ejecutar:</strong> en los Logs, la llamada a <em>Log Expense</em> con los valores (vendor, total…); y en <strong>Data tables → <code>expenses</code></strong>, una <strong>fila nueva</strong>.</li>
+<li><strong>Di:</strong> <em>"Este apunta el gasto. Las columnas son <code>$fromAI()</code> → el agente las rellena con lo que leyó en la foto. La llamada a la tool ES la salida estructurada, sin ningún parser."</em></li>
+</ul>
+<blockquote>
+<p><strong>La imagen mental:</strong> una libreta (<code>expenses</code>) y dos manos — una mira si ya está apuntado (Find Similar), la otra lo apunta (Log Expense).</p>
+</blockquote>
+<h2 id="5-demo-los-cuatro-recibos-paso-a-paso-4-5-min">5 · DEMO — los cuatro recibos, paso a paso (4-5 min)</h2>
+<p><strong>Cómo enviar CADA recibo (repetirás estos 3 gestos):</strong>
+1. Pulsa <strong>Open chat</strong> (en el Chat Trigger o el botón de chat del editor).
+2. Pulsa el <strong>clip 📎</strong> → elige el archivo del recibo.
+3. Escribe la <strong>línea de texto</strong> (copia-pega abajo) y pulsa <strong>Enviar</strong>.</p>
+<blockquote>
+<p>Recuerda: n8n <strong>exige texto</strong>, no puedes mandar solo la foto. La frase da igual; el agente trabaja con la imagen.</p>
+</blockquote>
+<p>Hazlo <strong>todo en la misma sesión de chat</strong> (así la memoria recuerda el café para detectar el duplicado). Entre paso y paso, abre <strong><code>Expense Agent → Logs</code></strong> para enseñar que ha leído la imagen y qué herramienta ha llamado.</p>
+<hr />
+<h3 id="recibo-1-limpio-se-registra">Recibo 1 · Limpio → se registra ✅</h3>
+<p><strong>Adjunta</strong> <code>receipt_cafe_valid.png</code> y <strong>escribe:</strong></p>
+<pre><code>Aquí tienes un recibo
+</code></pre>
+<p><strong>Qué pasa:</strong> lo lee (Café Central, 12,40 €), llama a <em>Find Similar</em> (no hay nada), sin flags → llama a <em>Log Expense</em>. Responde algo como <em>"Registrado: Café Central, 12.40 EUR (Meals) ✅"</em>.</p>
+<p><strong>Enseña:</strong> abre la pestaña <strong>Data Tables → <code>expenses</code></strong> → la fila está ahí.</p>
+<blockquote>
+<p><strong>Di:</strong> <em>"He soltado una foto y se ha registrado sola: comercio, fecha, importe, categoría. Sin teclear un dato. El agente ha LEÍDO la imagen. Miradlo en los Logs: ahí está el recibo que ha visto y la llamada a Log Expense."</em></p>
+</blockquote>
+<hr />
+<h3 id="recibo-2-el-mismo-otra-vez-duplicado">Recibo 2 · El mismo otra vez → duplicado 🟡</h3>
+<p><strong>Adjunta</strong> <code>receipt_cafe_duplicate.png</code> y <strong>escribe:</strong></p>
+<pre><code>Y este otro
+</code></pre>
+<p><strong>Qué pasa:</strong> llama a <em>Find Similar</em> con "Café Central", ve la fila de antes (misma fecha e importe) y <strong>te pregunta</strong> antes de guardar: <em>"Esto parece un duplicado del recibo de Café Central del 2026-03-12 (12,40 €). ¿Lo registro igual?"</em></p>
+<p><strong>Tú respondes (copia-pega):</strong></p>
+<pre><code>No, no lo registres
+</code></pre>
+<p><strong>Qué pasa:</strong> no lo guarda.</p>
+<blockquote>
+<p><strong>Di:</strong> <em>"Fijaos: no lo ha metido a ciegas. Ha mirado en la tabla, ha visto que ya existía, y me ha preguntado. Eso es memoria + una herramienta de lectura. Un formulario nunca podría."</em></p>
+</blockquote>
+<hr />
+<h3 id="recibo-3-ilegible-te-pide-otra-foto">Recibo 3 · Ilegible → te pide otra foto 🔴</h3>
+<p><strong>Adjunta</strong> <code>receipt_incomplete.png</code> y <strong>escribe:</strong></p>
+<pre><code>Otro gasto
+</code></pre>
+<p><strong>Qué pasa:</strong> no ve el total (está tachado) → <strong>no se inventa un cero</strong>. Responde algo como <em>"No consigo leer el importe total de este recibo, ¿me puedes enviar una foto más clara?"</em>.</p>
+<blockquote>
+<p><strong>Di:</strong> <em>"Este es el momento clave. En vez de guardar basura, el agente para y me pide una foto mejor. Ese ida y vuelta — 'esto está mal, súbela otra vez' — es justo por lo que necesitamos un chat con memoria y no un formulario."</em></p>
+</blockquote>
+<hr />
+<h3 id="recibo-4-rompe-politica-a-revision">Recibo 4 · Rompe política → a revisión 🟠</h3>
+<p><strong>Adjunta</strong> <code>receipt_dinner_policy.png</code> y <strong>escribe:</strong></p>
+<pre><code>Cena de trabajo
+</code></pre>
+<p><strong>Qué pasa:</strong> 85 € (comida &gt; 50) <strong>y</strong> lleva vino (alcohol) → lo marca y <strong>te pide una justificación</strong>: <em>"Esta comida supera el límite de 50 € e incluye alcohol. ¿Me das una breve justificación? La registraré para revisión."</em></p>
+<p><strong>Tú respondes (copia-pega):</strong></p>
+<pre><code>Cena con un cliente para cerrar el contrato
+</code></pre>
+<p><strong>Qué pasa:</strong> lo registra con <strong>status <code>review</code></strong> (no approved).</p>
+<p><strong>Enseña:</strong> la tabla <code>expenses</code> → esa fila con <code>status = review</code>.</p>
+<blockquote>
+<p><strong>Di:</strong> <em>"La política, aplicada sola: importe alto + alcohol → no lo aprueba, pide contexto y lo deja marcado para que una persona lo revise."</em></p>
+</blockquote>
+<hr />
+<blockquote>
+<p><strong>🎁 Wow extra (opcional):</strong> saca una foto a un recibo REAL con el móvil y súbela con un <code>Aquí va otro</code>. Lee manuscritos, monedas raras y papel arrugado sorprendentemente bien — ahí se ve que no es un truco con imágenes preparadas.</p>
+</blockquote>
+<hr />
+<h2 id="6-de-donde-vive-cada-cosa-mapa-mental-1-min">6 · 🧭 De dónde vive cada cosa (mapa mental, 1 min)</h2>
+<table>
+<thead>
+<tr>
+<th>Comportamiento</th>
+<th>Dónde vive</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ver la foto</td>
+<td><strong>Modelo multimodal</strong> + toggle <strong>Passthrough Binary Images</strong> del agente</td>
+</tr>
+<tr>
+<td>Leer, validar, política, cuándo pedir re-subida</td>
+<td><strong>System prompt</strong> del agente</td>
+</tr>
+<tr>
+<td>Detectar duplicados (dato exacto)</td>
+<td><strong>Data Table</strong> (Find Similar) — no el prompt</td>
+</tr>
+<tr>
+<td>Guardar el gasto (datos estructurados)</td>
+<td><strong>Log Expense</strong> con <code>$fromAI()</code></td>
+</tr>
+<tr>
+<td>Que la conversación fluya (re-subir, confirmar)</td>
+<td><strong>Simple Memory</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Regla:</strong> el modelo ve, el prompt decide, la tabla recuerda y garantiza, la memoria mantiene la charla.</p>
+</blockquote>
+<hr />
+<h2 id="7-cierre-30s">7 · Cierre (30s)</h2>
+<ul>
+<li><strong>Multimodal</strong> — el agente lee una foto directamente, sin OCR</li>
+<li><strong>Chat con memoria</strong> — puede pedirte re-subir o confirmar; un formulario no</li>
+<li><strong>Decide qué tool usar</strong> — buscar duplicado / registrar → es un agente</li>
+<li><strong><code>$fromAI()</code></strong> — la llamada a la herramienta ES la salida estructurada</li>
+<li><strong>Garantías en la BD, no en el prompt</strong> — el duplicado es un lookup exacto</li>
+</ul>
+<hr />
+<h2 id="analisis-del-prompt-y-mejoras-2-min">📋 Análisis del prompt (y mejoras, 2 min)</h2>
+<p><strong>Bien:</strong> procedimiento numerado (leer→validar→dedup→política→registrar) que mantiene a raya a un modelo hablador; el "no registres si no lo lees" (re-subida); "solo una vez Log Expense".
+<strong>Mejoras:</strong> un <strong>ejemplo</strong> de cada caso (válido / ilegible / duplicado) clavaría el criterio; <code>category</code> podría cerrarse con un JSON Schema si quieres categorías fijas; la comparación de duplicado la hace el modelo sobre las filas devueltas — para máxima fiabilidad, podrías filtrar también por fecha+total en la tool.</p>
+<blockquote>
+<p><strong>Meta-punto:</strong> reglas para lo binario (política, re-subir), ejemplos para lo sutil, y las garantías duras (el lookup de duplicados) fuera del prompt.</p>
+</blockquote>
+<hr />
+<h1 id="parte-2-variaciones-para-alargar-el-video">🎬 PARTE 2 — Variaciones (para alargar el vídeo)</h1>
+<h2 id="variacion-1-pregunta-a-tus-gastos-4-min">Variación 1 — "Pregunta a tus gastos" (4 min) ⭐</h2>
+<p>Añade una 3ª tool <strong>List Expenses</strong> (Data Table Get, filtro <code>category</code> = <code>$fromAI</code>) y una línea al prompt: <em>"Si el usuario pregunta por su gasto, usa List Expenses."</em> Ahora el mismo asistente <strong>captura</strong> (subes recibo) y <strong>responde</strong> ("¿cuánto llevo en Meals?").</p>
+<blockquote>
+<p>"Cierra el círculo: construyes los datos VIÉNDOLOS y los consultas HABLANDO."</p>
+</blockquote>
+<h2 id="variacion-2-botones-de-aprobarrechazar-hitl-real-5-min">Variación 2 — Botones de Aprobar/Rechazar (HITL real) (5 min) 🛡️</h2>
+<p>Para un gasto <code>review</code>, en vez de guardarlo directo, mete un <strong>Chat 'Send and Wait' (Approval)</strong> (como la variación de P1): una persona pulsa <strong>Aprobar/Rechazar</strong> antes de guardarlo. Los limpios pasan solos.</p>
+<h2 id="variacion-3-digest-semanal-5-min">Variación 3 — Digest semanal (5 min)</h2>
+<p>Segundo workflow: <strong>Schedule Trigger</strong> → lee <code>expenses</code> → filtra <code>status = review</code> de los últimos 7 días → email/Telegram a finanzas con el resumen de lo que necesita revisión.</p>
+<h2 id="variacion-4-facturas-en-pdf-3-min">Variación 4 — Facturas en PDF (3 min)</h2>
+<p>El agente también tiene <strong>Automatically Passthrough Binary PDFs</strong> (genial con Gemini). Acepta un PDF de factura y extrae los mismos campos.</p>
+<h2 id="variacion-5-tu-propia-politica-3-min-solo-prompt">Variación 5 — Tu propia política (3 min, solo prompt)</h2>
+<p>Reescribe las reglas de política para un equipo real (límites por categoría, campos obligatorios, comercios permitidos) y prueba cada una con un recibo (edita uno de los de muestra).</p>
+<hr />
+<h2 id="recibos-de-prueba-en-el-repo-_staticdatareceipts">🧪 Recibos de prueba (en el repo, <code>_static/data/receipts/</code>)</h2>
+<ul>
+<li><code>receipt_cafe_valid.png</code> — Café Central, 12,40 € → <strong>approved</strong></li>
+<li><code>receipt_cafe_duplicate.png</code> — idéntico → <strong>duplicado</strong> (pide confirmar)</li>
+<li><code>receipt_incomplete.png</code> — sin total → <strong>pide re-subir</strong></li>
+<li><code>receipt_dinner_policy.png</code> — 85 € + vino → <strong>review</strong></li>
+</ul>
+<hr />
+<h2 id="avisos-de-grabacion">⚠️ Avisos de grabación</h2>
+<ol>
+<li><strong>Modelo multimodal obligatorio:</strong> con un modelo de solo texto el agente "no ve" nada y se lo inventa. <code>gpt-4o-mini</code> funciona.</li>
+<li><strong>La tabla <code>expenses</code> creada</strong> (por nombre, 6 columnas String) antes de grabar, o Log Expense/Find Similar fallan.</li>
+<li><strong>El orden de la demo importa:</strong> el válido primero (crea la fila) para que el duplicado luego se detecte.</li>
+<li><strong>La pantalla clave es <code>Expense Agent → Logs</code>:</strong> ahí se ve que ha leído la imagen y ha llamado a las tools.</li>
+<li><strong>Sesión de chat:</strong> la re-subida y la confirmación del duplicado dependen de la memoria — hazlas en la misma conversación.</li>
+<li><strong>Coste:</strong> cada foto es una llamada con imagen (un pelín más cara que texto), pero con gpt-4o-mini es barato. Pon Max Iterations 5-10 si compartes la URL.</li>
+</ol>
+</main>
+</div>
+<script>
+// Botón "copiar" en cada bloque de código
+document.querySelectorAll('main pre').forEach(pre => {
+  const btn = document.createElement('button');
+  btn.className = 'copy'; btn.textContent = 'copiar';
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(pre.querySelector('code').innerText.trimEnd());
+    btn.textContent = '✓ copiado';
+    setTimeout(() => btn.textContent = 'copiar', 1500);
+  });
+  pre.appendChild(btn);
+});
+// Scrollspy: resalta en el sidebar la sección visible
+const links = [...document.querySelectorAll('.nav a')];
+const byId = Object.fromEntries(links.map(a => [a.getAttribute('href').slice(1), a]));
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(a => a.classList.remove('active'));
+      byId[e.target.id]?.classList.add('active');
+    }
+  });
+}, {rootMargin: '0px 0px -75% 0px'});
+document.querySelectorAll('main h2[id], main h3[id]').forEach(h => obs.observe(h));
+</script>
+</body>
+</html>

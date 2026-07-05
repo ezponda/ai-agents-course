@@ -77,9 +77,9 @@
     <a href="#7-auto-correccion-reflexion-con-pistas-1-min">7 · Auto-corrección — reflexión con pistas (1 min)</a>
     <a href="#8-cierre-30s">8 · Cierre (30s)</a>
     <a href="#opcional-analisis-del-prompt-final-y-mejoras-2-min">📋 (Opcional) Análisis del prompt final y mejoras (2 min)</a>
-    <a href="#variacion-1-tablas-markdown-en-el-chat-2-min-1-linea">Variación 1 — Tablas Markdown en el chat (2 min, 1 línea)</a>
-    <a href="#variacion-2-forzar-la-auto-correccion-3-min">Variación 2 — Forzar la auto-corrección (3 min)</a>
-    <a href="#variacion-3-anadir-memoria-3-min-1-nodo">Variación 3 — Añadir memoria (3 min, 1 nodo)</a>
+    <a href="#variacion-1-anadir-memoria-3-min-1-nodo">Variación 1 — Añadir memoria (3 min, 1 nodo) ⭐</a>
+    <a href="#variacion-2-tablas-markdown-en-el-chat-2-min-1-linea">Variación 2 — Tablas Markdown en el chat (2 min, 1 línea)</a>
+    <a href="#variacion-3-forzar-la-auto-correccion-3-min">Variación 3 — Forzar la auto-corrección (3 min)</a>
     <a href="#variacion-4-guardrail-en-el-interprete-4-min">Variación 4 — Guardrail en el intérprete (4 min) 🛡️</a>
     <a href="#variacion-5-el-analista-universal-que-infiera-el-dataset-solo-5-6-min">Variación 5 — El analista UNIVERSAL: que infiera el dataset solo 🌍 (5-6 min) ⭐</a>
     <a class="h3" href="#paso-1-pon-el-prompt-generico-borra-el-esquema-de-spotify">Paso 1 — Pon el prompt genérico (borra el esquema de Spotify)</a>
@@ -326,7 +326,7 @@ Use bracket notation for keys with special characters: row['artist(s)_name'], ro
 <hr />
 <h2 id="7-auto-correccion-reflexion-con-pistas-1-min">7 · Auto-corrección — reflexión con pistas (1 min)</h2>
 <ul>
-<li>Si en los Logs ha aparecido un reintento, señálalo. Si no, <strong>provócalo con la Variación 2</strong>.</li>
+<li>Si en los Logs ha aparecido un reintento, señálalo. Si no, <strong>provócalo con la Variación 3</strong>.</li>
 <li><strong>Di:</strong> <em>"Cuando el código del agente falla, la herramienta le devuelve el error MÁS las columnas MÁS una fila de ejemplo. El agente lo lee, ve dónde se equivocó, y reescribe. Nadie ha programado ese retry: es el loop del agente + reflexión (Cap. 5) — y le hemos dado justo las pistas para que acierte a la primera. Reflexión </em><em>con pistas</em><em>, no a ciegas."</em></li>
 </ul>
 <hr />
@@ -350,7 +350,27 @@ Use bracket notation for keys with special characters: row['artist(s)_name'], ro
 <blockquote>
 <p>Colócalas <strong>antes del cierre</strong> (Paso 8). Recomendadas: <strong>1 + 4 + 5</strong>. Al terminar, revierte o reimporta el JSON limpio.</p>
 </blockquote>
-<h2 id="variacion-1-tablas-markdown-en-el-chat-2-min-1-linea">Variación 1 — Tablas Markdown en el chat (2 min, 1 línea)</h2>
+<h2 id="variacion-1-anadir-memoria-3-min-1-nodo">Variación 1 — Añadir memoria (3 min, 1 nodo) ⭐</h2>
+<p><strong>Qué enseña:</strong> que sin memoria el agente no "falla" con un error — <strong>da una respuesta convincente y EQUIVOCADA</strong>. Es la lección más importante (y más peligrosa) del proyecto, y se ve en los logs.</p>
+<ol>
+<li><strong>Demo del fallo primero</strong> (sin tocar nada). Pregunta:
+   <code>Dame las 5 canciones más escuchadas</code>
+   Y luego, seguido:
+   <code>De la segunda, dime su nombre y cuántos BPM tiene</code></li>
+<li><strong>[Abre los Logs — ESTE es el momento]:</strong> mira el código que escribió el agente. Habrá puesto algo como <code>data[1]['bpm']</code> — la <strong>segunda FILA del CSV en crudo</strong>, que no está ordenado por streams. <strong>No</strong> es Shape of You (la segunda de tu lista).<blockquote>
+<p><em>"Le pido 'la segunda' y me responde tan tranquilo… pero mirad el código: ha usado <code>data[1]</code>, la segunda fila del fichero — una canción cualquiera, no la de mi lista. No tiene ni idea de qué lista le hablo, así que se lo inventa. Y lo peligroso no es que falle: es que responde con total seguridad una respuesta FALSA. Fijaos en el nombre — ni coincide con mi top 5."</em></p>
+</blockquote>
+</li>
+<li><strong>+ Memory</strong> en el agente → <strong>Simple Memory</strong>: Session ID <code>{{ $json.sessionId }}</code>, Context Window <code>10</code>.</li>
+<li>Repite las dos preguntas en el mismo orden → ahora sí:<blockquote>
+<p><em>"Ahora recuerda la lista. 'La segunda' es Shape of You, la busca por nombre, y me da su BPM de verdad. Eso es la memoria: reinyectar los últimos mensajes en cada llamada. Sin ella no hay conversación — hay preguntas sueltas, y a veces mentiras con buena cara."</em></p>
+</blockquote>
+</li>
+</ol>
+<blockquote>
+<p>"P2 venía sin memoria a propósito — preguntas sueltas no la necesitan y es más barato. Para conversar con tus datos, un clic. Pero ya veis que la ausencia de memoria no avisa: por eso hay que probarla."</p>
+</blockquote>
+<h2 id="variacion-2-tablas-markdown-en-el-chat-2-min-1-linea">Variación 2 — Tablas Markdown en el chat (2 min, 1 línea)</h2>
 <ol>
 <li>Añade al System Message (regla 6) — copia y pega:
    ```</li>
@@ -362,7 +382,7 @@ Use bracket notation for keys with special characters: row['artist(s)_name'], ro
 </blockquote>
 </li>
 </ol>
-<h2 id="variacion-2-forzar-la-auto-correccion-3-min">Variación 2 — Forzar la auto-corrección (3 min)</h2>
+<h2 id="variacion-3-forzar-la-auto-correccion-3-min">Variación 3 — Forzar la auto-corrección (3 min)</h2>
 <ol>
 <li>En el System Message, <strong>borra la regla 2</strong> (bracket notation) y la línea suelta de corchetes.</li>
 <li>Pregunta:
@@ -370,18 +390,6 @@ Use bracket notation for keys with special characters: row['artist(s)_name'], ro
 <li><strong>[Abre Logs]:</strong> <em>"Primer intento: <code>row.danceability_%</code> — sintaxis ilegal → ERROR con columnas + ejemplo. Segundo intento: corchetes, respuesta. El error es un resultado más de la herramienta y el loop hace el resto."</em></li>
 <li><strong>Restaura</strong> el prompt (Paso 5, V3).<blockquote>
 <p>Ojo: probabilístico. Si acierta a la primera, dilo ("por eso existe la regla: para acertar SIEMPRE") y prueba <code>Compare average valence_% by key</code>.</p>
-</blockquote>
-</li>
-</ol>
-<h2 id="variacion-3-anadir-memoria-3-min-1-nodo">Variación 3 — Añadir memoria (3 min, 1 nodo)</h2>
-<ol>
-<li>Demo del fallo, en orden:
-   <code>Top 5 most streamed songs</code>
-   <code>And which of those is the most danceable?</code>
-   <em>"'¿De ESAS cuál…?' — ni idea. Este workflow no tiene memoria."</em></li>
-<li><strong>+ Memory</strong> en el agente → <strong>Simple Memory</strong>: Session ID <code>{{ $json.sessionId }}</code>, Context Window <code>10</code>.</li>
-<li>Repite las dos → el follow-up funciona.<blockquote>
-<p>"P2 venía sin memoria a propósito — preguntas sueltas no la necesitan y es más barato. Para CONVERSAR con tus datos, un clic."</p>
 </blockquote>
 </li>
 </ol>
@@ -452,7 +460,7 @@ Rules:
 <ul>
 <li><strong>Antes (V3):</strong> el esquema estaba en el prompt → el agente NO inferencia, se lo dábamos nosotros. Más preciso, pero atado a Spotify.</li>
 <li><strong>Ahora (V5):</strong> el prompt le pide <strong>inspeccionar primero</strong> (un <code>head</code>: <code>Object.keys</code> + una fila) → el agente <strong>descubre</strong> columnas y tipos, y luego analiza. Genérico: sirve para cualquier dataset cambiando la URL.</li>
-<li><strong>El coste:</strong> una llamada extra de inspección por pregunta. Es barata (solo entran las claves + 1 fila). Si quisieras evitar repetirla, añades <strong>Memory</strong> (Variación 3) y una regla "si ya inspeccionaste en esta conversación, salta el paso 1".</li>
+<li><strong>El coste:</strong> una llamada extra de inspección por pregunta. Es barata (solo entran las claves + 1 fila). Si quisieras evitar repetirla, añades <strong>Memory</strong> (Variación 1) y una regla "si ya inspeccionaste en esta conversación, salta el paso 1".</li>
 </ul>
 <p><strong>Revertir:</strong> restaura el System Message de Spotify (V3, Paso 5) y la <code>CSV_URL</code> original — o reimporta el JSON limpio.</p>
 <hr />

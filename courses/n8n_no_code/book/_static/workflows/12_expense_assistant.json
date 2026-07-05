@@ -1,0 +1,214 @@
+{
+  "name": "12 — Expense Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_3_expense_assistant.html)\n## AI Expense Assistant — a vision agent\n**Goal:** Drop a photo of a receipt in the chat. The agent **sees** it, extracts the fields, checks it's readable, not a duplicate and within policy, then logs it — talking you through anything wrong.\n\n### Requirements\n- **n8n 1.113+** (Data Tables) and an **OpenRouter API key** with a **multimodal** model (`openai/gpt-4o-mini` works).\n- No other credentials — expenses live in an n8n **Data Table**.\n\n### Setup (before first run)\n1. Create a Data Table named exactly `expenses` (all columns String): `vendor`, `expense_date`, `total`, `currency`, `category`, `status`. The two Data Table tools already point to it **by name** — nothing to select.\n2. The Chat Trigger already has **Allow File Uploads** on, and the agent has **Automatically Passthrough Binary Images** on — that's what lets it see the receipt.\n\n### Try this (sample receipts are in the course repo, `_static/data/receipts/`)\n1. Upload `receipt_cafe_valid.png` → logged as approved.\n2. Upload `receipt_cafe_duplicate.png` → \"looks like a duplicate, confirm?\".\n3. Upload `receipt_incomplete.png` → \"I can't read the total, send a clearer photo\".\n4. Upload `receipt_dinner_policy.png` → 85 EUR meal + wine → flagged for review.",
+        "height": 500,
+        "width": 760,
+        "color": 4
+      },
+      "id": "13000000-0000-4000-8000-000000000001",
+      "name": "NOTE — Expense Assistant",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1060,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "public": false,
+        "mode": "hostedChat",
+        "options": {
+          "allowFileUploads": true,
+          "responseMode": "lastNode"
+        }
+      },
+      "id": "13000000-0000-4000-8000-000000000002",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1000,
+        -40
+      ],
+      "webhookId": "13000000-0000-4000-8000-00000000cc03"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are an expense assistant for a company. Employees send you a PHOTO of a receipt in the chat, and you log it — but only after you have checked it is readable, not a duplicate, and within policy. You can see the images they send.\n\nThe user must type a short text message to send the photo (e.g. \"here's a receipt\", \"aquí tienes\"). That note is not important — work from the receipt IMAGE. If a message arrives with NO image at all, ask them to attach the receipt photo.\n\nFor each receipt image the user sends:\n1. READ it. Extract: vendor (merchant name), expense_date (YYYY-MM-DD), total amount, currency, and a category — one of: Meals, Travel, Software, Office, Other.\n2. VALIDATE. If it is not a receipt, or you cannot clearly read the total or the vendor, do NOT log it. Tell the user exactly what is missing and ask them to send a clearer photo.\n3. CHECK FOR DUPLICATES. Call \"Find Similar Expenses\" with the vendor to get their past expenses for that merchant. If one has the SAME date and the SAME total, tell the user it looks like a duplicate and ask them to confirm before you log it.\n4. CHECK POLICY. Set status to \"review\" (otherwise \"approved\") when any of these apply:\n   - a Meals expense is over 50 — also ask the user for a short justification;\n   - the receipt is clearly for alcohol or a bar — alcohol is not reimbursable, flag it;\n   - the total is over 200.\n5. LOG. Once the receipt is readable, not an unconfirmed duplicate, and policy is handled, call \"Log Expense\" with vendor, expense_date, total, currency, category and status. Then confirm in one friendly line what you logged and its status.\n\nRules:\n- Be concise and friendly — one short paragraph per reply.\n- Never invent a field you cannot read; ask instead.\n- Call \"Log Expense\" only once per receipt, after the checks.\n- Reply in the user's language.",
+          "passthroughBinaryImages": true
+        }
+      },
+      "id": "13000000-0000-4000-8000-000000000003",
+      "name": "Expense Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -680,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "13000000-0000-4000-8000-000000000004",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -860,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 12,
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "id": "13000000-0000-4000-8000-000000000005",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -700,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "expenses"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "vendor",
+              "condition": "eq",
+              "keyValue": "={{ $fromAI('vendor', 'The vendor / merchant name on the receipt', 'string') }}"
+            }
+          ]
+        },
+        "descriptionType": "manual",
+        "toolDescription": "Returns past expenses for a given vendor. Each row has vendor, expense_date, total, currency, category, status. Use it to detect duplicates: a duplicate has the SAME vendor, date and total."
+      },
+      "id": "13000000-0000-4000-8000-000000000006",
+      "name": "Find Similar Expenses",
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "expenses"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "vendor": "={{ $fromAI('vendor', 'The vendor / merchant name', 'string') }}",
+            "expense_date": "={{ $fromAI('expense_date', 'The receipt date, format YYYY-MM-DD', 'string') }}",
+            "total": "={{ $fromAI('total', 'The total amount as a number, e.g. 12.40', 'string') }}",
+            "currency": "={{ $fromAI('currency', 'Currency code or symbol, e.g. EUR', 'string') }}",
+            "category": "={{ $fromAI('category', 'One of: Meals, Travel, Software, Office, Other', 'string') }}",
+            "status": "={{ $fromAI('status', 'approved or review', 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "descriptionType": "manual",
+        "toolDescription": "Adds one expense row to the table. Call it ONLY after the receipt is readable, checked for duplicates, and policy handled."
+      },
+      "id": "13000000-0000-4000-8000-000000000007",
+      "name": "Log Expense",
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Expense Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Expense Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Expense Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Similar Expenses": {
+      "ai_tool": [
+        [
+          {
+            "node": "Expense Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Expense": {
+      "ai_tool": [
+        [
+          {
+            "node": "Expense Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
