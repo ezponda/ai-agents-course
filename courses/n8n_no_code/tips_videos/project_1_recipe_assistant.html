@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guion — Project 1: Recipe Assistant (workflow 10_recipe_assistant.json)</title>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#171a23; --panel2:#1e2230; --ink:#e8eaf0; --muted:#9aa3b2;
+    --line:#2a2f3e; --accent:#36a3ff; --say:#4aa3ff; --do:#36c98b; --warn:#ffb84d;
+    --quote:#c08bff; --code:#0b0d13; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+
+  aside{position:sticky;top:0;height:100vh;overflow:auto;background:var(--panel);
+    border-right:1px solid var(--line);padding:20px 16px}
+  aside h1{font-size:14px;margin:0 0 16px;line-height:1.4}
+  .nav a{display:block;color:var(--muted);text-decoration:none;padding:7px 11px;
+    border-radius:10px;font-size:13px;margin-bottom:2px;border:1px solid transparent;line-height:1.35}
+  .nav a.h3{padding-left:24px;font-size:12.5px}
+  .nav a:hover{background:var(--panel2);color:var(--ink)}
+  .nav a.active{background:var(--panel2);color:var(--ink);border-color:var(--line)}
+
+  main{padding:36px 48px;max-width:980px}
+  main h1{font-size:26px;margin:0 0 18px;line-height:1.3}
+  main h2{font-size:21px;margin:44px 0 14px;padding-top:22px;border-top:1px solid var(--line)}
+  main h3{font-size:17px;margin:30px 0 10px;color:var(--accent)}
+  main h4{font-size:15px;margin:22px 0 8px;color:var(--tip,#caa45a)}
+  main a{color:var(--accent)}
+  main blockquote{margin:12px 0;padding:10px 16px;border-left:3px solid var(--say);
+    background:var(--panel);border-radius:0 10px 10px 0;color:#cfe3ff}
+  main blockquote p{margin:0}
+  main strong{color:#d6f5e7}
+  main code{background:var(--code);border:1px solid var(--line);border-radius:6px;
+    padding:1px 6px;font-size:.9em}
+  main pre{position:relative;background:var(--code);border:1px solid var(--line);
+    border-radius:10px;padding:14px 16px;overflow-x:auto}
+  main pre code{background:none;border:0;padding:0;font-size:13.5px;line-height:1.55}
+  .copy{position:absolute;top:8px;right:8px;background:var(--panel2);color:var(--muted);
+    border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:12px;cursor:pointer}
+  .copy:hover{color:var(--ink)}
+  main table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14.5px}
+  main th,main td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+  main th{background:var(--panel2)}
+  main tr:nth-child(even) td{background:var(--panel)}
+  main hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+  main ul,main ol{padding-left:26px}
+  main li{margin:5px 0}
+
+  @media(max-width:860px){.wrap{grid-template-columns:1fr}aside{position:static;height:auto}main{padding:24px 20px}}
+  @media print{aside{display:none}.wrap{grid-template-columns:1fr}.copy{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<aside>
+  <h1>Guion — Project 1: Recipe Assistant (workflow 10_recipe_assistant.json)</h1>
+  <nav class="nav">
+    <a href="#concepto-clave">Concepto clave</a>
+    <a href="#flujo-del-workflow">Flujo del workflow</a>
+    <a href="#preparacion-antes-de-grabar">🔧 Preparación ANTES de grabar</a>
+    <a href="#guion-paso-a-paso-comentando-el-workflow-importado">🎬 Guion paso a paso (comentando el workflow importado)</a>
+    <a class="h3" href="#0-cold-open-opcional-40s">0. Cold open (opcional, 40s)</a>
+    <a class="h3" href="#1-introduccion-que-vamos-a-ver-30s">1. Introducción — Qué vamos a ver (30s)</a>
+    <a class="h3" href="#2-chat-trigger-el-punto-de-entrada-30s">2. Chat Trigger — El punto de entrada (30s)</a>
+    <a class="h3" href="#3-recipe-search-agent-el-cerebro-del-workflow-2-min">3. Recipe Search Agent — El cerebro del workflow (2 min)</a>
+    <a class="h3" href="#4-review-recipe-el-formulario-humano-15-min">4. Review Recipe — El formulario humano (1.5 min)</a>
+    <a class="h3" href="#5-want-prices-branching-condicional-30s">5. Want Prices? — Branching condicional (30s)</a>
+    <a class="h3" href="#6-shopping-list-agent-precios-reales-15-min">6. Shopping List Agent — Precios reales (1.5 min)</a>
+    <a class="h3" href="#7-output-nodes-30s">7. Output nodes (30s)</a>
+    <a class="h3" href="#8-demo-en-vivo-3-min">8. DEMO en vivo (3 min)</a>
+    <a class="h3" href="#9-demo-follow-up-con-memoria-1-min">9. Demo — Follow-up con memoria (1 min)</a>
+    <a class="h3" href="#10-demo-fallback-a-google-opcional-1-min">10. Demo — Fallback a Google (opcional, 1 min)</a>
+    <a class="h3" href="#11-cierre-que-combina-este-proyecto-30s">11. Cierre — Qué combina este proyecto (30s)</a>
+    <a href="#parte-2-variaciones-para-alargar-el-video">🎬 PARTE 2 — Variaciones (para alargar el vídeo)</a>
+    <a class="h3" href="#variacion-1-que-pasa-sin-memoria-2-min-sin-config">Variación 1 — ¿Qué pasa sin memoria? (2 min, sin config)</a>
+    <a class="h3" href="#variacion-2-agent-vs-basic-llm-chain-los-precios-inventados-4-min">Variación 2 — Agent vs Basic LLM Chain: los precios inventados (4 min)</a>
+    <a class="h3" href="#variacion-3-nueva-herramienta-random-recipe-4-min">Variación 3 — Nueva herramienta: Random Recipe (4 min)</a>
+    <a class="h3" href="#variacion-4-cambiar-un-nodo-por-otro-if-switch-con-tercera-opcion-5-6-min">Variación 4 — Cambiar un nodo por otro: IF → Switch, con tercera opción (5-6 min)</a>
+    <a class="h3" href="#variacion-5-el-prompt-manda-formato-y-idioma-3-min-solo-prompt">Variación 5 — El prompt manda: formato y idioma (3 min, solo prompt)</a>
+    <a href="#textos-de-prueba-copy-paste-para-el-chat">🧪 Textos de prueba (copy-paste para el chat)</a>
+    <a href="#cosas-a-tener-en-cuenta-durante-la-grabacion">⚠️ Cosas a tener en cuenta durante la grabación</a>
+  </nav>
+</aside>
+<main>
+<h1 id="guion-project-1-recipe-assistant-workflow-10_recipe_assistantjson">Guion — Project 1: Recipe Assistant (workflow <code>10_recipe_assistant.json</code>)</h1>
+<h2 id="concepto-clave">Concepto clave</h2>
+<p>Un workflow completo que combina todo lo visto en el curso: agent con tools, memoria, formulario de revisión humana, branching condicional, y un segundo agent que busca precios reales en Google.</p>
+<h2 id="flujo-del-workflow">Flujo del workflow</h2>
+<pre><code>Chat Trigger → Recipe Search Agent → Review Recipe (Form) → Want Prices? (IF)
+                    ┊                                           │
+         ┌──────────┼──────────┐                   Yes ─────────┼──▶ Shopping List Agent → Output — With Prices
+         ┊          ┊     ┊    ┊                                │         ┊
+    Chat Model  Memory  HTTP  SerpAPI              No ──────────┼──▶ Output — Recipe Only
+                      (MealDB) (fallback)                            ┊
+                                                              Chat Model + Price Search (SerpAPI)
+</code></pre>
+<p><strong>Credenciales necesarias:</strong> OpenRouter + SerpAPI</p>
+<hr />
+<h2 id="preparacion-antes-de-grabar">🔧 Preparación ANTES de grabar</h2>
+<ol>
+<li><strong>Cuota SerpAPI:</strong> entra en tu dashboard de serpapi.com y comprueba las búsquedas que te quedan este mes — cada demo con lista de compras gasta 1-2.</li>
+<li><strong>Ejecución completa de prueba</strong> (receta → formulario → lista con precios): calienta el flujo y confirma que las credenciales funcionan antes de grabar.</li>
+<li><strong>TheMealDB en 10 segundos:</strong> <code>curl "https://www.themealdb.com/api/json/v1/1/search.php?s=chicken"</code> — te evita descubrir en directo que la API está caída.</li>
+<li><strong>Durabilidad — modelos:</strong> no te recrees en <code>gpt-4o-mini</code> a cámara; di "un modelo rápido y barato — el que tengáis configurado". Los nombres de modelos caducan antes que el vídeo.</li>
+<li><strong>Durabilidad — UI:</strong> nombra funciones, no posiciones ("el botón <strong>Chat</strong> del editor", no "abajo a la derecha"); n8n mueve botones entre versiones. Verifica también los nombres de nodo en TU versión (la memoria hoy se llama <strong>Simple Memory</strong>; antes <em>Window Buffer Memory</em>).</li>
+</ol>
+<hr />
+<h2 id="guion-paso-a-paso-comentando-el-workflow-importado">🎬 Guion paso a paso (comentando el workflow importado)</h2>
+<h3 id="0-cold-open-opcional-40s">0. Cold open (opcional, 40s)</h3>
+<p><strong>Empezar con el resultado final de una ejecución anterior en pantalla: la receta + la lista de la compra con precios.</strong></p>
+<blockquote>
+<p>"Esto es un asistente de recetas montado en n8n sin una línea de código: busca recetas reales en internet, me deja revisarlas en un formulario y, si quiero, me genera la lista de la compra con precios reales sacados de Google. Vamos a verlo por dentro, nodo a nodo."</p>
+</blockquote>
+<hr />
+<h3 id="1-introduccion-que-vamos-a-ver-30s">1. Introducción — Qué vamos a ver (30s)</h3>
+<blockquote>
+<p>"Este es el Project 1 del curso. Combina casi todo lo que habéis visto: un agent con herramientas, memoria, un formulario para que el humano revise, y un segundo agent que busca precios reales por internet. Vamos a recorrer el workflow nodo a nodo."</p>
+</blockquote>
+<p><strong>Abrir el workflow importado y hacer zoom out para que se vea entero.</strong></p>
+<hr />
+<h3 id="2-chat-trigger-el-punto-de-entrada-30s">2. Chat Trigger — El punto de entrada (30s)</h3>
+<p><strong>Click en "When chat message received".</strong></p>
+<blockquote>
+<p>"A diferencia de los workflows anteriores que usaban Manual Trigger, aquí usamos Chat Trigger. Esto habilita el botón <strong>Chat</strong> del editor, que abre una ventanita donde podemos escribir como si fuera ChatGPT. Cada mensaje que enviamos genera una ejecución."</p>
+</blockquote>
+<p><strong>Dato interesante:</strong> "Como tiene <code>responseMode: lastNode</code>, el chat espera a que el ÚLTIMO nodo del flujo devuelva la respuesta. Si elegimos generar la lista de compras, el chat no responde hasta que TODO el flujo termina."</p>
+<hr />
+<h3 id="3-recipe-search-agent-el-cerebro-del-workflow-2-min">3. Recipe Search Agent — El cerebro del workflow (2 min)</h3>
+<p><strong>Click en "Recipe Search Agent". Mostrar las 4 conexiones de abajo: Chat Model, Memory, Recipe Search, Google Search.</strong></p>
+<blockquote>
+<p>"Este agent tiene cuatro cosas conectadas por debajo. Vamos a verlas una a una."</p>
+</blockquote>
+<h4 id="3a-system-message">3a. System Message</h4>
+<p><strong>Click en Options → System Message.</strong></p>
+<blockquote>
+<p>"El system message le dice al agent tres cosas importantes:"</p>
+</blockquote>
+<ol>
+<li>
+<p><strong>Traducción automática:</strong> "Convierte la petición a inglés antes de buscar. Si el alumno escribe 'quiero pollo', el agent busca 'chicken'. TheMealDB solo entiende inglés."</p>
+</li>
+<li>
+<p><strong>Estrategia de fallback:</strong> "Usa primero Recipe Search (TheMealDB), que devuelve datos estructurados. Solo usa Google Search si TheMealDB no encuentra nada — o sea, si <code>meals</code> es <code>null</code>."</p>
+</li>
+<li>
+<p><strong>Formato de respuesta:</strong> "Le damos un formato exacto: nombre, categoría, ingredientes con cantidades, instrucciones. Esto es importante porque luego el segundo agent necesita leer esos ingredientes para la lista de compras."</p>
+</li>
+</ol>
+<h4 id="3b-memory">3b. Memory</h4>
+<p><strong>Click en Simple Memory.</strong></p>
+<blockquote>
+<p>"Simple Memory — el Window Buffer de toda la vida — con 10 mensajes. Gracias a esto podemos tener una conversación: 'busca pollo', luego 'ahora dame una receta de pasta', y el agent recuerda el contexto."</p>
+</blockquote>
+<p><strong>Dato interesante:</strong> "El Session ID usa <code>$json.sessionId</code>, que viene del Chat Trigger. Cada ventana de chat tiene su propia conversación."</p>
+<h4 id="3c-http-request-tool-recipe-search">3c. HTTP Request Tool — Recipe Search</h4>
+<p><strong>Click en Recipe Search. Mostrar la configuración.</strong></p>
+<blockquote>
+<p>"Esta es la primera vez que usamos el HTTP Request Tool. Permite que el agent llame a cualquier API de internet."</p>
+</blockquote>
+<p><strong>Señalar estos campos:</strong></p>
+<ul>
+<li><strong>URL:</strong> <code>https://www.themealdb.com/api/json/v1/1/search.php</code> — "La URL es fija, sin parámetros."</li>
+<li><strong>Query Parameters:</strong> "Aquí está la magia. El parámetro <code>s</code> tiene un valor con <code>$fromAI()</code>. Esto le dice al agent: 'tú decides qué valor poner aquí'. Si el usuario pide chicken, el agent rellena <code>s=chicken</code> y la URL final es <code>search.php?s=chicken</code>."</li>
+<li><strong>Tool Description:</strong> "Importante: la descripción le dice al agent CUÁNDO usar esta herramienta y QUÉ esperar. Fíjaos que dice 'If the response contains meals:null, no recipes were found'. Esto le ayuda a decidir si probar Google."</li>
+<li><strong>Optimize Response:</strong> "Reduce el JSON de respuesta para gastar menos tokens."</li>
+</ul>
+<p><strong>Dato interesante:</strong> "TheMealDB es gratis y no necesita API key. El <code>1</code> en la URL es la key de prueba que ellos proporcionan."</p>
+<h4 id="3d-google-search-serpapi-fallback">3d. Google Search (SerpAPI) — Fallback</h4>
+<p><strong>Click en Google Search.</strong></p>
+<blockquote>
+<p>"SerpAPI es el plan B. Si TheMealDB no tiene la receta (por ejemplo, un plato muy específico), el agent busca en Google. Esto ya lo vimos en el capítulo de AI Agents."</p>
+</blockquote>
+<hr />
+<h3 id="4-review-recipe-el-formulario-humano-15-min">4. Review Recipe — El formulario humano (1.5 min)</h3>
+<p><strong>Click en "Review Recipe".</strong></p>
+<blockquote>
+<p>"Después de que el agent encuentra la receta, el workflow se PAUSA aquí. Este es un Wait node configurado como formulario. Es el mismo patrón de Human-in-the-Loop que vimos antes, pero con un formulario web."</p>
+</blockquote>
+<p><strong>Señalar los campos del formulario:</strong></p>
+<ul>
+<li><strong>Recipe (HTML):</strong> "Muestra la receta en formato legible. Usa <code>$json.output</code> que es la respuesta del agent."</li>
+<li><strong>Generate shopping list? (Dropdown):</strong> "Aquí el humano decide: quiero lista de compras con precios, o solo la receta."</li>
+</ul>
+<blockquote>
+<p>"Para probarlo: cuando ejecutéis el workflow, el chat no va a responder inmediatamente. Tenéis que ir al nodo Review Recipe en el panel de ejecución, copiar la Test URL, y abrirla en el navegador. Ahí veréis el formulario."</p>
+</blockquote>
+<p><strong>Dato interesante:</strong> "Este patrón es súper útil en producción: el AI draft, el humano revisa. Nunca dejéis que un agent envíe algo directamente sin revisión humana."</p>
+<hr />
+<h3 id="5-want-prices-branching-condicional-30s">5. Want Prices? — Branching condicional (30s)</h3>
+<p><strong>Click en "Want Prices?".</strong></p>
+<blockquote>
+<p>"Un IF simple. Si el usuario eligió 'Yes, with price estimates', va por arriba hacia el Shopping List Agent. Si eligió 'No', va directamente al Output — Recipe Only."</p>
+</blockquote>
+<p><strong>Señalar la expresión:</strong> <code>$json["Generate shopping list?"]</code></p>
+<blockquote>
+<p>"Fíjaos que el nombre del campo del formulario se usa tal cual como clave del JSON. Los espacios y el interrogante son parte del nombre."</p>
+</blockquote>
+<hr />
+<h3 id="6-shopping-list-agent-precios-reales-15-min">6. Shopping List Agent — Precios reales (1.5 min)</h3>
+<p><strong>Click en "Shopping List Agent".</strong></p>
+<blockquote>
+<p>"Aquí es donde se pone interesante. Esto NO es un Basic LLM Chain como los que hemos visto antes. Es un SEGUNDO agent, con su propia herramienta: SerpAPI para buscar precios en Google."</p>
+</blockquote>
+<h4 id="6a-por-que-un-agent-y-no-un-llm-chain">6a. Por qué un agent y no un LLM Chain</h4>
+<blockquote>
+<p>"Un LLM Chain simplemente genera texto. Si le pides precios, se los inventa — 'realistic estimates based on 2024 averages'. Un agent puede BUSCAR esos precios en Google, así que son datos reales."</p>
+</blockquote>
+<h4 id="6b-system-message">6b. System Message</h4>
+<p><strong>Click en Options → System Message.</strong></p>
+<blockquote>
+<p>"El prompt le dice al agent algo clave: que agrupe los ingredientes en UNA sola búsqueda. En vez de buscar 'price chicken', 'price tomatoes', 'price onions' — una búsqueda por ingrediente, que gastaría mucha API — busca 'grocery store prices chicken breast tomatoes onions' todo junto. Máximo 2 búsquedas."</p>
+</blockquote>
+<p><strong>Señalar:</strong> "Los ingredientes que no encuentra los marca con <code>≈</code> para que el usuario sepa cuáles son estimados y cuáles son reales."</p>
+<h4 id="6c-prompt-referencia-a-otro-nodo">6c. Prompt — Referencia a otro nodo</h4>
+<p><strong>Señalar la expresión del prompt:</strong> <code>$('Recipe Search Agent').first().json.output</code></p>
+<blockquote>
+<p>"Esto es importante: después del Wait node, <code>$json</code> contiene los datos del formulario, NO la receta. Para acceder a la receta tenemos que referenciar el nodo del agent anterior por nombre. Esta expresión dice: 've al Recipe Search Agent, coge su primer output, y dame el campo output'."</p>
+</blockquote>
+<h4 id="6d-price-search-serpapi">6d. Price Search (SerpAPI)</h4>
+<p><strong>Click en Price Search.</strong></p>
+<blockquote>
+<p>"Misma herramienta SerpAPI que ya tenéis configurada. El agent la usa para buscar precios actuales de supermercado."</p>
+</blockquote>
+<hr />
+<h3 id="7-output-nodes-30s">7. Output nodes (30s)</h3>
+<p><strong>Click en "Output — With Prices".</strong></p>
+<blockquote>
+<p>"Si se generó lista de compras, este nodo combina la receta original con la lista. Usa la misma expresión <code>$('Recipe Search Agent')</code> para la receta, y <code>$json.output</code> para la lista del Shopping List Agent."</p>
+</blockquote>
+<p><strong>Click en "Output — Recipe Only".</strong></p>
+<blockquote>
+<p>"Si el usuario dijo que no quería lista de compras, simplemente pasa la receta tal cual."</p>
+</blockquote>
+<hr />
+<h3 id="8-demo-en-vivo-3-min">8. DEMO en vivo (3 min)</h3>
+<blockquote>
+<p>"Vamos a probarlo. Click en el botón <strong>Chat</strong> del editor."</p>
+</blockquote>
+<p><strong>Escribir en el chat:</strong></p>
+<pre><code>I want a chicken recipe
+</code></pre>
+<p><strong>Mientras trabaja (mirad el canvas, no el chat):</strong></p>
+<blockquote>
+<p>"Ojo: el chat se va a quedar 'pensando' y no va a decir nada todavía — está configurado para responder solo cuando TODO el flujo termina. El progreso lo vemos aquí en el canvas: el agent está llamando a TheMealDB con 'chicken'."</p>
+</blockquote>
+<p><strong>Cuando la ejecución se pausa en Review Recipe:</strong></p>
+<blockquote>
+<p>"El workflow se ha parado en el formulario. Fijaos: la receta NO está en el chat — la vamos a ver dentro del formulario."</p>
+</blockquote>
+<p><strong>Ir al nodo Review Recipe → copiar la Test URL → abrirla en el navegador.</strong> (En versiones recientes n8n abre el formulario automáticamente al llegar al nodo — si lo hace, mejor.)</p>
+<blockquote>
+<p>"Aquí está la receta, dentro del formulario. Voy a elegir 'Yes, with price estimates' y pulsar Continue."</p>
+</blockquote>
+<p><strong>Volver a n8n y esperar el resultado final.</strong></p>
+<blockquote>
+<p>"Ahora el Shopping List Agent está buscando precios en Google... Y aquí tenemos la lista de compras con precios reales."</p>
+</blockquote>
+<p><strong>Volver al chat: ahora sí aparece la respuesta completa (receta + lista con precios) — la primera y única respuesta del chat en toda la ejecución.</strong></p>
+<hr />
+<h3 id="9-demo-follow-up-con-memoria-1-min">9. Demo — Follow-up con memoria (1 min)</h3>
+<p><strong>Escribir en el chat (sin cerrar la sesión):</strong></p>
+<pre><code>Now find me a pasta recipe
+</code></pre>
+<blockquote>
+<p>"Gracias a la memoria, el agent recuerda que estamos buscando recetas. No hace falta repetir contexto."</p>
+</blockquote>
+<hr />
+<h3 id="10-demo-fallback-a-google-opcional-1-min">10. Demo — Fallback a Google (opcional, 1 min)</h3>
+<p><strong>Escribir en el chat:</strong></p>
+<pre><code>How do I make Spanish fabada asturiana?
+</code></pre>
+<blockquote>
+<p>"Fabada asturiana probablemente no está en TheMealDB, que tiene unas 300 recetas en inglés. Vamos a ver si el agent activa el fallback a Google..."</p>
+</blockquote>
+<p><strong>Expandir execution details para ver qué tools se usaron.</strong></p>
+<blockquote>
+<p>"Veis: primero intentó TheMealDB, recibió <code>meals: null</code>, y luego buscó en Google. Eso es la estrategia de fallback funcionando."</p>
+</blockquote>
+<hr />
+<h3 id="11-cierre-que-combina-este-proyecto-30s">11. Cierre — Qué combina este proyecto (30s)</h3>
+<blockquote>
+<p>"Recapitulemos lo que habéis visto:"</p>
+</blockquote>
+<ul>
+<li><strong>HTTP Request Tool</strong> — el agent llama a una API real (TheMealDB)</li>
+<li><strong><code>$fromAI()</code></strong> — el agent rellena los parámetros dinámicamente</li>
+<li><strong>Fallback strategy</strong> — primero TheMealDB, luego Google</li>
+<li><strong>Memoria</strong> — conversación multi-turno</li>
+<li><strong>Wait + Form</strong> — humano revisa antes de continuar</li>
+<li><strong>IF branching</strong> — camino diferente según la elección del usuario</li>
+<li><strong>Segundo agent con búsqueda</strong> — precios reales, no inventados</li>
+<li><strong><code>$('Node').first().json.output</code></strong> — referenciar nodos anteriores después de un Wait</li>
+</ul>
+<blockquote>
+<p>"Es el workflow más completo del curso. Combina casi todos los patrones que habéis aprendido en un solo proyecto funcional."</p>
+</blockquote>
+<hr />
+<h2 id="parte-2-variaciones-para-alargar-el-video">🎬 PARTE 2 — Variaciones (para alargar el vídeo)</h2>
+<p>Cinco variaciones autocontenidas, ordenadas de menos a más montaje. Elige las que quieras — con la <strong>2 + 3 + 4</strong> añades ~12 min de vídeo con chicha. Si grabas variaciones, colócalas <strong>antes del cierre</strong> (sección 11) y guarda el cierre para el final.</p>
+<blockquote>
+<p>⚠️ <strong>Al terminar de grabar:</strong> las variaciones ensucian el workflow. Revierte o reimporta el JSON limpio del curso, que es el que descargan los alumnos.</p>
+</blockquote>
+<hr />
+<h3 id="variacion-1-que-pasa-sin-memoria-2-min-sin-config">Variación 1 — ¿Qué pasa sin memoria? (2 min, sin config)</h3>
+<p><strong>Qué enseña:</strong> qué hace la memoria de verdad, mostrándolo por ausencia.</p>
+<p><strong>Pasos:</strong>
+1. <strong>Desconecta</strong> el nodo Simple Memory del agent (borra la línea de puntos; no borres el nodo).
+2. En el chat: <code>I want a chicken recipe</code> → responde normal.
+3. En el mismo chat: <code>What recipe did you just give me?</code></p>
+<blockquote>
+<p>"Sin memoria, cada mensaje es una conversación nueva. El agent no tiene ni idea de qué le acabo de preguntar — no es que 'se le olvide': es que nunca lo supo."</p>
+</blockquote>
+<ol>
+<li><strong>Reconecta</strong> la memoria y repite la segunda pregunta → ahora sí.</li>
+</ol>
+<blockquote>
+<p>"Esto es todo lo que hace la memoria: reinyectar los últimos mensajes en cada llamada. Sin ella no hay conversación, hay preguntas sueltas."</p>
+</blockquote>
+<p><strong>Revertir:</strong> ya está revertido al reconectar.</p>
+<hr />
+<h3 id="variacion-2-agent-vs-basic-llm-chain-los-precios-inventados-4-min">Variación 2 — Agent vs Basic LLM Chain: los precios inventados (4 min)</h3>
+<p><strong>Qué enseña:</strong> POR QUÉ el Shopping List es un agent y no un chain — viéndolo fallar. Es la demostración práctica de la sección 6a.</p>
+<p><strong>Pasos:</strong>
+1. Añade un nodo <strong>Basic LLM Chain</strong> → renómbralo <code>Shopping List (Chain)</code>.
+2. Conéctale el <strong>OpenRouter Chat Model</strong> existente (línea de puntos).
+3. Configúralo:
+   - <strong>Source for Prompt:</strong> <code>Define below</code>
+   - <strong>Prompt</strong> (Expression) — copia y pega:
+     <code>{{ $('Recipe Search Agent').first().json.output }}</code>
+   - Añade un <strong>System Message</strong> (Add prompt → System) — copia y pega:
+     ```
+     You are a shopping assistant. From the recipe provided, create a complete shopping list with estimated US grocery prices.</p>
+<pre><code> Rules:
+ - Include exact quantities from the recipe
+ - Group items by store section (Produce, Meat / Fish, Dairy, Pantry)
+ - End with an estimated total
+ - Output ONLY the shopping list
+ ```
+</code></pre>
+<ol>
+<li><strong>Recablea temporalmente:</strong> desconecta la salida <strong>true</strong> de <code>Want Prices?</code> del Shopping List Agent y conéctala a <code>Shopping List (Chain)</code>.</li>
+<li>Demo: <code>I want a chicken recipe</code> → formulario → <code>Yes, with price estimates</code>.</li>
+<li>Abre el output del chain en el panel:</li>
+</ol>
+<blockquote>
+<p>"Fijaos: lista perfecta, precios de aspecto razonable... e inventados TODOS. Un chain no puede buscar — no tiene herramientas. Genera texto plausible, que es justo lo peligroso. El agent de verdad, con SerpAPI, va a Google y trae precios reales."</p>
+</blockquote>
+<ol>
+<li>Señala de paso el campo de salida: "Y otro detalle: el chain deja su respuesta en <code>text</code>, no en <code>output</code> — si dejáramos esto conectado, el nodo Output se rompería. Chain → <code>text</code>, Agent → <code>output</code>. Os lo dije en Core Concepts y aquí muerde de verdad."</li>
+</ol>
+<p><strong>Revertir:</strong> reconecta la salida true del IF al <strong>Shopping List Agent</strong> (el chain puede quedarse desconectado en el canvas o borrarse).</p>
+<p><strong>Bonus:</strong> esta variación no gasta SerpAPI.</p>
+<hr />
+<h3 id="variacion-3-nueva-herramienta-random-recipe-4-min">Variación 3 — Nueva herramienta: Random Recipe (4 min)</h3>
+<p><strong>Qué enseña:</strong> añadir una herramienta a un agent existente y ver cómo DECIDE usarla (es el Challenge 1 del notebook — díselo a los alumnos).</p>
+<p><strong>Pasos:</strong>
+1. En el <strong>Recipe Search Agent</strong> → <strong>+ Tool</strong> → <strong>HTTP Request Tool</strong> → renómbrala <code>Random Recipe</code>.
+2. Configúrala:</p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URL</strong></td>
+<td><code>https://www.themealdb.com/api/json/v1/1/random.php</code></td>
+</tr>
+<tr>
+<td><strong>Send Query Parameters</strong></td>
+<td>OFF (no necesita parámetros — esa es la gracia)</td>
+</tr>
+<tr>
+<td><strong>Optimize Response</strong></td>
+<td>ON</td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li><strong>Description</strong> — copia y pega:
+   <code>Returns one random recipe from TheMealDB. Takes no input. Use this only when the user asks to be surprised or wants a random recipe.</code></li>
+<li>En el <strong>System Message</strong> del agent, añade esta línea como punto 4 de la sección "Searching for recipes" — copia y pega:
+   ```</li>
+<li>If the user asks to be surprised or wants a random pick, use Random Recipe (it takes no input)
+   ```</li>
+<li>Demo: <code>Surprise me!</code></li>
+</ol>
+<blockquote>
+<p>"No he tocado ni una línea de lógica — le he dado una herramienta nueva con una buena descripción y una regla en el prompt. El agent solo elige Random Recipe cuando la petición es 'sorpréndeme'. Miradlo en los logs: para 'I want chicken' sigue usando la búsqueda normal."</p>
+</blockquote>
+<ol>
+<li>Segunda demo de contraste: <code>I want a chicken recipe</code> → en los logs, verifica que usa Recipe Search y NO Random Recipe.</li>
+</ol>
+<p><strong>Revertir:</strong> opcional — esta variación puede quedarse (coincide con el Challenge 1); si la dejas, deja también la línea 4 del prompt.</p>
+<hr />
+<h3 id="variacion-4-cambiar-un-nodo-por-otro-if-switch-con-tercera-opcion-5-6-min">Variación 4 — Cambiar un nodo por otro: IF → Switch, con tercera opción (5-6 min)</h3>
+<p><strong>Qué enseña:</strong> el Switch como generalización del IF (capítulo de Routing), y cuándo basta un chain (sin herramientas, no gasta SerpAPI).</p>
+<p><strong>Pasos:</strong>
+1. En el formulario <strong>Review Recipe</strong>, añade una tercera opción al dropdown <code>Generate shopping list?</code> — copia y pega:
+   <code>Just the list, no prices</code>
+2. Añade un nodo <strong>Switch</strong> → renómbralo <code>Route Choice</code>. Tres reglas, todas sobre la misma expresión — copia y pega en <strong>Left Value</strong> de cada regla:
+   <code>{{ $json["Generate shopping list?"] }}</code></p>
+<table>
+<thead>
+<tr>
+<th>Regla</th>
+<th>Operación</th>
+<th>Right Value (copia y pega)</th>
+<th>Renombra la salida</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>equals</td>
+<td><code>Yes, with price estimates</code></td>
+<td><code>prices</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>equals</td>
+<td><code>Just the list, no prices</code></td>
+<td><code>list</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>equals</td>
+<td><code>No, just the recipe</code></td>
+<td><code>recipe</code></td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>Añade un <strong>Basic LLM Chain</strong> → renómbralo <code>Shopping List — No Prices</code>. Conéctale el <strong>OpenRouter Chat Model</strong> (línea de puntos). Configuración:</li>
+<li><strong>Source for Prompt:</strong> <code>Define below</code></li>
+<li><strong>Prompt</strong> (Expression) — copia y pega:
+     <code>{{ $('Recipe Search Agent').first().json.output }}</code></li>
+<li>
+<p><strong>System Message</strong> — copia y pega:
+     ```
+     You are a shopping assistant. From the recipe provided, extract a complete shopping list.</p>
+<p>Rules:
+ - Include exact quantities from the recipe
+ - Group items by store section (Produce, Meat / Fish, Dairy, Pantry)
+ - Skip items most kitchens already have (salt, pepper, cooking oil)
+ - No prices
+ - Output ONLY the shopping list
+ <code>4. Añade un **Edit Fields** → renómbralo `Output — List Only`, con un campo String:
+   - `output` (Expression) — copia y pega:</code>
+ {{ $('Recipe Search Agent').first().json.output + '\n\n---\n\n' + $json.text }}
+ <code>``
+5. **Recablea:**</code>Review Recipe<code>→</code>Route Choice<code>; salida</code>prices<code>→ Shopping List Agent; salida</code>list<code>→</code>Shopping List — No Prices<code>→</code>Output — List Only<code>; salida</code>recipe<code>→ Output — Recipe Only. (El IF</code>Want Prices?<code>queda desconectado — no lo borres hasta el final del vídeo.)
+6. Demo: receta → formulario → elige</code>Just the list, no prices`.</p>
+</li>
+</ol>
+<blockquote>
+<p>"Tres decisiones ya no caben en un IF — para eso está el Switch: mismas expresiones, N salidas. Y fijaos en la rama nueva: para extraer la lista SIN precios no hace falta buscar nada, así que basta un Basic LLM Chain — más barato y más rápido que un agent. Herramientas solo cuando hacen falta."</p>
+</blockquote>
+<ol>
+<li>Señala el <code>$json.text</code> del Output — List Only: "el chain responde en <code>text</code>, por eso este Output es distinto de los otros dos."</li>
+</ol>
+<p><strong>Revertir:</strong> vuelve a conectar <code>Review Recipe</code> → <code>Want Prices?</code> y quita la tercera opción del formulario (o reimporta el JSON limpio).</p>
+<hr />
+<h3 id="variacion-5-el-prompt-manda-formato-y-idioma-3-min-solo-prompt">Variación 5 — El prompt manda: formato y idioma (3 min, solo prompt)</h3>
+<p><strong>Qué enseña:</strong> cambiar el comportamiento sin tocar ni un nodo — solo el system message.</p>
+<p><strong>Pasos:</strong>
+1. Abre el <strong>System Message</strong> del Recipe Search Agent y sustitúyelo ENTERO por este — copia y pega:
+   ```
+   You are a friendly recipe assistant that helps users find recipes.</p>
+<p>Searching for recipes:
+   1. Convert the user's request to a simple English search term for the tool (e.g. "quiero pollo" → search for "chicken", "pasta con tomate" → search for "tomato pasta")
+   2. Use Recipe Search (TheMealDB) first — it returns structured, reliable data
+   3. Only use Google Search if TheMealDB returns no results (meals is null)</p>
+<p>Presenting recipes — use this format:
+   RECIPE: [name]
+   Category: [category] | Cuisine: [cuisine]
+   Difficulty: [easy/medium/hard] | Time: [estimated total minutes]</p>
+<p>INGREDIENTS:
+   - [quantity] [ingredient]
+   - [quantity] [ingredient]
+   ...</p>
+<p>INSTRUCTIONS:
+   1. [step]
+   2. [step]
+   ...</p>
+<p>Rules:
+   - Never invent recipes — only present what you find from tools
+   - Include ALL ingredients with exact quantities from the source
+   - If no results, suggest alternative search terms
+   - Always reply in the same language the user wrote in (translate the recipe if needed)
+   <code>``
+   (Son dos cambios sobre el original: la línea</code>Difficulty/Time<code>en el formato, y la última regla de idioma.)
+2. Demo en español:</code>Quiero una receta con pollo`</p>
+<blockquote>
+<p>"Mismo workflow, mismos nodos. He añadido dos líneas al prompt: ahora estima dificultad y tiempo, y responde en el idioma del usuario — busca en inglés por dentro, pero me contesta en español. El 80% de estos sistemas es el prompt."</p>
+</blockquote>
+<p><strong>Ojo:</strong> <code>Difficulty</code> y <code>Time</code> los estima el modelo (TheMealDB no los trae) — dilo en voz alta, conecta con la lección de 'datos reales vs generados'.</p>
+<p><strong>Revertir:</strong> restaura el system message original (está en el notebook y en el JSON del curso).</p>
+<hr />
+<h2 id="textos-de-prueba-copy-paste-para-el-chat">🧪 Textos de prueba (copy-paste para el chat)</h2>
+<p><strong>Pollo (demo principal):</strong></p>
+<pre><code>I want a chicken recipe
+</code></pre>
+<p><strong>Pasta (follow-up para demostrar memoria):</strong></p>
+<pre><code>Now find me a pasta recipe
+</code></pre>
+<p><strong>Plato específico:</strong></p>
+<pre><code>How do I make beef stroganoff?
+</code></pre>
+<p><strong>Postre:</strong></p>
+<pre><code>Find me a chocolate dessert
+</code></pre>
+<p><strong>Fallback a Google (plato que no está en TheMealDB):</strong></p>
+<pre><code>How do I make Spanish fabada asturiana?
+</code></pre>
+<p><strong>En español (para demostrar traducción automática):</strong></p>
+<pre><code>Quiero hacer algo con pescado
+</code></pre>
+<p><strong>Aleatorio/vago (el agent elige):</strong></p>
+<pre><code>Surprise me with something Italian
+</code></pre>
+<hr />
+<h2 id="cosas-a-tener-en-cuenta-durante-la-grabacion">⚠️ Cosas a tener en cuenta durante la grabación</h2>
+<ol>
+<li>
+<p><strong>El formulario tarda:</strong> Después de que el agent responde, hay que ir al nodo Review Recipe, copiar la Test URL y abrirla en el navegador. Esto puede parecer lento en el vídeo — avisa a los alumnos de que es normal. (En versiones recientes n8n abre el formulario solo al llegar al nodo.)</p>
+</li>
+<li>
+<p><strong>SerpAPI tiene límite:</strong> el free tier tiene un tope mensual de búsquedas (100/mes al escribir esto — compruébalo en tu dashboard). Cada ejecución del Shopping List Agent usa 1-2 búsquedas. Si haces muchas demos seguidas, puedes llegar al límite.</p>
+</li>
+<li>
+<p><strong>TheMealDB es limitada:</strong> ~300 recetas en inglés. Si buscas algo muy específico o en otro idioma, probablemente caerá al fallback de Google.</p>
+</li>
+<li>
+<p><strong>Los precios del Shopping List Agent:</strong> Son reales pero aproximados — vienen de resultados de Google, no de una API de supermercado. El agent marca con <code>≈</code> los que estima por su cuenta.</p>
+</li>
+<li>
+<p><strong>Dos credenciales SerpAPI:</strong> El workflow usa SerpAPI en DOS sitios (Google Search como fallback del Recipe Agent, y Price Search para el Shopping List Agent). Ambos usan la misma credencial, pero cuentan como búsquedas separadas.</p>
+</li>
+</ol>
+</main>
+</div>
+<script>
+// Botón "copiar" en cada bloque de código
+document.querySelectorAll('main pre').forEach(pre => {
+  const btn = document.createElement('button');
+  btn.className = 'copy'; btn.textContent = 'copiar';
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(pre.querySelector('code').innerText.trimEnd());
+    btn.textContent = '✓ copiado';
+    setTimeout(() => btn.textContent = 'copiar', 1500);
+  });
+  pre.appendChild(btn);
+});
+// Scrollspy: resalta en el sidebar la sección visible
+const links = [...document.querySelectorAll('.nav a')];
+const byId = Object.fromEntries(links.map(a => [a.getAttribute('href').slice(1), a]));
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(a => a.classList.remove('active'));
+      byId[e.target.id]?.classList.add('active');
+    }
+  });
+}, {rootMargin: '0px 0px -75% 0px'});
+document.querySelectorAll('main h2[id], main h3[id]').forEach(h => obs.observe(h));
+</script>
+</body>
+</html>

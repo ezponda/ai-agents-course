@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guion — Project 4: Deploy to Production (workflow 13_deploy_to_production.json)</title>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#171a23; --panel2:#1e2230; --ink:#e8eaf0; --muted:#9aa3b2;
+    --line:#2a2f3e; --accent:#36a3ff; --say:#4aa3ff; --do:#36c98b; --warn:#ffb84d;
+    --quote:#c08bff; --code:#0b0d13; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+
+  aside{position:sticky;top:0;height:100vh;overflow:auto;background:var(--panel);
+    border-right:1px solid var(--line);padding:20px 16px}
+  aside h1{font-size:14px;margin:0 0 16px;line-height:1.4}
+  .nav a{display:block;color:var(--muted);text-decoration:none;padding:7px 11px;
+    border-radius:10px;font-size:13px;margin-bottom:2px;border:1px solid transparent;line-height:1.35}
+  .nav a.h3{padding-left:24px;font-size:12.5px}
+  .nav a:hover{background:var(--panel2);color:var(--ink)}
+  .nav a.active{background:var(--panel2);color:var(--ink);border-color:var(--line)}
+
+  main{padding:36px 48px;max-width:980px}
+  main h1{font-size:26px;margin:0 0 18px;line-height:1.3}
+  main h2{font-size:21px;margin:44px 0 14px;padding-top:22px;border-top:1px solid var(--line)}
+  main h3{font-size:17px;margin:30px 0 10px;color:var(--accent)}
+  main h4{font-size:15px;margin:22px 0 8px;color:var(--tip,#caa45a)}
+  main a{color:var(--accent)}
+  main blockquote{margin:12px 0;padding:10px 16px;border-left:3px solid var(--say);
+    background:var(--panel);border-radius:0 10px 10px 0;color:#cfe3ff}
+  main blockquote p{margin:0}
+  main strong{color:#d6f5e7}
+  main code{background:var(--code);border:1px solid var(--line);border-radius:6px;
+    padding:1px 6px;font-size:.9em}
+  main pre{position:relative;background:var(--code);border:1px solid var(--line);
+    border-radius:10px;padding:14px 16px;overflow-x:auto}
+  main pre code{background:none;border:0;padding:0;font-size:13.5px;line-height:1.55}
+  .copy{position:absolute;top:8px;right:8px;background:var(--panel2);color:var(--muted);
+    border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:12px;cursor:pointer}
+  .copy:hover{color:var(--ink)}
+  main table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14.5px}
+  main th,main td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+  main th{background:var(--panel2)}
+  main tr:nth-child(even) td{background:var(--panel)}
+  main hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+  main ul,main ol{padding-left:26px}
+  main li{margin:5px 0}
+
+  @media(max-width:860px){.wrap{grid-template-columns:1fr}aside{position:static;height:auto}main{padding:24px 20px}}
+  @media print{aside{display:none}.wrap{grid-template-columns:1fr}.copy{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<aside>
+  <h1>Guion — Project 4: Deploy to Production (workflow 13_deploy_to_production.json)</h1>
+  <nav class="nav">
+    <a href="#concepto-clave">Concepto clave</a>
+    <a href="#flujo-del-workflow">Flujo del workflow</a>
+    <a href="#guia-de-decision-con-que-grabamos-el-video">🧭 GUÍA DE DECISIÓN — ¿Con qué grabamos el vídeo?</a>
+    <a href="#checklist-de-altas-antes-de-grabar-haz-esto-hoy-no-en-el-video">✅ CHECKLIST DE ALTAS — Antes de grabar (haz esto HOY, no en el vídeo)</a>
+    <a href="#parte-1-guion-paso-a-paso">🎬 PARTE 1 — Guion paso a paso</a>
+    <a class="h3" href="#0-cold-open-40s">0. Cold open (40s)</a>
+    <a class="h3" href="#1-la-decision-donde-desplegar-15-min">1. La decisión — dónde desplegar (1.5 min)</a>
+    <a class="h3" href="#2-el-workflow-minimo-a-proposito-15-min">2. El workflow — mínimo a propósito (1.5 min)</a>
+    <a class="h3" href="#3-deploy-en-railway-el-click-3-min">3. Deploy en Railway — el click (3 min)</a>
+    <a class="h3" href="#4-webhook_url-la-leccion-25-min">4. WEBHOOK_URL — LA lección (2.5 min) ⭐</a>
+    <a class="h3" href="#5-importar-credencial-y-publish-25-min">5. Importar, credencial y Publish (2.5 min)</a>
+    <a class="h3" href="#6-el-momento-probarlo-desde-fuera-2-min">6. El momento — probarlo desde fuera (2 min)</a>
+    <a class="h3" href="#7-execution-history-tu-debugger-de-produccion-15-min">7. Execution History — tu debugger de producción (1.5 min)</a>
+    <a class="h3" href="#8-cierre-45s">8. Cierre (45s)</a>
+    <a href="#parte-2-variaciones-para-alargar-el-video">🎬 PARTE 2 — Variaciones (para alargar el vídeo)</a>
+    <a class="h3" href="#variacion-1-cuanto-cuesta-esto-de-verdad-2-min-sin-config">Variación 1 — ¿Cuánto cuesta esto DE VERDAD? (2 min, sin config)</a>
+    <a class="h3" href="#variacion-2-ponle-contrasena-al-chat-3-min">Variación 2 — Ponle contraseña al chat (3 min) 🔒</a>
+    <a class="h3" href="#variacion-3-un-servidor-n-workflows-3-4-min">Variación 3 — Un servidor, N workflows (3-4 min)</a>
+    <a class="h3" href="#variacion-4-error-workflow-que-los-fallos-te-avisen-4-min">Variación 4 — Error Workflow: que los fallos te avisen (4 min)</a>
+    <a class="h3" href="#variacion-5-dominio-propio-3-min-opcional">Variación 5 — Dominio propio (3 min, opcional)</a>
+    <a href="#textos-de-prueba-copy-paste-para-el-chat">🧪 Textos de prueba (copy-paste para el chat)</a>
+    <a href="#cosas-a-tener-en-cuenta-durante-la-grabacion">⚠️ Cosas a tener en cuenta durante la grabación</a>
+  </nav>
+</aside>
+<main>
+<h1 id="guion-project-4-deploy-to-production-workflow-13_deploy_to_productionjson">Guion — Project 4: Deploy to Production (workflow <code>13_deploy_to_production.json</code>)</h1>
+<h2 id="concepto-clave">Concepto clave</h2>
+<p>Llevar un workflow del portátil a un servidor que corre 24/7: cualquiera con el enlace chatea con tu IA. El workflow es mínimo a propósito (Chat Trigger → LLM → Output) porque la lección no es el workflow — es el <strong>deploy</strong>: publicar, <code>WEBHOOK_URL</code>, credenciales por instancia, y el historial de ejecuciones como debugger.</p>
+<h2 id="flujo-del-workflow">Flujo del workflow</h2>
+<pre><code>Chat Trigger (público) ──▶ Answer Question (Basic LLM Chain) ──▶ Output (text → output)
+                                 ┊
+                          OpenRouter Chat Model
+</code></pre>
+<p><strong>Credenciales necesarias:</strong> solo OpenRouter (y habrá que re-introducirla EN el servidor — eso es parte de la lección).</p>
+<hr />
+<h2 id="guia-de-decision-con-que-grabamos-el-video">🧭 GUÍA DE DECISIÓN — ¿Con qué grabamos el vídeo?</h2>
+<p>Precios verificados el 2026-07-05 (di siempre "a fecha de grabación" a cámara):</p>
+<table>
+<thead>
+<tr>
+<th>Opción</th>
+<th>Precio</th>
+<th>Setup</th>
+<th>¿Enseña la lección?</th>
+<th>Veredicto para el vídeo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Railway</strong> ⭐</td>
+<td><strong>$5/mes</strong> (Hobby, incluye $5 de uso) + <strong>$5 de crédito trial al registrarte</strong> → el vídeo te sale gratis</td>
+<td>1-click template, ~3 min</td>
+<td>✅ Sí: obliga a configurar <code>WEBHOOK_URL</code> (la lección estrella)</td>
+<td><strong>LA ELEGIDA</strong></td>
+</tr>
+<tr>
+<td>n8n Cloud</td>
+<td>€20/mes anual, €24/mes mensual (Starter, 2.500 ejecuciones)</td>
+<td>2 min, cero config</td>
+<td>❌ A medias: <code>WEBHOOK_URL</code> automático — desaparece la lección</td>
+<td>Nómbrala: "la más fácil, la más cara"</td>
+</tr>
+<tr>
+<td>Sliplane (managed n8n)</td>
+<td>€9/mes</td>
+<td>~5 min</td>
+<td>❌ Similar: te lo dan hecho</td>
+<td>Nómbrala de pasada como alternativa gestionada</td>
+</tr>
+<tr>
+<td>VPS + Docker (Hetzner ~€5)</td>
+<td>El más barato a largo plazo</td>
+<td>30-60 min, terminal</td>
+<td>✅ Pero requiere Linux/Docker</td>
+<td>Nómbrala: "máximo control, fuera del alcance del curso"</td>
+</tr>
+<tr>
+<td>Render</td>
+<td><strong>$25/mes</strong> (el servicio de 2GB, 2026)</td>
+<td>—</td>
+<td>—</td>
+<td>Ya no compite en precio — ni la menciones</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Por qué Railway</strong> (dilo así a cámara): <em>"Un click, cinco dólares — y de hecho el primer mes gratis con el crédito de prueba — y nos obliga a tocar la única pieza de configuración de producción que de verdad hay que entender: el WEBHOOK_URL. Las alternativas más fáciles nos la esconderían."</em></p>
+<hr />
+<h2 id="checklist-de-altas-antes-de-grabar-haz-esto-hoy-no-en-el-video">✅ CHECKLIST DE ALTAS — Antes de grabar (haz esto HOY, no en el vídeo)</h2>
+<p><strong>No hay que instalar NADA.</strong> Todo el proyecto va por navegador — ni Docker, ni CLI, ni terminal. Dilo a cámara: es un selling point.</p>
+<table>
+<thead>
+<tr>
+<th>✓</th>
+<th>Alta / preparación</th>
+<th>Enlace</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>☐</td>
+<td><strong>Cuenta GitHub</strong> (ya la tienes)</td>
+<td><a href="https://github.com">github.com</a></td>
+<td>Se usa para el login de Railway</td>
+</tr>
+<tr>
+<td>☐</td>
+<td><strong>Cuenta Railway</strong> — "Login with GitHub" → autorizar</td>
+<td><a href="https://railway.com/">railway.com</a></td>
+<td>Al registrarte: <strong>$5 de crédito trial</strong> sin tarjeta. Para pasar a Hobby ($5/mes) pedirá tarjeta — para el vídeo el trial basta</td>
+</tr>
+<tr>
+<td>☐</td>
+<td><strong>API key de OpenRouter</strong> (ya la tienes)</td>
+<td><a href="https://openrouter.ai/keys">openrouter.ai/keys</a></td>
+<td>Tenla A MANO en un gestor — la vas a pegar en el servidor durante el vídeo. ⚠️ NUNCA visible en pantalla</td>
+</tr>
+<tr>
+<td>☐</td>
+<td><strong>Deploy de prueba COMPLETO la víspera</strong></td>
+<td><a href="https://railway.com/deploy/n8n">railway.com/deploy/n8n</a></td>
+<td>Hazlo entero una vez (deploy → WEBHOOK_URL → publish → chat). Bórralo después y en el vídeo lo repites limpio. Así sabes los tiempos y qué pantallas salen</td>
+</tr>
+<tr>
+<td>☐</td>
+<td>Workflow local funcionando</td>
+<td>—</td>
+<td>El chat local responde antes de empezar a grabar</td>
+</tr>
+<tr>
+<td>☐</td>
+<td>Móvil a mano</td>
+<td>—</td>
+<td>El plano final: chatear con tu servidor desde el móvil</td>
+</tr>
+</tbody>
+</table>
+<p><strong>⚠️ Seguridad en pantalla (vídeo de deploy = máximo riesgo):</strong>
+- La API key de OpenRouter: pégala con la pantalla fuera de grabación o difumina en edición.
+- La URL de tu instancia Railway saldrá en pantalla → cualquiera del público podrá chatear y gastar TUS tokens. Opciones: (a) borra el proyecto tras grabar, (b) límites de uso en OpenRouter, (c) la variación 2 (proteger con contraseña).</p>
+<hr />
+<h2 id="parte-1-guion-paso-a-paso">🎬 PARTE 1 — Guion paso a paso</h2>
+<h3 id="0-cold-open-40s">0. Cold open (40s)</h3>
+<p><strong>Empezar con el móvil en mano, cámara al móvil: abrir una URL y chatear con tu IA.</strong></p>
+<blockquote>
+<p>"Esto no es ChatGPT — es MI inteligencia artificial, corriendo en MI servidor, y esta URL se la puedo pasar a cualquiera. Hace veinte minutos esto solo existía en mi portátil. Hoy vamos a hacer exactamente ese viaje: del portátil a producción, sin escribir una línea de código y por cinco dólares al mes."</p>
+</blockquote>
+<hr />
+<h3 id="1-la-decision-donde-desplegar-15-min">1. La decisión — dónde desplegar (1.5 min)</h3>
+<p><strong>Enseñar la tabla de comparación (del notebook o de este guion).</strong></p>
+<blockquote>
+<p>"Tres formas de poner n8n en internet. n8n Cloud: la oficial, dos minutos, pero es la más cara — unos veinte euros al mes — y te lo da todo tan hecho que no aprendes lo que pasa por debajo. Un VPS con Docker: lo más barato a largo plazo y máximo control, pero necesitas manejarte con Linux — fuera del alcance de este curso. Y Railway: cinco dólares, un click... y nos deja UNA pieza de configuración manual. Esa pieza es justo la lección de hoy, así que Railway."</p>
+<p>"Precios a fecha de grabación — compruébalos en las páginas de pricing, que esto cambia."</p>
+</blockquote>
+<hr />
+<h3 id="2-el-workflow-minimo-a-proposito-15-min">2. El workflow — mínimo a propósito (1.5 min)</h3>
+<p><strong>Enseñar el workflow local: 3 nodos.</strong></p>
+<blockquote>
+<p>"El workflow más simple que puede ser útil: chat, LLM, respuesta. Lo hago mínimo a propósito — hoy la estrella no es el workflow, es el viaje al servidor. Todo lo que aprendáis hoy vale para CUALQUIER workflow del curso que tenga Chat Trigger o Webhook."</p>
+</blockquote>
+<p><strong>Señalar 2 detalles:</strong>
+1. <strong>Chat Trigger con Public ON</strong> — "esto genera una página de chat alojada".
+2. <strong>El nodo Output</strong> — "el chain deja su respuesta en <code>text</code> y el chat necesita <code>output</code> — este Set solo renombra. Os suena, ¿no?"</p>
+<p><strong>Probar en local (botón Chat):</strong> <code>What is n8n?</code> → funciona.</p>
+<blockquote>
+<p>"Funciona en mi portátil. Pero si ahora cierro n8n... muerto. Nadie más puede usarlo. Vamos a arreglarlo."</p>
+</blockquote>
+<hr />
+<h3 id="3-deploy-en-railway-el-click-3-min">3. Deploy en Railway — el click (3 min)</h3>
+<p><strong>Pantalla: <a href="https://railway.com/deploy/n8n">railway.com/deploy/n8n</a></strong> <em>(ojo: /deploy/n8n — la URL vieja /template/n8n ya no existe)</em></p>
+<ol>
+<li><strong>Click "Deploy Now"</strong> → login con GitHub si no lo está.</li>
+<li>
+<blockquote>
+<p>"Railway monta dos cosas: el contenedor de n8n y una base de datos Postgres para guardar workflows y credenciales. Todo automático."</p>
+</blockquote>
+</li>
+<li><strong>Mientras despliega (2-3 min)</strong> — rellenar la espera:<blockquote>
+<p>"Esto que está pasando ahora — crear un servidor, instalar n8n, conectarle una base de datos, ponerle HTTPS — era un día de trabajo de un administrador de sistemas. Ahora son dos minutos y una barra de progreso. Y ojo al precio: el plan son cinco dólares al mes que INCLUYEN cinco dólares de uso — n8n parado casi no consume. Y al registrarte te regalan cinco de crédito: este vídeo me está saliendo gratis."</p>
+</blockquote>
+</li>
+<li><strong>Deploy verde → click en la URL pública</strong> (<code>tu-app.up.railway.app</code>) → <strong>crear la cuenta admin de n8n</strong>.<blockquote>
+<p>"Primera lección de producción: esta es OTRA instancia de n8n. Recién nacida. No tiene mis workflows, no tiene mis credenciales. Todo lo que tenía en local, aquí no existe."</p>
+</blockquote>
+</li>
+</ol>
+<hr />
+<h3 id="4-webhook_url-la-leccion-25-min">4. WEBHOOK_URL — LA lección (2.5 min) ⭐</h3>
+<blockquote>
+<p>"Y ahora la única pieza de configuración que de verdad hay que entender. n8n genera URLs para sus webhooks y chats. ¿Con qué dominio las genera? Si no le decimos nada, con localhost — y localhost en un servidor significa 'yo mismo': nadie de fuera podrá entrar. Hay que decirle: 'tu dirección pública es ESTA'."</p>
+</blockquote>
+<p><strong>En Railway: click en el servicio n8n → pestaña Variables → añadir:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WEBHOOK_URL</code></td>
+<td><code>https://tu-app.up.railway.app/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Señalar dos trampas a cámara:</strong>
+1. "Con <code>https://</code> delante y <strong>barra al final</strong> — la barra importa."
+2. "Es TU URL de Railway, la del paso anterior — cópiala, no la escribas."</p>
+<blockquote>
+<p>"Al guardar, Railway redespliega solo. Esta variable es EL concepto: en n8n Cloud os la configuran ellos, en un VPS la pondríais igual. Donde sea que despleguéis n8n, WEBHOOK_URL es la diferencia entre un chat que funciona y uno que apunta a ninguna parte."</p>
+</blockquote>
+<hr />
+<h3 id="5-importar-credencial-y-publish-25-min">5. Importar, credencial y Publish (2.5 min)</h3>
+<ol>
+<li><strong>Workflows → Import from URL</strong> — copia y pega:
+   <code>https://raw.githubusercontent.com/ezponda/ai-agents-course/main/courses/n8n_no_code/book/_static/workflows/13_deploy_to_production.json</code></li>
+<li><strong>Credencial OpenRouter</strong> en el nodo del Chat Model:<blockquote>
+<p>"Segunda lección de producción: las credenciales viven POR instancia. Mi API key de local no ha viajado — y es lo correcto: las claves no deben viajar dentro de los workflows."
+   <em>(⚠️ pega la key en un corte o difumínala en edición)</em></p>
+</blockquote>
+</li>
+<li><strong>Publish</strong> (arriba a la derecha):<blockquote>
+<p>"Tercera lección: un workflow importado es un borrador. Los borradores solo corren cuando pulsas Execute TÚ. Para que el chat exista para el mundo, se publica. Click en Publish... y ya está vivo."</p>
+</blockquote>
+</li>
+</ol>
+<hr />
+<h3 id="6-el-momento-probarlo-desde-fuera-2-min">6. El momento — probarlo desde fuera (2 min)</h3>
+<ol>
+<li><strong>Click en el nodo Chat Trigger → copiar la Production URL.</strong></li>
+<li><strong>Abrirla en el móvil</strong> (o en una ventana de incógnito) y chatear:
+   <code>Recommend me 3 books about artificial intelligence</code></li>
+<li>
+<blockquote>
+<p>"Fijaos en lo que acaba de pasar: esto NO es mi portátil. Puedo apagar el ordenador ahora mismo y este chat sigue funcionando. Está en el servidor, veinticuatro-siete, y cualquiera con la URL puede usarlo."</p>
+</blockquote>
+</li>
+</ol>
+<hr />
+<h3 id="7-execution-history-tu-debugger-de-produccion-15-min">7. Execution History — tu debugger de producción (1.5 min)</h3>
+<p><strong>En la instancia de Railway: sidebar → Executions.</strong></p>
+<blockquote>
+<p>"Cada mensaje del chat es una ejecución, y aquí quedan todas. En local depurábamos mirando el output de cada nodo; en producción se depura AQUÍ. Si mañana alguien os dice 'tu bot no me contestó', este es el primer sitio donde mirar: veréis la ejecución en rojo y exactamente qué nodo falló."</p>
+</blockquote>
+<p><strong>Abrir una ejecución y enseñar los datos fluyendo por los 3 nodos.</strong></p>
+<hr />
+<h3 id="8-cierre-45s">8. Cierre (45s)</h3>
+<blockquote>
+<p>"El viaje completo: workflow local → servidor en Railway con un click → WEBHOOK_URL para que las URLs apunten al mundo → credencial en la instancia → Publish → chat público. Cinco pasos, cero código."</p>
+</blockquote>
+<ul>
+<li><strong>Publish</strong>: los borradores no existen para el mundo</li>
+<li><strong>WEBHOOK_URL</strong>: la variable que lo cambia todo (con barra final)</li>
+<li><strong>Credenciales por instancia</strong>: las claves no viajan</li>
+<li><strong>Executions</strong>: tu debugger de producción</li>
+<li><strong>Vale para todo el curso</strong>: cualquier workflow con Chat Trigger o Webhook se despliega igual</li>
+</ul>
+<blockquote>
+<p>"Y un aviso: URL pública significa que cualquiera puede gastar vuestros tokens. En las variaciones le ponemos contraseña."</p>
+</blockquote>
+<hr />
+<h2 id="parte-2-variaciones-para-alargar-el-video">🎬 PARTE 2 — Variaciones (para alargar el vídeo)</h2>
+<p>Recomendadas: <strong>1 + 2 + 3</strong> (~9 min extra). Colócalas antes del cierre si las grabas.</p>
+<hr />
+<h3 id="variacion-1-cuanto-cuesta-esto-de-verdad-2-min-sin-config">Variación 1 — ¿Cuánto cuesta esto DE VERDAD? (2 min, sin config)</h3>
+<p><strong>Qué enseña:</strong> leer el dashboard de uso de Railway — que el miedo al coste se va con datos.</p>
+<p><strong>Pasos:</strong>
+1. En Railway: click en el proyecto → <strong>Usage</strong> (o el estimado de coste del servicio).
+2. Enseñar el consumo real tras la demo:</p>
+<blockquote>
+<p>"Después de todo lo que hemos hecho, mirad el contador: céntimos. n8n parado consume casi nada — pagas sobre todo por tener el servidor encendido, no por ejecución. Comparad con los veinte euros del plan Starter de n8n Cloud: para aprender y para proyectos pequeños, esto es imbatible. Eso sí: los tokens del LLM van aparte, por OpenRouter."</p>
+</blockquote>
+<hr />
+<h3 id="variacion-2-ponle-contrasena-al-chat-3-min">Variación 2 — Ponle contraseña al chat (3 min) 🔒</h3>
+<p><strong>Qué enseña:</strong> cerrar el grifo — que "público" no tenga que significar "gratis para todo internet".</p>
+<p><strong>Pasos:</strong>
+1. En el workflow desplegado, abre <strong>When chat message received</strong>.
+2. <strong>Authentication</strong> → <code>Basic Auth</code> → crea una credencial:</p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>User</strong></td>
+<td><code>demo</code></td>
+</tr>
+<tr>
+<td><strong>Password</strong></td>
+<td>(una que puedas decir en el vídeo, p. ej. <code>curso2026</code>)</td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li><strong>Publish</strong> de nuevo (los cambios en producción se re-publican — otra mini-lección).</li>
+<li>Abre la Production URL en incógnito → pide usuario y contraseña → entra con <code>demo</code>.</li>
+</ol>
+<blockquote>
+<p>"Ahora la URL se puede compartir en un grupo cerrado sin que un curioso cualquiera os vacíe el crédito de OpenRouter. Para algo serio: rate limiting con un proxy delante — eso ya es capítulo de Guardrails."</p>
+</blockquote>
+<p><strong>Revertir:</strong> Authentication → None (o déjalo con contraseña, más seguro).</p>
+<hr />
+<h3 id="variacion-3-un-servidor-n-workflows-3-4-min">Variación 3 — Un servidor, N workflows (3-4 min)</h3>
+<p><strong>Qué enseña:</strong> el servidor no es "del workflow" — es TU plataforma. Desplegar un segundo proyecto del curso cuesta 2 minutos y 0 dólares extra.</p>
+<p><strong>Pasos:</strong>
+1. En la instancia de Railway: <strong>Workflows → Import from URL</strong> — copia y pega (el Proyecto 2, Ask Your Data):
+   <code>https://raw.githubusercontent.com/ezponda/ai-agents-course/main/courses/n8n_no_code/book/_static/workflows/11_ask_your_data.json</code>
+2. Selecciona tu credencial de OpenRouter en su Chat Model (ya existe en esta instancia — segunda vez que NO hay que crearla: las credenciales son de la instancia, no del workflow).
+3. <strong>Publish</strong> → copiar su Production URL → probar:
+   <code>Which song has the most streams?</code></p>
+<blockquote>
+<p>"Mismo servidor, mismos cinco dólares — y ahora tengo DOS productos publicados: un chat genérico y un analista de datos. El coste de Railway es por servidor, no por workflow. Vuestra instancia es una plataforma: cada proyecto del curso que tenga Chat Trigger se publica aquí igual."</p>
+</blockquote>
+<p><strong>Revertir:</strong> despublica el workflow extra si no lo quieres activo.</p>
+<hr />
+<h3 id="variacion-4-error-workflow-que-los-fallos-te-avisen-4-min">Variación 4 — Error Workflow: que los fallos te avisen (4 min)</h3>
+<p><strong>Qué enseña:</strong> el nivel 2 de manejo de errores del Appendix B, en producción.</p>
+<p><strong>Pasos:</strong>
+1. Crea un workflow nuevo en la instancia: <strong>Error Handler</strong>.
+2. Añade un nodo <strong>Error Trigger</strong> (se dispara cuando OTRO workflow falla).
+3. Añade un <strong>Edit Fields</strong> → <code>Format Error Info</code> con tres campos String:</p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor (Expression)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>failed_workflow</code></td>
+<td><code>{{ $json.workflow.name }}</code></td>
+</tr>
+<tr>
+<td><code>error_message</code></td>
+<td><code>{{ $json.execution.error.message }}</code></td>
+</tr>
+<tr>
+<td><code>execution_url</code></td>
+<td><code>{{ $json.execution.url }}</code></td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>Publica el Error Handler.</li>
+<li>En el workflow del chat: <strong>⋯ → Settings → Error Workflow</strong> → selecciona <code>Error Handler</code>.</li>
+<li>Provoca un fallo (p. ej. rompe temporalmente la credencial del Chat Model escribiendo un carácter de más) → chatea → mira las Executions del Error Handler: ahí está el aviso con el nombre del workflow y el error.</li>
+<li><strong>Arregla la credencial.</strong></li>
+</ol>
+<blockquote>
+<p>"En producción los fallos son cuándo, no si. Con un Error Workflow, cada fallo de cualquier workflow de la instancia deja un registro estructurado — y en producción de verdad ese Edit Fields sería un mensaje de Slack o un email."</p>
+</blockquote>
+<p><strong>Revertir:</strong> nada que revertir (deja el Error Handler — es buena práctica).</p>
+<hr />
+<h3 id="variacion-5-dominio-propio-3-min-opcional">Variación 5 — Dominio propio (3 min, opcional)</h3>
+<p><strong>Qué enseña:</strong> que <code>tu-app.up.railway.app</code> puede ser <code>chat.tudominio.com</code>.</p>
+<p><strong>Pasos:</strong>
+1. Railway: servicio n8n → <strong>Settings → Networking → Custom Domain</strong> → añade <code>chat.tudominio.com</code>.
+2. En tu DNS: el registro CNAME que Railway te indique.
+3. <strong>Actualiza <code>WEBHOOK_URL</code></strong> a <code>https://chat.tudominio.com/</code> — ¡la lección del vídeo, otra vez! Si cambias el dominio y no cambias la variable, las URLs nuevas seguirán apuntando al dominio viejo.</p>
+<blockquote>
+<p>"Requiere tener un dominio (~10€/año). Si no tienes, salta esta — la URL de Railway funciona perfectamente."</p>
+</blockquote>
+<hr />
+<h2 id="textos-de-prueba-copy-paste-para-el-chat">🧪 Textos de prueba (copy-paste para el chat)</h2>
+<pre><code>What is n8n?
+</code></pre>
+<pre><code>Recommend me 3 books about artificial intelligence
+</code></pre>
+<pre><code>Explain what a webhook is, in one sentence
+</code></pre>
+<p><strong>En español (para el plano del móvil):</strong></p>
+<pre><code>¿Qué es un agente de IA? Explícalo en 2 frases
+</code></pre>
+<p><strong>Para la variación 3 (Ask Your Data):</strong></p>
+<pre><code>Which song has the most streams?
+</code></pre>
+<hr />
+<h2 id="cosas-a-tener-en-cuenta-durante-la-grabacion">⚠️ Cosas a tener en cuenta durante la grabación</h2>
+<ol>
+<li><strong>⚠️ API keys en pantalla:</strong> es un vídeo de deploy — vas a pegar credenciales. Pégalas fuera de grabación o difumina en edición. Revisa el material ANTES de publicar el vídeo.</li>
+<li><strong>La URL de tu instancia queda expuesta</strong> en el vídeo. Plan: borrar el proyecto de Railway tras grabar (Settings → Danger → Delete project), o dejarlo con la contraseña de la variación 2 y límites de gasto en OpenRouter.</li>
+<li><strong>Precios = "a fecha de grabación":</strong> di las cifras con esa coletilla y enseña las páginas de pricing en vez de fiarte de memoria (<a href="https://railway.com/pricing">railway.com/pricing</a>, <a href="https://n8n.io/pricing/">n8n.io/pricing</a>). Verificado 2026-07-05: Railway $5 Hobby + $5 trial; n8n Cloud €20 anual / €24 mensual.</li>
+<li><strong>La URL de la plantilla es <a href="https://railway.com/deploy/n8n">railway.com/deploy/n8n</a></strong> — la vieja <code>/template/n8n</code> da 404 (ya corregida en el notebook).</li>
+<li><strong>El deploy tarda 2-3 min:</strong> ten preparado el relleno de la sección 3 (qué está montando Railway + el precio). No cortes el clip: la espera real da credibilidad.</li>
+<li><strong>UI de Railway cambia a menudo:</strong> nombra funciones ("la pestaña Variables del servicio"), no posiciones. Si tu pantalla difiere del guion, di la función y búscala en directo con naturalidad.</li>
+<li><strong>Haz el ensayo la víspera</strong> con un proyecto desechable y bórralo — así el día de grabación Railway no te sorprende con pantallas nuevas de onboarding.</li>
+<li><strong>Si el chat público no responde:</strong> el 90% de las veces es (a) workflow sin publicar o (b) <code>WEBHOOK_URL</code> sin la barra final o sin poner. Son LAS dos lecciones del vídeo — si te pasa en directo, úsalo como momento didáctico.</li>
+</ol>
+</main>
+</div>
+<script>
+// Botón "copiar" en cada bloque de código
+document.querySelectorAll('main pre').forEach(pre => {
+  const btn = document.createElement('button');
+  btn.className = 'copy'; btn.textContent = 'copiar';
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(pre.querySelector('code').innerText.trimEnd());
+    btn.textContent = '✓ copiado';
+    setTimeout(() => btn.textContent = 'copiar', 1500);
+  });
+  pre.appendChild(btn);
+});
+// Scrollspy: resalta en el sidebar la sección visible
+const links = [...document.querySelectorAll('.nav a')];
+const byId = Object.fromEntries(links.map(a => [a.getAttribute('href').slice(1), a]));
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(a => a.classList.remove('active'));
+      byId[e.target.id]?.classList.add('active');
+    }
+  });
+}, {rootMargin: '0px 0px -75% 0px'});
+document.querySelectorAll('main h2[id], main h3[id]').forEach(h => obs.observe(h));
+</script>
+</body>
+</html>
