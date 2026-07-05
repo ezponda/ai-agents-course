@@ -1,0 +1,373 @@
+{
+  "name": "17 — Salon Booking Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/project_6_salon_booking_assistant.html)\n## Salon Booking Assistant — Multi-Agent Receptionist\n\n**Goal:** A WhatsApp-style receptionist for a hair salon. It can ONLY do four things (book, cancel, check appointments, answer salon questions) — everything else gets a polite decline and a ticket for the owner.\n\n### Requirements\n- **n8n 1.113 or newer** (Data Tables)\n- **OpenRouter API key** (Settings → Credentials) — one Chat Model shared by all three agents\n- No other credentials — the calendar lives in **n8n Data Tables**\n\n### Setup (before first run)\n1. Create two Data Tables (project Overview → **Data Tables** tab):\n   - `appointments` with columns: `date`, `time`, `service`, `client_name`, `status` (all String)\n   - `tickets` with columns: `client_name`, `question`, `status` (all String)\n2. Open each of the 4 Data Table tool nodes and **select your table** from the dropdown (table IDs are per-instance, so the import cannot pre-select them).\n\n### How it works\n- **Receptionist** talks to the client, holds the memory, and routes: it has a closed catalog of 4 tasks in its prompt.\n- **Agenda Agent** (worker) reads/writes the `appointments` table.\n- **Info Agent** (worker) answers from a fixed knowledge block. No tools.\n- **Escalate to Lola** writes a row in `tickets` for anything out of scope.\n\n### Try this\n1. `How much is a haircut?`\n2. `I'd like a coloring appointment next Friday afternoon` (then confirm)\n3. `Do you sell gift cards?` → polite decline + a new row in `tickets`\n\n**Common mistakes:** forgetting to select the tables in the Data Table nodes after import; giving a worker Memory (keep workers stateless — memory belongs to the Receptionist).",
+        "height": 620,
+        "width": 900,
+        "color": 4
+      },
+      "id": "f6000000-0000-4000-8000-000000000001",
+      "name": "NOTE — Salon Booking Assistant",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1500,
+        -640
+      ]
+    },
+    {
+      "parameters": {
+        "public": true,
+        "mode": "webhook",
+        "options": {
+          "responseMode": "lastNode"
+        }
+      },
+      "id": "f6000000-0000-4000-8000-000000000002",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1140,
+        0
+      ],
+      "webhookId": "f6000000-0000-4000-8000-00000000cc06"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are the receptionist of Lola's Hair Salon, chatting with clients as if on WhatsApp.\nToday is {{ $now.format('cccc, yyyy-MM-dd') }}.\n\nYou can ONLY help with these four tasks:\n1. Book an appointment\n2. Cancel an appointment\n3. Check existing appointments\n4. Answer questions about services, prices, and opening hours\n\nYou have two specialists available as tools:\n- Agenda Agent: everything about appointments (check availability, book, cancel)\n- Info Agent: services, prices, opening hours, address\n\nRules:\n- For appointments: first collect ALL the details (service, date, time, client name), then call the Agenda Agent. One call with complete details beats many calls.\n- Before booking or cancelling, repeat the details back and ask the client to confirm. Only call the Agenda Agent to book or cancel AFTER they confirm.\n- Never invent available slots, services, or prices yourself — always ask a specialist.\n- Never mention your tools or internal agents. To the client, you are simply the salon.\n- If the request is NOT one of the four tasks above, or a specialist could not solve it: call Escalate to Lola with a short summary, then reply exactly: \"Sorry, I can only help with appointments and salon info. I've left a note for Lola and she'll get back to you soon.\"\n- Keep replies short and friendly (max 4 lines). Reply in the client's language."
+        }
+      },
+      "id": "f6000000-0000-4000-8000-000000000003",
+      "name": "Receptionist",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -880,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "f6000000-0000-4000-8000-000000000004",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10,
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "id": "f6000000-0000-4000-8000-000000000005",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -960,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "tickets"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "client_name": "={{ $fromAI('client_name', 'The client name if known, otherwise \"unknown\"', 'string') }}",
+            "question": "={{ $fromAI('summary', 'A short summary of what the client asked and why we could not help', 'string') }}",
+            "status": "open"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "descriptionType": "manual",
+        "toolDescription": "Leaves a written note (a ticket) for Lola, the owner. Use it when the client asks for anything outside your four tasks, or when a specialist could not solve the request. Send a short summary of what the client needs, and the client's name if you know it."
+      },
+      "id": "f6000000-0000-4000-8000-000000000006",
+      "name": "Escalate to Lola",
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "text": "={{ $fromAI('request', 'What you need from the agenda, in one complete sentence: check availability / book / cancel, plus service, date, time and client name', 'string') }}",
+        "toolDescription": "Manages the salon agenda: checks availability, books appointments, cancels appointments. Send it ONE complete request with all details: what to do, service, date (YYYY-MM-DD), time (HH:00) and client name. Use it for ANY request about appointments.",
+        "hasOutputParser": false,
+        "options": {
+          "systemMessage": "You manage the appointment book of Lola's Hair Salon. The agenda lives in a data table; your tools are your only source of truth.\n\nHow the agenda works:\n- Open Tuesday to Saturday, 10:00 to 18:00.\n- Every appointment lasts exactly 1 hour and starts on the hour: 10:00, 11:00, 12:00, 13:00, 14:00, 15:00, 16:00 or 17:00.\n- A slot is taken if a row exists with that date, that time and status \"booked\".\n- Dates use YYYY-MM-DD format, times use HH:00 format.\n\nRules:\n- To check availability or find appointments: call Check Agenda with the date.\n- To book: FIRST call Check Agenda to confirm the slot is free, THEN call Book Appointment. Never double-book.\n- To cancel: call Check Agenda to find the appointment, then call Cancel Appointment with its id.\n- If the requested slot is taken, list the free slots for that day instead.\n- If the request is for a closed day (Sunday or Monday) or outside opening hours, say so and suggest the nearest open slot.\n- Reply with a short factual summary of what you found or did — nothing else."
+        }
+      },
+      "id": "f6000000-0000-4000-8000-000000000007",
+      "name": "Agenda Agent",
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        -620,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "text": "={{ $fromAI('question', 'The client question about the salon: services, prices, hours, address or payment', 'string') }}",
+        "toolDescription": "Answers questions about the salon: services, prices, opening hours, address and payment methods. It knows NOTHING about the agenda or existing appointments — for those, use the Agenda Agent.",
+        "hasOutputParser": false,
+        "options": {
+          "systemMessage": "You answer questions about Lola's Hair Salon. Use ONLY the information below. If the answer is not here, say exactly: \"I don't have that information.\"\n\nServices and prices (every appointment lasts 1 hour):\n- Haircut — 15 EUR\n- Coloring — 45 EUR\n- Styling — 25 EUR\n- Keratin treatment — 60 EUR\n\nOpening hours: Tuesday to Saturday, 10:00 to 18:00. Closed Sunday and Monday.\nAddress: 24 Rosemary Street.\nPayment: cash and card.\n\nReply in 1-3 short lines."
+        }
+      },
+      "id": "f6000000-0000-4000-8000-000000000008",
+      "name": "Info Agent",
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        -420,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "appointments"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "date",
+              "condition": "eq",
+              "keyValue": "={{ $fromAI('date', 'The date to check, format YYYY-MM-DD', 'string') }}"
+            }
+          ]
+        },
+        "descriptionType": "manual",
+        "toolDescription": "Returns all appointments for one date (YYYY-MM-DD). Each row has: id, date, time, service, client_name, status. A slot is taken if a row with that time has status 'booked'."
+      },
+      "id": "f6000000-0000-4000-8000-000000000009",
+      "name": "Check Agenda",
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1,
+      "position": [
+        -740,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "appointments"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $fromAI('date', 'Appointment date, format YYYY-MM-DD', 'string') }}",
+            "time": "={{ $fromAI('time', 'Appointment start time, format HH:00', 'string') }}",
+            "service": "={{ $fromAI('service', 'One of: Haircut, Coloring, Styling, Keratin treatment', 'string') }}",
+            "client_name": "={{ $fromAI('client_name', 'The client name', 'string') }}",
+            "status": "booked"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "descriptionType": "manual",
+        "toolDescription": "Adds one appointment row to the agenda with status 'booked'. Only call it after Check Agenda confirmed the slot is free."
+      },
+      "id": "f6000000-0000-4000-8000-00000000000a",
+      "name": "Book Appointment",
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1,
+      "position": [
+        -580,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "appointments"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $fromAI('appointment_id', 'The id of the appointment row to cancel, from Check Agenda', 'number') }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "cancelled"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "descriptionType": "manual",
+        "toolDescription": "Marks one appointment as cancelled. Needs the id of the appointment row, which you get from Check Agenda."
+      },
+      "id": "f6000000-0000-4000-8000-00000000000b",
+      "name": "Cancel Appointment",
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        520
+      ]
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Receptionist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Receptionist",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Agenda Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Info Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Receptionist",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escalate to Lola": {
+      "ai_tool": [
+        [
+          {
+            "node": "Receptionist",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agenda Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Receptionist",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Info Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Receptionist",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Agenda": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agenda Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Book Appointment": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agenda Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cancel Appointment": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agenda Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

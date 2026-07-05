@@ -230,6 +230,9 @@ NOTEBOOK_WORKFLOW_MAP = {
     "project_5_connect_your_app.ipynb": [
         "16_connect_your_app.json",
     ],
+    "project_6_salon_booking_assistant.ipynb": [
+        "17_salon_booking_multiagent.json",
+    ],
 }
 
 

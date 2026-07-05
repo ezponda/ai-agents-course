@@ -32,6 +32,7 @@ parts:
       - file: project_3_onboarding_checkin
       - file: project_4_deploy_to_production
       - file: project_5_connect_your_app
+      - file: project_6_salon_booking_assistant
   - caption: Appendices
     numbered: false
     chapters:
