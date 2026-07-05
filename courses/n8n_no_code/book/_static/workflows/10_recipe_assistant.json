@@ -12,11 +12,14 @@
       "name": "NOTE — Recipe Assistant",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [-880, -560]
+      "position": [
+        -880,
+        -560
+      ]
     },
     {
       "parameters": {
-        "public": true,
+        "public": false,
         "mode": "webhook",
         "options": {
           "responseMode": "lastNode"
@@ -26,7 +29,10 @@
       "name": "When chat message received",
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.1,
-      "position": [-760, -200],
+      "position": [
+        -760,
+        -200
+      ],
       "webhookId": "a0000001-0001-4000-8000-00000000cc01"
     },
     {
@@ -41,7 +47,10 @@
       "name": "Recipe Search Agent",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3,
-      "position": [-400, -200]
+      "position": [
+        -400,
+        -200
+      ]
     },
     {
       "parameters": {
@@ -61,8 +70,12 @@
               "requiredField": true,
               "fieldOptions": {
                 "values": [
-                  { "option": "Yes, with price estimates" },
-                  { "option": "No, just the recipe" }
+                  {
+                    "option": "Yes, with price estimates"
+                  },
+                  {
+                    "option": "No, just the recipe"
+                  }
                 ]
               }
             }
@@ -76,7 +89,10 @@
       "name": "Review Recipe",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
-      "position": [-60, -200]
+      "position": [
+        -60,
+        -200
+      ]
     },
     {
       "parameters": {
@@ -104,21 +120,27 @@
       "name": "Want Prices?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [200, -200]
+      "position": [
+        200,
+        -200
+      ]
     },
     {
       "parameters": {
         "promptType": "define",
         "text": "={{ $('Recipe Search Agent').first().json.output }}",
         "options": {
-          "systemMessage": "You are a shopping assistant that creates shopping lists with real prices.\n\nFrom the recipe provided, create a complete shopping list with current US grocery prices.\n\nSteps:\n1. Extract the ingredient list from the recipe\n2. Search for current grocery prices — batch multiple ingredients into ONE search query (e.g. \"grocery store prices chicken breast tomatoes onions 2025\")\n3. Use at most 2 searches total to conserve API usage\n4. For any ingredient you cannot find a price for, estimate based on your knowledge and mark it with ≈\n\nFormat:\n## Shopping List\n\n### Produce\n- [quantity] [item] — ~$[price]\n\n### Meat / Fish\n- [quantity] [item] — ~$[price]\n\n### Dairy\n- [quantity] [item] — ~$[price]\n\n### Pantry\n- [quantity] [item] — ~$[price]\n\n---\n**Estimated Total: ~$[total]**\n\nBudget Tips:\n- [tip 1]\n- [tip 2]\n\nRules:\n- Include exact quantities from the recipe\n- Skip items most kitchens already have (salt, pepper, cooking oil)\n- Group items by store section\n- Mark searched prices with $ and estimated prices with ≈$\n- Output ONLY the shopping list — no recipe repetition"
+          "systemMessage": "You are a shopping assistant that creates shopping lists with real prices.\n\nFrom the recipe provided, create a complete shopping list with current US grocery prices.\n\nSteps:\n1. Extract the ingredient list from the recipe\n2. Search for current grocery prices — batch multiple ingredients into ONE search query (e.g. \"grocery store prices chicken breast tomatoes onions\")\n3. Use at most 2 searches total to conserve API usage\n4. For any ingredient you cannot find a price for, estimate based on your knowledge and mark it with ≈\n\nFormat:\n## Shopping List\n\n### Produce\n- [quantity] [item] — ~$[price]\n\n### Meat / Fish\n- [quantity] [item] — ~$[price]\n\n### Dairy\n- [quantity] [item] — ~$[price]\n\n### Pantry\n- [quantity] [item] — ~$[price]\n\n---\n**Estimated Total: ~$[total]**\n\nBudget Tips:\n- [tip 1]\n- [tip 2]\n\nRules:\n- Include exact quantities from the recipe\n- Skip items most kitchens already have (salt, pepper, cooking oil)\n- Group items by store section\n- Mark searched prices with $ and estimated prices with ≈$\n- Output ONLY the shopping list — no recipe repetition"
         }
       },
       "id": "a0000001-0001-4000-8000-000000000009",
       "name": "Shopping List Agent",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3,
-      "position": [440, -350]
+      "position": [
+        440,
+        -350
+      ]
     },
     {
       "parameters": {
@@ -138,7 +160,10 @@
       "name": "Output — With Prices",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [700, -350]
+      "position": [
+        700,
+        -350
+      ]
     },
     {
       "parameters": {
@@ -158,7 +183,10 @@
       "name": "Output — Recipe Only",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [440, -50]
+      "position": [
+        440,
+        -50
+      ]
     },
     {
       "parameters": {
@@ -169,7 +197,10 @@
       "name": "OpenRouter Chat Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
-      "position": [-560, 40]
+      "position": [
+        -560,
+        40
+      ]
     },
     {
       "parameters": {
@@ -181,7 +212,10 @@
       "name": "Simple Memory",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
-      "position": [-400, 40]
+      "position": [
+        -400,
+        40
+      ]
     },
     {
       "parameters": {
@@ -203,7 +237,10 @@
       "name": "Recipe Search",
       "type": "n8n-nodes-base.httpRequestTool",
       "typeVersion": 4.2,
-      "position": [-240, 40]
+      "position": [
+        -240,
+        40
+      ]
     },
     {
       "parameters": {},
@@ -211,7 +248,10 @@
       "name": "Google Search",
       "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
       "typeVersion": 1,
-      "position": [-80, 40]
+      "position": [
+        -80,
+        40
+      ]
     },
     {
       "parameters": {
@@ -219,10 +259,13 @@
         "options": {}
       },
       "id": "a0000001-0001-4000-8000-000000000018",
-      "name": "OpenRouter Chat Model1",
+      "name": "OpenRouter Chat Model (Prices)",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
-      "position": [440, -150]
+      "position": [
+        440,
+        -150
+      ]
     },
     {
       "parameters": {},
@@ -230,7 +273,10 @@
       "name": "Price Search",
       "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
       "typeVersion": 1,
-      "position": [600, -150]
+      "position": [
+        600,
+        -150
+      ]
     }
   ],
   "connections": {
@@ -340,23 +386,23 @@
         ]
       ]
     },
-    "OpenRouter Chat Model1": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Shopping List Agent",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Price Search": {
       "ai_tool": [
         [
           {
             "node": "Shopping List Agent",
             "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model (Prices)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Shopping List Agent",
+            "type": "ai_languageModel",
             "index": 0
           }
         ]
