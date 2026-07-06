@@ -13,6 +13,8 @@ parts:
       - file: 04_workflow_patterns
       - file: 05_reflection_and_hitl
       - file: 06_memory_from_scratch
+      - file: 07_build_a_coding_agent
+      - file: 08_context_engineering
   - caption: "Block 1 · PydanticAI"
     chapters:
       - file: 10_rosetta_raw_vs_pydanticai

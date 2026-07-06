@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auditoría del curso python_code — 2026-07-06</title>
+<style>
+  :root { --bg:#ffffff; --fg:#1a1a1a; --muted:#666; --accent:#0b5fff; --border:#e0e0e0; --code-bg:#f5f5f5; --warn:#b45309; --ok:#15803d; --bad:#b91c1c; --card:#fafafa; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#111418; --fg:#e6e6e6; --muted:#9aa0a6; --accent:#6ea8ff; --border:#2a2f36; --code-bg:#1c2128; --warn:#fbbf24; --ok:#4ade80; --bad:#f87171; --card:#181d23; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--fg); line-height:1.55; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 2rem 1.2rem 6rem; }
+  h1 { font-size:1.7rem; border-bottom:3px solid var(--accent); padding-bottom:.4rem; }
+  h2 { font-size:1.35rem; margin-top:2.6rem; border-bottom:1px solid var(--border); padding-bottom:.3rem; }
+  h3 { font-size:1.1rem; margin-top:1.8rem; }
+  code, pre { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; background:var(--code-bg); border-radius:4px; }
+  code { padding:.1em .35em; font-size:.9em; }
+  pre { padding:.8rem 1rem; overflow-x:auto; border:1px solid var(--border); }
+  table { border-collapse:collapse; width:100%; margin:1rem 0; font-size:.92rem; }
+  .tablewrap { overflow-x:auto; }
+  th, td { border:1px solid var(--border); padding:.45rem .6rem; text-align:left; vertical-align:top; }
+  th { background:var(--code-bg); }
+  .toc { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:1rem 1.4rem; margin:1.5rem 0; }
+  .toc a { text-decoration:none; color:var(--accent); }
+  .toc li { margin:.25rem 0; }
+  .badge { display:inline-block; font-size:.75rem; font-weight:700; padding:.1em .55em; border-radius:99px; margin-right:.4em; }
+  .p0 { background:#fee2e2; color:#991b1b; } .p1 { background:#fef3c7; color:#92400e; } .p2 { background:#dcfce7; color:#166534; }
+  @media (prefers-color-scheme: dark) { .p0{background:#450a0a;color:#fca5a5;} .p1{background:#451a03;color:#fcd34d;} .p2{background:#052e16;color:#86efac;} }
+  .note { border-left:4px solid var(--accent); background:var(--card); padding:.6rem 1rem; margin:1rem 0; border-radius:0 6px 6px 0; }
+  .warnbox { border-left:4px solid var(--warn); background:var(--card); padding:.6rem 1rem; margin:1rem 0; border-radius:0 6px 6px 0; }
+  .grade-hi { color:var(--ok); font-weight:700; } .grade-mid { color:var(--warn); font-weight:700; } .grade-lo { color:var(--bad); font-weight:700; }
+  .muted { color:var(--muted); }
+  a { color:var(--accent); }
+  ul, ol { padding-left:1.4rem; }
+  li { margin:.25rem 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Auditoría exhaustiva del curso <code>courses/python_code</code></h1>
+<p class="muted">Fecha: 2026-07-06 · Base: 34 notebooks (Bloques 0–3 + apéndices) · Método: 3 auditores de lectura íntegra (uno por bloque), 1 análisis del ADN didáctico del curso n8n, 2 investigaciones externas (14+ cursos de referencia; internals de Claude Code / Codex / OpenCode / Aider con ~20 fuentes primarias).</p>
+
+<div class="toc">
+<strong>Índice</strong>
+<ol>
+  <li><a href="#veredicto">Veredicto global</a></li>
+  <li><a href="#notas">Notas por notebook</a></li>
+  <li><a href="#p0">P0 — Bugs y fixes obligatorios</a></li>
+  <li><a href="#p1">P1 — Las 5 mejoras estructurales</a></li>
+  <li><a href="#p2">P2 — Añadidos valiosos</a></li>
+  <li><a href="#no">Qué NO añadir</a></li>
+  <li><a href="#coding">Propuesta detallada: capítulos 07 y 08 (coding agents)</a></li>
+  <li><a href="#adn">ADN didáctico del curso n8n a portar</a></li>
+  <li><a href="#externos">Checklist de cursos externos (2025–2026)</a></li>
+  <li><a href="#fuentes">Fuentes primarias sobre coding agents</a></li>
+  <li><a href="#orden">Orden de ejecución</a></li>
+</ol>
+</div>
+
+<h2 id="veredicto">1. Veredicto global</h2>
+<p>El curso está <strong>por encima de la media del género</strong> (media ~7.4/10). Dos fortalezas raras y valiosas:</p>
+<ul>
+  <li><strong>El arco raw-loop → framework es el consenso del sector.</strong> DeepLearning.AI (AI Agents in LangGraph) empieza con "Build an Agent from Scratch"; Hugging Face Agents Course Unit 1 construye un agente dummy a mano; Ed Donner dedica su primera semana a fundamentos sin framework; la guía de OpenAI define el "run" como un while loop. El curso ya está donde hay que estar.</li>
+  <li><strong>La escalera de memoria 06 → 14 → 23 → 28</strong> (gestionar la lista → message_history → thread → usuario cross-thread) y el anclaje constante "esto es lo que hacías a mano en 0.X" (patrón Rosetta) son de lo mejor diseñado del curso.</li>
+</ul>
+<p>Tres debilidades <strong>sistémicas</strong>:</p>
+<div class="tablewrap"><table>
+<tr><th>Debilidad</th><th>Evidencia</th></tr>
+<tr><td><strong>Ejercicios no verificables</strong></td><td>46+ ejercicios en dropdowns, 0 con assert / solución oculta / expected output. El Bloque 2 es el peor: 1 de 9 notebooks tiene ejercicios. Justo el ADN que el curso n8n sí tiene ("Done when:", "Expected:", escenarios adversariales).</td></tr>
+<tr><td><strong>El Bloque 2 es un callejón sin salida</strong></td><td>Nada de LangGraph (checkpointer, interrupt, stream) se usa en los capstones ni en el deploy. 9 notebooks sin desembocadura narrativa.</td></tr>
+<tr><td><strong>"Producción" que no produce</strong></td><td>31 es el notebook más flojo (5.5): nada ejecutable, seguridad reducida a un <code>{note}</code>. Sin auth, sin Docker, sin deploy guiado de extremo a extremo.</td></tr>
+</table></div>
+
+<h2 id="notas">2. Notas por notebook</h2>
+
+<h3>Bloque 0 — el bucle a mano</h3>
+<div class="tablewrap"><table>
+<tr><th>NB</th><th>Nota</th><th>Diagnóstico en una línea</th></tr>
+<tr><td>00 what_is_an_agent</td><td class="grade-hi">8</td><td>Excelente mapa; pseudocódigo ReAct solo ejecuta el primer tool_call (03 itera todos); 0 self-checks.</td></tr>
+<tr><td>01 setup_and_first_call</td><td class="grade-hi">8.5</td><td>El mejor estructurado; la sección wire-format "hace trampa" (dict reconstruido, no la petición real → <code>with_raw_response</code>); sin Common issues 401/402/429; MODEL por defecto es de pago.</td></tr>
+<tr><td>02 messages_and_structured_output</td><td class="grade-mid">6.5</td><td><strong>BUG</strong>: celda 10 revienta (schema exige <code>summary</code> que el prompt no pide); falta retry-on-ValidationError (el patrón que PydanticAI automatiza); el "watch it break" a menudo no falla.</td></tr>
+<tr><td>03 tool_use_from_scratch</td><td class="grade-hi">9</td><td>El mejor del bloque; <strong>NameError latente de <code>args</code></strong> en el camino de error; parallel tool calls ocurre pero no se nombra; falta <code>tool_choice</code>.</td></tr>
+<tr><td>04 workflow_patterns</td><td class="grade-mid">7.5</td><td>El router usa substring matching justo tras enseñar structured output (contradicción); la tesis "no necesitas agente" se afirma sin medir; workers secuenciales tras enseñar gather.</td></tr>
+<tr><td>05 reflection_and_hitl</td><td class="grade-hi">8</td><td>Jerarquía código&gt;juez excelente; nunca cierra un ciclo generate→judge→revise con el feedback inyectado; falta el problema de persistencia del HITL real.</td></tr>
+<tr><td>06 memory_from_scratch</td><td class="grade-mid">7</td><td>Promete un problema de presupuesto de tokens y nunca mide tokens; equipara mal window/summary con "checkpointer"; prompt caching ausente (su sitio natural); demo WindowMemory no determinista narrada como determinista.</td></tr>
+</table></div>
+
+<h3>Bloque 1 — PydanticAI (bloque: 7.5/10)</h3>
+<div class="tablewrap"><table>
+<tr><th>NB</th><th>Nota</th><th>Diagnóstico en una línea</th></tr>
+<tr><td>10 rosetta_raw_vs_pydanticai</td><td class="grade-hi">8</td><td>Buen puente; el código raw de 0.3 no está inline para comparar; "por qué PydanticAI" se asume, no se argumenta; promete turn-limit gestionado que nunca se enseña (UsageLimits).</td></tr>
+<tr><td>11 first_pydanticai_agent</td><td class="grade-mid">6.5</td><td>Demasiado delgado para técnicos; falta anatomía del result (ModelRequest/Response) y <code>model_settings</code>.</td></tr>
+<tr><td>12 tools_and_descriptions</td><td class="grade-hi">8.5</td><td>El mejor arco del bloque; demo vago-vs-claro probabilística (convertir en medición N=5); falta el JSON schema generado y <code>ModelRetry</code> en tools.</td></tr>
+<tr><td>13 typed_output_and_di</td><td class="grade-mid">7.5</td><td>DI no se justifica (3 strings ≠ recurso real); no enseña qué pasa cuando la validación falla por dentro; falta <code>list[X]</code> / union en output_type.</td></tr>
+<tr><td>14 memory_and_history</td><td class="grade-mid">6</td><td>El más delgado; falta <code>history_processors</code> (la traducción idiomática de 0.6), serialización a JSON; su ejercicio 2 puede cortar pares tool-call/return (error 400) sin avisar.</td></tr>
+<tr><td>15 guardrails_and_validation</td><td class="grade-mid">7</td><td>Gran final read/write + least privilege; pero el guardrail de input es un blocklist de 3 strings; el guardrail de tools que la tabla promete nunca se codifica; no se ve agotar retries.</td></tr>
+<tr><td>16 evals_and_observability</td><td class="grade-hi">8.5</td><td>El mejor del bloque (error analysis); pero evalúa un clasificador de juguete, nunca al agente con tools; <code>Dataset(name=)</code> y <code>ToneJudge</code> merecen verificación ejecutada.</td></tr>
+<tr><td>17 knowledge_agent_rag</td><td class="grade-hi">8</td><td>Buen milestone; falta chunking real (los docs ya vienen troceados) y citar fuentes; pip sin pin y tras el print.</td></tr>
+<tr><td>18 mcp_tools</td><td class="grade-mid">7</td><td>Depende del servidor vivo de DeepWiki sin fallback; no lista los tools del servidor; ni una palabra de seguridad de MCP de terceros (incoherente tras 15).</td></tr>
+<tr><td>18b build_an_mcp_server</td><td class="grade-mid">7.5</td><td>Muy buen complemento; el end-to-end servidor propio + agente nunca se ejecuta; el ejercicio del <code>inputSchema</code> merece ser celda ejecutada.</td></tr>
+<tr><td>19 debugging_agents</td><td class="grade-mid">7.5</td><td>Re-enseña el bug de 12; solo depura runs que terminan — falta <code>capture_run_messages()</code>; su ejercicio 2 es irresoluble sin <code>UsageLimits</code>.</td></tr>
+</table></div>
+<p><strong>Hueco nº1 del bloque:</strong> testing con <code>TestModel</code>/<code>FunctionModel</code> (testear agentes sin gastar tokens ni red) — el argumento más diferencial de PydanticAI para ingenieros, ausente por completo. También ausentes: streaming (<code>run_stream</code>) antes del Bloque 3, <code>UsageLimits</code>, <code>ModelRetry</code> en tools, coste tokens→$.</p>
+
+<h3>Bloques 2 y 3 — LangGraph y producción</h3>
+<div class="tablewrap"><table>
+<tr><th>NB</th><th>Nota</th><th>Diagnóstico en una línea</th></tr>
+<tr><td>20 rosetta_agent_as_graph</td><td class="grade-mid">7</td><td>Buen rosetta, "porqué" débil (solo visualización — los argumentos duros llegan en 23–24); 0 ejercicios.</td></tr>
+<tr><td>21 stategraph_fundamentals</td><td class="grade-mid">7.5</td><td>Honesto; el "merge problem"/reducers queda teórico sin demo de ramas paralelas; 0 ejercicios.</td></tr>
+<tr><td>22 agent_loop_as_graph</td><td class="grade-hi">8.5</td><td><strong>El modelo a imitar del bloque</strong> (ejercicios + common issues + conexión 0.3); nit: recursion_limit ≠ max_turns (cuenta super-steps).</td></tr>
+<tr><td>23 persistence_and_checkpointers</td><td class="grade-mid">7.5</td><td>Contraste perfecto, pero el time-travel (su mejor argumento) nunca se ejecuta; SqliteSaver solo mención; 0 ejercicios.</td></tr>
+<tr><td>24 human_in_the_loop</td><td class="grade-hi">8</td><td>El mejor argumento pro-grafo; falta el aviso de re-ejecución del nodo al reanudar, el camino resume="no" y <code>get_state().next</code>; 0 ejercicios.</td></tr>
+<tr><td>25 reflection_cyclic_graph</td><td class="grade-mid">6.5</td><td><strong>Contradice a 05</strong>: crítico LLM para criterios objetivos (3 frases, &lt;25 palabras); el ciclo no se ve iterar (sin stream); 0 ejercicios.</td></tr>
+<tr><td>26 multi_agent_supervisor</td><td class="grade-lo">6</td><td>Capítulo multiagente sin ningún grafo; <strong>silencia la pérdida de contexto</strong> del patrón agents-as-tools (su limitación nº1); handoffs solo en dropdown; 0 ejercicios.</td></tr>
+<tr><td>27 agentic_rag</td><td class="grade-mid">7</td><td>El bucle probablemente nunca se dispara en la demo (KB 4 docs, k=2); el rewriter no ve los docs fallidos; colisión de etiqueta "agentic RAG" con 17; 0 ejercicios.</td></tr>
+<tr><td>28 long_term_memory</td><td class="grade-mid">7.5</td><td>NO redundante (capa que faltaba); falta extracción de hechos con LLM (vs "remember" mágico) y ejecutar un segundo user_id; 0 ejercicios.</td></tr>
+<tr><td>30 deploy_fastapi</td><td class="grade-mid">6.5</td><td>Mínimo digno; el snippet LangGraph lleva <code>thread_id="web-1"</code> hardcodeado (todos los usuarios compartirían conversación); sin auth/Docker/target guiado.</td></tr>
+<tr><td>31 connect_your_app</td><td class="grade-lo">5.5</td><td><strong>El más flojo del curso</strong>: nada ejecutable; parser SSE frágil; toda la seguridad del Bloque 3 es un <code>{note}</code>.</td></tr>
+<tr><td>32 project_data_analyst</td><td class="grade-hi">8</td><td>Idea de capstone de primera (tool run-code); <strong>bug en el eval</strong> (caso 3, substring pasa con la respuesta contraria); cero Bloque 2; dataset de 6 filas; exec sin estado entre llamadas sin avisar.</td></tr>
+<tr><td>32b project_onboarding</td><td class="grade-mid">7</td><td>Gran patrón (validator de consistencia cruzada) pero tamaño de ejercicio, no de capstone; el eval no se ejecuta; needs_hr pide a gritos interrupt.</td></tr>
+<tr><td>33 which_tool_when</td><td class="grade-mid">7</td><td>Honesto en disciplina; corto en ecosistema (solo las 4 del curso); sin práctica; <strong>cita subgraphs nunca enseñados</strong>.</td></tr>
+<tr><td>ap. prompt_engineering</td><td class="grade-hi">8</td><td>Muy sólido (context engineering mejor que muchos cursos de pago); cerrarlo con mini-eval ejecutado.</td></tr>
+<tr><td>ap. resources</td><td class="grade-lo">6</td><td>URL PydanticAI probablemente errónea (canónica: ai.pydantic.dev); blurb Colab vestigial; sin evals/memoria/seguridad.</td></tr>
+</table></div>
+
+<h2 id="p0">3. <span class="badge p0">P0</span> Bugs y fixes obligatorios</h2>
+<ol>
+  <li><strong>02 celda 10</strong>: ValidationError garantizado — el schema exige <code>summary</code> que el prompt de Fix 1 no pide. Rompe la ejecución top-to-bottom. Convertirlo en la lección ("JSON válido ≠ JSON correcto") y arreglarlo.</li>
+  <li><strong>03</strong>: NameError latente de <code>args</code> en el camino de excepción de <code>run_agent</code> — justo el camino que presume de manejar.</li>
+  <li><strong>32 celda 15 caso 3</strong>: eval substring que da PASS a "Widget vendió más que Gadget" (contiene "gadget"). Arreglar Y explotar como micro-lección de evals mal diseñados.</li>
+  <li><strong>30 dropdown</strong>: <code>thread_id="web-1"</code> hardcodeado → per-user (contradice la tabla de errores de 23).</li>
+  <li><strong>Incoherencias internas</strong>: 25 vs 05 (juez LLM para criterios objetivos); 17 vs 27 (etiqueta "agentic RAG" con dos significados → 27 pasa a "self-corrective RAG"); 33 cita subgraphs no enseñados; appendix_resources con URL dudosa y blurb Colab vestigial.</li>
+  <li><strong>27</strong>: la demo probablemente nunca dispara su propio bucle rewrite; el rewriter no recibe los docs fallidos.</li>
+  <li><strong>Fragilidad transversal <code>json_object</code></strong> (02/04/05) con OpenRouter: según el proveedor del día se ignora o falla, sin try/retry. El punto de rotura más probable en un aula. + 01: Common issues 401/402/429 y aviso del MODEL de pago por defecto.</li>
+</ol>
+
+<h2 id="p1">4. <span class="badge p1">P1</span> Las 5 mejoras estructurales de mayor retorno</h2>
+
+<h3>4.1 Capítulos nuevos: "cómo funciona un coding agent por dentro" (07 + 08)</h3>
+<p>Petición explícita del autor y el tema más "2026" del panorama (LangChain acaba de publicar un curso entero de "Deep Agents" que es exactamente esto). Encaja como payoff natural del Bloque 0: los alumnos ya tienen el bucle; Claude Code / OpenCode / Codex son "su bucle + 7 capas de ingeniería". <a href="#coding">Detalle completo en §7</a>.</p>
+
+<h3>4.2 Ejercicios verificables — portar el ADN n8n (transversal)</h3>
+<ul>
+  <li>Al menos 1 ejercicio por notebook con verificación (assert / expected / eval) + <strong>solución en dropdown colapsado</strong>.</li>
+  <li>Escenarios de test numerados con "Expected:" y al menos un caso adversarial (15, 17, 26, 32, 32b).</li>
+  <li>Challenges con "Done when:" en los capstones; patrón V1→V2→V3 con fallos predichos.</li>
+  <li>Prioridad máxima: Bloque 2 (8 de 9 sin ejercicios; replicar el patrón de 22).</li>
+</ul>
+
+<h3>4.3 Bloque 1: testing + streaming + límites</h3>
+<ul>
+  <li><strong>Nuevo notebook 15b_testing_agents</strong>: <code>TestModel</code>/<code>FunctionModel</code> (testear sin tokens ni red), <code>UsageLimits</code>, coste tokens→$.</li>
+  <li>Engordar 11 (anatomía del result, model_settings) y 14 (history_processors, serialización) — hoy 6.5 y 6.</li>
+  <li><code>ModelRetry</code> dentro de tools (12/15) y streaming <code>run_stream</code> antes del Bloque 3.</li>
+  <li>19: <code>capture_run_messages()</code> para runs que explotan + bug distinto al de 12 + UsageLimits como stopping rule.</li>
+</ul>
+
+<h3>4.4 Darle desembocadura al Bloque 2</h3>
+<ul>
+  <li><code>graph.stream(stream_mode="updates")</code> en 22/25/27 — ver el loop, la reflexión y el grade/rewrite iterar en vivo.</li>
+  <li>23: ejecutar el time-travel de verdad (<code>get_state_history</code> + resume desde checkpoint) y SqliteSaver real.</li>
+  <li><strong>LangGraph en el Bloque 3</strong>: thread_id por usuario en el cuerpo de 30; <code>interrupt</code> en un capstone — lo natural: aprobar el código generado antes de <code>exec()</code> en 32 (une 24+32).</li>
+  <li>26: nombrar la pérdida de contexto de agents-as-tools + un handoff mínimo con <code>Command</code> + ejercicio de comparación coste/latencia supervisor vs single-agent.</li>
+</ul>
+
+<h3>4.5 Subir el Bloque 3 a "producción" de verdad</h3>
+<ul>
+  <li><strong>31 rehecho</strong>: frontend Gradio ejecutable en el notebook (corre en Colab), auth API-key + rate limit con código, y un deploy guiado de extremo a extremo (un solo host, con pasos) → "habla con tu agente desde el móvil". El momento que motiva (lo que mejor funciona en n8n P6/P7).</li>
+  <li>Dockerfile mínimo en 30.</li>
+  <li>33: ejercicio de 5 escenarios "elige herramienta y justifica" + párrafo de ecosistema (OpenAI Agents SDK, CrewAI, smolagents, Claude Agent SDK) + coste de churn.</li>
+</ul>
+
+<h2 id="p2">5. <span class="badge p2">P2</span> Añadidos valiosos (no urgentes)</h2>
+<div class="tablewrap"><table>
+<tr><th>Añadido</th><th>Por qué</th></tr>
+<tr><td><strong>Proyecto multimodal</strong> (Expense Assistant en código: visión + <code>Expense</code> Pydantic + SQLite dedupe + validación conversacional)</td><td>El hueco de contenido más claro: cero visión en 34 notebooks. Los 4 recibos de test ya existen en <code>n8n_no_code/book/_static/data/receipts/</code>.</td></tr>
+<tr><td><strong>Agente proactivo/scheduled</strong> (cron + agente + entrega; ¿cómo evalúas un agente que corre solo?)</td><td>Categoría mental distinta; LangChain le dedica un curso entero ("Ambient Agents").</td></tr>
+<tr><td><strong>Guardrails con rating de riesgo por tool</strong> en 15 (low/medium/high: read-only vs write, reversibilidad) + screen LLM en vez del blocklist</td><td>Taxonomía de la guía de OpenAI; el blocklist actual es lo que <em>no</em> hay que desplegar.</td></tr>
+<tr><td><strong>Afirmaciones → mediciones</strong>: usage.prompt_tokens naive/window/summary en 06; agent vs workflow en 04; tool vago vs claro N=5 en 12</td><td>"Mide, no afirmes" — coherente con el lema del propio curso en 16.</td></tr>
+<tr><td><strong>CI que ejecute los notebooks contra los pins</strong> (especialmente 16 y 18; 18 con fallback si DeepWiki cae)</td><td>El curso afirma "verified against 2.2" con APIs que solo un run real valida.</td></tr>
+</table></div>
+
+<h2 id="no">6. Qué NO añadir</h2>
+<ul>
+  <li><strong>No portar más proyectos n8n</strong>: Recipe (cubierto por 12/13), Ask Your Data (32 ya es mejor), Deploy Railway completo (30+31 arreglados bastan). El salon P7 completo tampoco: su valor en código es una lección concreta (dónde viven las garantías: constraints SQL vs prompt) que cabe como sección/challenge.</li>
+  <li><strong>No capítulos de CrewAI/AutoGen/OpenAI SDK</strong>: basta el párrafo de ecosistema en 33. Multiplicar frameworks es lo que hace mediocres a los cursos de Udemy.</li>
+  <li><strong>No</strong> LangGraph Studio/Platform en profundidad (2 líneas en 23 bastan) · <strong>no</strong> fine-tuning para function-calling · <strong>no</strong> A2A más allá de la nota existente · <strong>no</strong> subgraphs como capítulo (solo coherencia en 33) · <strong>no</strong> benchmark tipo GAIA con leaderboard (mecánica de MOOC masivo, no de este formato).</li>
+</ul>
+
+<h2 id="coding">7. Propuesta detallada: capítulos 07 y 08</h2>
+<div class="note">La numeración del Bloque 0 (00–06) deja libres 07 y 08. El hilo narrativo que sugieren todas las fuentes: <em>el bucle es el 5% (Ball); el 95% restante es ingeniería del contexto y de las tools</em> — y cada agente comercial resuelve las mismas capas con decisiones distintas y documentadas.</div>
+
+<h3>07_build_a_coding_agent</h3>
+<ul>
+  <li><strong>Tools de Ball/Huntley sobre el bucle de 0.3</strong>: <code>read_file</code> (offset/límite de líneas, como Claude Code, máx. 2000), <code>list_files</code>, <code>edit_file</code> (string-replace con validación de unicidad), <code>bash</code> (timeout + truncado de output).</li>
+  <li><strong>Inyección de entorno</strong>: cwd + <code>git status</code> + árbol de ficheros en el system prompt (lo que hacen Claude Code y Codex con CLAUDE.md/AGENTS.md).</li>
+  <li><strong>Permisos</strong>: interceptar tool calls con <code>input()</code> + allowlist de prefijos — el modelo mental de Codex: <em>sandbox (qué puede) × approval policy (cuándo pregunta)</em>.</li>
+  <li><strong>Clímax</strong>: "escribe la función, corre pytest, itera hasta verde" — el bucle de verificación (Crawshaw: "agents are feedback-driven LLMs").</li>
+  <li><strong>Cierre comparativo</strong>: Claude Code = LLM-search (grep/glob, no RAG) + string-replace + permisos · Codex = patch V4A entrenado + sandbox OS (Seatbelt/Landlock) · Aider = repo-map (tree-sitter + PageRank) + formatos por modelo, con el dato de benchmark: udiff subió el éxito de GPT-4 Turbo del 20% al 61%.</li>
+</ul>
+
+<h3>08_context_engineering</h3>
+<ul>
+  <li><strong>Context rot</strong>: por qué el historial degrada el rendimiento (attention budget, Anthropic).</li>
+  <li><strong>Compaction manual</strong>: al superar N tokens, resumir mensajes viejos con una llamada aparte — demostrable con límite artificial bajo (lo que hace el auto-compact de Claude Code).</li>
+  <li><strong>Subagente</strong>: tool <code>task(prompt)</code> que lanza un segundo bucle con contexto limpio y devuelve solo el resumen (~30 líneas reutilizando su propia clase). Restricción real de Claude Code: máximo una rama — "debuggability &gt;&gt;&gt; multi-agent mishmash" (MinusX).</li>
+  <li><strong>TodoWrite</strong>: una tool que guarda/muestra la lista de tareas del propio modelo (~20 líneas) — combate el context drift; plan mode como contraste ReAct vs plan-then-execute.</li>
+  <li><strong>Teoría con números</strong>: prompt caching (por qué reenviar todo el historial es viable; por qué la compaction interactúa con la cache) y model routing (&gt;50% de las llamadas de Claude Code van a Haiku; $0,11 y 40s para una tarea trivial).</li>
+</ul>
+<p><strong>No construible en notebook (contar, no construir):</strong> sandboxing OS-level, repo-map completo, parser robusto de patches (sin matching flexible, 9× más errores según Aider), TUI, hooks.</p>
+
+<h2 id="adn">8. ADN didáctico del curso n8n a portar</h2>
+<ol>
+  <li><strong>Fallar primero, arreglar con nombre y apellidos</strong> (iteración V1→V2→V3 con "what you'll see go wrong" predicho — el mejor recurso del curso n8n, en project_2 y appendix_d).</li>
+  <li><strong>Test scenarios numerados con "Expected:"</strong> + al menos un caso adversarial (injection, dato inexistente, carrera de concurrencia).</li>
+  <li><strong>Challenges con "Done when:" verificable</strong> — incluidos retos de <em>romper</em>, no solo de construir (el "Break It — the Double-Booking Race" de project_7).</li>
+  <li><strong>Prompts anotados línea→patrón</strong> (tabla "Why it works").</li>
+  <li><strong>Seed data diseñado para la demo</strong> (huecos libres a propósito, fila cancelled para el soft-delete).</li>
+  <li><strong>Tablas síntoma→causa→arreglo</strong> + sesión de debugging narrada.</li>
+  <li><strong>Cada proyecto termina tocando el mundo</strong> (URL pública, schedule, "have a friend use it").</li>
+</ol>
+<p class="muted">El curso n8n es didácticamente más fuerte en el ciclo de verificación por el alumno; es el ADN que un curso técnico suele omitir por asumir que "el técnico ya sabe probar". No transfieren: mecánica de UI, justificaciones sin-credenciales, vocabulario repetido, cap. de setup con capturas.</p>
+
+<h2 id="externos">9. Checklist de cursos externos (2025–2026)</h2>
+<p>★★★ = en casi todos (5+ fuentes) · ★★ = común (3–4) · ★ = distintivo de alto valor.</p>
+<div class="tablewrap"><table>
+<tr><th></th><th>Tema</th><th>Estado en python_code</th></tr>
+<tr><td>★★★</td><td>Agente desde cero antes del framework</td><td class="grade-hi">YA — es el consenso, el curso está bien posicionado</td></tr>
+<tr><td>★★★</td><td>Evaluación como módulo obligatorio (trayectoria/router, error analysis, LLM-judge, regresión)</td><td class="grade-mid">Parcial — 16 es bueno pero evalúa un juguete; falta eval del agente con tools y como hilo transversal</td></tr>
+<tr><td>★★★</td><td>Observabilidad/tracing desde el día 1</td><td class="grade-mid">Parcial — Logfire/LangSmith solo comentado</td></tr>
+<tr><td>★★★</td><td>Human-in-the-loop como mecánica concreta</td><td class="grade-hi">BIEN (05, 24) — falta desembocar en capstone</td></tr>
+<tr><td>★★★</td><td>MCP (cliente + construir servidor)</td><td class="grade-hi">BIEN (18, 18b) — falta robustez y seguridad</td></tr>
+<tr><td>★★★</td><td>Catálogo de patrones con nombre</td><td class="grade-hi">BIEN (00, 04)</td></tr>
+<tr><td>★★</td><td>"¿Cuándo NO construir un agente?"</td><td class="grade-hi">BIEN (04, 33)</td></tr>
+<tr><td>★★</td><td>Guardrails/seguridad con taxonomía y rating de riesgo por tool</td><td class="grade-mid">Parcial — 15 flojo en input guardrails; sin rating de riesgo</td></tr>
+<tr><td>★★</td><td>Memoria corta vs larga separadas</td><td class="grade-hi">MUY BIEN (06/14/23/28)</td></tr>
+<tr><td>★★</td><td>Structured outputs + Pydantic como cimiento</td><td class="grade-hi">MUY BIEN (02/13) — ventaja natural del curso</td></tr>
+<tr><td>★★</td><td>Multiagente con semánticas contrastadas (tools vs handoffs)</td><td class="grade-mid">Parcial — 26 solo enseña una y silencia su limitación</td></tr>
+<tr><td>★★</td><td>Despliegue y producción (auth, coste, double-texting)</td><td class="grade-lo">FLOJO — el hueco del Bloque 3</td></tr>
+<tr><td>★★</td><td>Agentes que ejecutan código + sandboxing</td><td class="grade-mid">Parcial — 32 lo tiene; falta profundidad (E2B nota)</td></tr>
+<tr><td>★</td><td>Deep agents / context engineering avanzado (todos, offload, subagentes, caching)</td><td class="grade-lo">AUSENTE → lo cubren los nuevos 07/08</td></tr>
+<tr><td>★</td><td>Certificación con benchmark + leaderboard</td><td class="muted">NO adoptar (mecánica de MOOC masivo)</td></tr>
+<tr><td>★</td><td>ACI: diseño de tools como disciplina · agentes ambient/event-driven</td><td class="grade-mid">Parcial (12) · ausente (→ P2 proactivo)</td></tr>
+</table></div>
+<p class="muted">Fuentes: <a href="https://agenticai-learning.org/f25">Berkeley Agentic AI f25</a> · <a href="https://huggingface.co/learn/agents-course/unit0/introduction">HF Agents Course</a> · <a href="https://academy.langchain.com/">LangChain Academy</a> (Intro to LangGraph, Ambient Agents, Deep Agents) · DeepLearning.AI (<a href="https://www.deeplearning.ai/courses/agentic-ai/">Agentic AI de Ng</a>, <a href="https://www.deeplearning.ai/short-courses/evaluating-ai-agents/">Evaluating AI Agents</a>, <a href="https://www.deeplearning.ai/short-courses/building-code-agents-with-hugging-face-smolagents/">Building Code Agents</a>, MCP, CrewAI, AutoGen, Pydantic) · <a href="https://github.com/anthropics/courses">Anthropic courses</a> + <a href="https://anthropic.skilljar.com/">Academy</a> · <a href="https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf">OpenAI practical guide (PDF)</a> · <a href="https://maven.com/parlance-labs/evals">Hamel/Shreya Evals</a> · <a href="https://www.udemy.com/course/the-complete-agentic-ai-engineering-course/">Ed Donner</a>.</p>
+
+<h2 id="fuentes">10. Fuentes primarias sobre coding agents (rankeadas)</h2>
+<ol>
+  <li><a href="https://ampcode.com/how-to-build-an-agent">Thorsten Ball — How to Build an Agent</a> — el texto canónico (~300 líneas, 3 tools); valida lo que los alumnos ya construyeron.</li>
+  <li><a href="https://minusx.ai/blog/decoding-claude-code/">MinusX — What makes Claude Code so damn good</a> — el mejor teardown con logs: 2.8k/9.4k tokens de prompt, &gt;50% Haiku, un solo bucle, máx. una rama de subagente.</li>
+  <li><a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Anthropic — Effective context engineering</a> — context rot, compaction, note-taking, subagentes.</li>
+  <li><a href="https://aider.chat/docs/repomap.html">Aider repo-map</a> + <a href="https://aider.chat/2023/12/21/unified-diffs.html">unified diffs</a> — la única fuente con benchmarks de por qué el edit format importa (20%→61%).</li>
+  <li><a href="https://code.claude.com/docs/en/how-claude-code-works">Claude Code — How it works</a> + <a href="https://code.claude.com/docs/en/best-practices">Best practices</a> — gather-context/act/verify, "give Claude a check it can run".</li>
+  <li><a href="https://developers.openai.com/codex/concepts/sandboxing">Codex — sandboxing</a> + <a href="https://github.com/openai/codex/blob/main/codex-rs/apply-patch/apply_patch_tool_instructions.md">apply_patch V4A</a> — el modelo mental más limpio de seguridad (sandbox × approval).</li>
+  <li><a href="https://ghuntley.com/agent/">Geoffrey Huntley — workshop</a> — Ball + bash + ripgrep search.</li>
+  <li><a href="https://github.com/humanlayer/12-factor-agents">Dex Horthy — 12-Factor Agents</a> — para cerrar elevando de "coding agent" a principios generales.</li>
+</ol>
+<p class="muted">Menciones: <a href="https://kirshatrov.com/posts/claude-code-internals">Kir Shatrov</a> (teardown por proxy, $0,11/40s por tarea trivial) · <a href="https://crawshaw.io/blog/programming-with-agents">Crawshaw</a> ("an agent is a for loop which contains an LLM call") · <a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a> · <a href="https://www.anthropic.com/engineering/writing-tools-for-agents">Writing tools for agents</a> · <a href="https://opencode.ai/docs/tools/">OpenCode docs</a> (el codebase abierto más legible para leer código real).</p>
+
+<h2 id="orden">11. Orden de ejecución</h2>
+<ol>
+  <li><span class="badge p0">P0</span> Bugs + incoherencias — barato, elimina roturas en Colab.</li>
+  <li><span class="badge p1">P1</span> Capítulos 07+08 de coding agents — máximo valor diferencial.</li>
+  <li><span class="badge p1">P1</span> Ejercicios verificables en Bloque 2 + graph.stream() + time-travel ejecutado.</li>
+  <li><span class="badge p1">P1</span> 15b_testing_agents (B1) + desembocadura LangGraph en capstones.</li>
+  <li><span class="badge p1">P1</span> 31 rehecho + 33 con ejercicio.</li>
+  <li><span class="badge p2">P2</span> Según apetito: mediciones, guardrails, multimodal (el hueco más visible), proactivo, CI.</li>
+</ol>
+
+</div>
+</body>
+</html>
