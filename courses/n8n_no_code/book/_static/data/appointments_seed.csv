@@ -1,0 +1,10 @@
+date,time,service,client_name,status
+2026-07-07,10:00,Haircut,Lucía,booked
+2026-07-07,11:00,Coloring,Marta,booked
+2026-07-07,16:00,Styling,Nuria,booked
+2026-07-08,12:00,Haircut,Pablo,booked
+2026-07-08,17:00,Keratin treatment,Elena,booked
+2026-07-09,11:00,Coloring,Sofía,booked
+2026-07-10,10:00,Haircut,Diego,cancelled
+2026-07-10,16:00,Haircut,Carlos,booked
+2026-07-11,12:00,Styling,Ana,booked
