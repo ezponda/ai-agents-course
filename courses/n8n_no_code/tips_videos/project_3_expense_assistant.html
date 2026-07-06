@@ -417,19 +417,67 @@ Sueltas la <strong>foto de un recibo</strong> en el chat y el agente lo <strong>
 </blockquote>
 <hr />
 <h1 id="parte-2-variaciones-para-alargar-el-video">🎬 PARTE 2 — Variaciones (para alargar el vídeo)</h1>
-<h2 id="variacion-1-pregunta-a-tus-gastos-4-min">Variación 1 — "Pregunta a tus gastos" (4 min) ⭐</h2>
-<p>Añade una 3ª tool <strong>List Expenses</strong> (Data Table Get, filtro <code>category</code> = <code>$fromAI</code>) y una línea al prompt: <em>"Si el usuario pregunta por su gasto, usa List Expenses."</em> Ahora el mismo asistente <strong>captura</strong> (subes recibo) y <strong>responde</strong> ("¿cuánto llevo en Meals?").</p>
 <blockquote>
-<p>"Cierra el círculo: construyes los datos VIÉNDOLOS y los consultas HABLANDO."</p>
+<p>Cada variación es una receta corta: <strong>qué nodo tocar → abrirlo → qué cambiar.</strong> Los nombres en <code>código</code> son los nodos tal cual salen en el canvas.</p>
 </blockquote>
+<h2 id="variacion-1-pregunta-a-tus-gastos-4-min">Variación 1 — "Pregunta a tus gastos" (4 min) ⭐</h2>
+<p><strong>Qué logras:</strong> el mismo asistente <strong>captura</strong> recibos (subes foto) Y <strong>responde</strong> preguntas ("¿cuánto llevo en Meals?").</p>
+<ul>
+<li><strong>1.</strong> Copia el nodo <code>Log Expense</code> (clic → Ctrl+C → Ctrl+V) y renómbralo <code>List Expenses</code>.</li>
+<li><strong>2.</strong> Ábrelo → <strong>Operation:</strong> <code>Insert Row</code> → <strong><code>Get Row(s)</code></strong>.</li>
+<li><strong>3.</strong> <strong>Filtro:</strong> columna <code>category</code> · condición <code>equals</code> · en el <strong>valor</strong>, pega:</li>
+</ul>
+<pre><code>={{ $fromAI('category', 'categoría a consultar, p.ej. Meals', 'string') }}
+</code></pre>
+<ul>
+<li><strong>4.</strong> Conéctalo al <code>Expense Agent</code> (arrastra desde el punto de <strong>tools</strong>, línea punteada, como las otras).</li>
+<li><strong>5.</strong> Abre <code>Expense Agent</code> → <strong>System Message</strong> y añade al final:</li>
+</ul>
+<pre><code>If the user asks about their spending, call List Expenses to look it up.
+</code></pre>
+<ul>
+<li><strong>6.</strong> <strong>Di:</strong> <em>"Cierra el círculo: construyes los datos VIÉNDOLOS y los consultas HABLANDO."</em></li>
+</ul>
 <h2 id="variacion-2-botones-de-aprobarrechazar-hitl-real-5-min">Variación 2 — Botones de Aprobar/Rechazar (HITL real) (5 min) 🛡️</h2>
-<p>Para un gasto <code>review</code>, en vez de guardarlo directo, mete un <strong>Chat 'Send and Wait' (Approval)</strong> (como la variación de P1): una persona pulsa <strong>Aprobar/Rechazar</strong> antes de guardarlo. Los limpios pasan solos.</p>
+<p><strong>Qué logras:</strong> un humano aprueba los gastos <code>review</code> <strong>antes</strong> de guardarlos; los limpios pasan solos.</p>
+<ul>
+<li><strong>1.</strong> Abre <code>Expense Agent</code> → <strong>System Message</strong>: para un gasto <code>review</code>, que <strong>NO</strong> llame a Log Expense; que solo responda el resumen y termine.</li>
+<li><strong>2.</strong> Detrás del agente añade un nodo <strong>IF</strong> → condición:</li>
+</ul>
+<pre><code>{{ $json.output.status }}   equals   review
+</code></pre>
+<ul>
+<li><strong>3.</strong> Rama <strong>true</strong> → nodo <strong>Chat · Send and Wait for Response (Approval)</strong> con botones <strong>Aprobar / Rechazar</strong> (el mismo de la variación HITL de P1).</li>
+<li><strong>4.</strong> <strong>Aprobar</strong> → <strong>Data Table · Insert Row</strong> (guarda en <code>expenses</code>). <strong>Rechazar</strong> → no guarda.</li>
+<li><strong>5.</strong> Rama <strong>false</strong> (gastos limpios) → directo a <strong>Data Table · Insert Row</strong>.</li>
+<li><strong>6.</strong> <strong>Di:</strong> <em>"El agente decide, la persona solo toca lo dudoso. Human-in-the-loop de verdad."</em></li>
+</ul>
 <h2 id="variacion-3-digest-semanal-5-min">Variación 3 — Digest semanal (5 min)</h2>
-<p>Segundo workflow: <strong>Schedule Trigger</strong> → lee <code>expenses</code> → filtra <code>status = review</code> de los últimos 7 días → email/Telegram a finanzas con el resumen de lo que necesita revisión.</p>
+<p><strong>Qué logras:</strong> cada lunes te llega un resumen de los gastos en <code>review</code>.</p>
+<ul>
+<li><strong>1.</strong> Crea un <strong>workflow NUEVO</strong> (no toques este).</li>
+<li><strong>2.</strong> <strong>Schedule Trigger</strong> → Interval <code>Weeks</code> · día <code>Monday</code> · hora <code>8</code>.</li>
+<li><strong>3.</strong> <strong>Data Table · Get Row(s)</strong> sobre <code>expenses</code> → filtro <code>status</code> <code>equals</code> <code>review</code>.</li>
+<li><strong>4.</strong> <em>(Opcional)</em> un <strong>agente / Edit Fields</strong> que redacte el resumen de esas filas.</li>
+<li><strong>5.</strong> <strong>Send Email (SMTP)</strong> o <strong>Telegram</strong> → a finanzas.</li>
+<li><strong>6.</strong> <strong>Di:</strong> <em>"El Proyecto 4 va justo de esto: agentes que trabajan solos con un horario."</em></li>
+</ul>
 <h2 id="variacion-4-facturas-en-pdf-3-min">Variación 4 — Facturas en PDF (3 min)</h2>
-<p>El agente también tiene <strong>Automatically Passthrough Binary PDFs</strong> (genial con Gemini). Acepta un PDF de factura y extrae los mismos campos.</p>
+<p><strong>Qué logras:</strong> acepta PDFs de factura, no solo fotos.</p>
+<ul>
+<li><strong>1.</strong> Abre <code>Expense Agent</code> → <strong>Options</strong>.</li>
+<li><strong>2.</strong> Activa <strong><code>Automatically Passthrough Binary PDFs</code></strong> (va genial con Gemini).</li>
+<li><strong>3.</strong> Sube un <strong>PDF</strong> de factura en el chat (mismo clip) → extrae los mismos campos.</li>
+<li><strong>4.</strong> <strong>Di:</strong> <em>"Misma tubería, ahora también con documentos, no solo con fotos."</em></li>
+</ul>
 <h2 id="variacion-5-tu-propia-politica-3-min-solo-prompt">Variación 5 — Tu propia política (3 min, solo prompt)</h2>
-<p>Reescribe las reglas de política para un equipo real (límites por categoría, campos obligatorios, comercios permitidos) y prueba cada una con un recibo (edita uno de los de muestra).</p>
+<p><strong>Qué logras:</strong> adaptar las reglas a un equipo real <strong>sin añadir ni un nodo</strong>.</p>
+<ul>
+<li><strong>1.</strong> Abre <code>Expense Agent</code> → <strong>System Message</strong>.</li>
+<li><strong>2.</strong> Reescribe la sección de <strong>política</strong>: límites por categoría, campos obligatorios, comercios permitidos.</li>
+<li><strong>3.</strong> <strong>Prueba</strong> cada regla con un recibo (edita uno de muestra o usa uno tuyo).</li>
+<li><strong>4.</strong> <strong>Di:</strong> <em>"Toda la política vive en el prompt: cámbiala y cambia el comportamiento, sin tocar el workflow."</em></li>
+</ul>
 <hr />
 <h2 id="recibos-de-prueba-en-el-repo-_staticdatareceipts">🧪 Recibos de prueba (en el repo, <code>_static/data/receipts/</code>)</h2>
 <ul>
