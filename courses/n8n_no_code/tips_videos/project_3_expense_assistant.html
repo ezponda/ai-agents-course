@@ -82,7 +82,8 @@
     <a href="#7-cierre-30s">7 · Cierre (30s)</a>
     <a href="#analisis-del-prompt-y-mejoras-2-min">📋 Análisis del prompt (y mejoras, 2 min)</a>
     <a href="#variacion-1-pregunta-a-tus-gastos-4-min">Variación 1 — "Pregunta a tus gastos" (4 min) ⭐</a>
-    <a href="#variacion-2-botones-de-aprobarrechazar-hitl-real-5-min">Variación 2 — Botones de Aprobar/Rechazar (HITL real) (5 min) 🛡️</a>
+    <a href="#variacion-1b-gasto-entre-fechas-2-min">Variación 1B — Gasto entre fechas (2 min) 📅</a>
+    <a href="#variacion-2-botones-de-aprobarrechazar-hitl-real-6-min">Variación 2 — Botones de Aprobar/Rechazar (HITL real) (6 min) 🛡️</a>
     <a href="#variacion-3-digest-semanal-5-min">Variación 3 — Digest semanal (5 min)</a>
     <a href="#variacion-4-facturas-en-pdf-3-min">Variación 4 — Facturas en PDF (3 min)</a>
     <a href="#variacion-5-tu-propia-politica-3-min-solo-prompt">Variación 5 — Tu propia política (3 min, solo prompt)</a>
@@ -422,35 +423,72 @@ Sueltas la <strong>foto de un recibo</strong> en el chat y el agente lo <strong>
 </blockquote>
 <h2 id="variacion-1-pregunta-a-tus-gastos-4-min">Variación 1 — "Pregunta a tus gastos" (4 min) ⭐</h2>
 <p><strong>Qué logras:</strong> el mismo asistente <strong>captura</strong> recibos (subes foto) Y <strong>responde</strong> preguntas ("¿cuánto llevo en Meals?").</p>
+<blockquote>
+<p><strong>Ojo (dos trampas):</strong> al copiar <code>Log Expense</code> heredas su descripción ("Adds one expense row…"), que es de <strong>escritura</strong> → hay que <strong>reescribirla</strong> para lectura o el agente no sabe qué hace. Y <strong>no filtres por categoría</strong>: un filtro <code>equals</code> exacto falla con "total" y con cualquier diferencia de mayúsculas. Devuelve <strong>todas</strong> las filas y deja que el agente sume.</p>
+</blockquote>
 <ul>
 <li><strong>1.</strong> Copia el nodo <code>Log Expense</code> (clic → Ctrl+C → Ctrl+V) y renómbralo <code>List Expenses</code>.</li>
-<li><strong>2.</strong> Ábrelo → <strong>Operation:</strong> <code>Insert Row</code> → <strong><code>Get Row(s)</code></strong>.</li>
-<li><strong>3.</strong> <strong>Filtro:</strong> columna <code>category</code> · condición <code>equals</code> · en el <strong>valor</strong>, pega:</li>
+<li><strong>2.</strong> Ábrelo → <strong>Operation:</strong> <code>Insert Row</code> → <strong><code>Get Row(s)</code></strong>, y <strong>deja el filtro vacío</strong> (que devuelva todas las filas).</li>
+<li><strong>3.</strong> <strong>Reescribe la Description</strong> (esto es lo que lee el agente) — pega:</li>
 </ul>
-<pre><code>={{ $fromAI('category', 'categoría a consultar, p.ej. Meals', 'string') }}
+<pre><code>Look up expenses already saved. Returns ALL expense rows (vendor, expense_date, total, currency, category, status). Use it whenever the user asks how much they have spent — a grand total, a total by category, a count or a list. Do the adding/filtering yourself from the rows returned.
 </code></pre>
 <ul>
-<li><strong>4.</strong> Conéctalo al <code>Expense Agent</code> (arrastra desde el punto de <strong>tools</strong>, línea punteada, como las otras).</li>
-<li><strong>5.</strong> Abre <code>Expense Agent</code> → <strong>System Message</strong> y añade al final:</li>
+<li><strong>4.</strong> <strong>Settings</strong> (pestaña de arriba) → activa <strong>Always Output Data</strong> (si la tabla está vacía, devuelve <code>[]</code> en vez de parar el flujo).</li>
+<li><strong>5.</strong> Conéctalo al <code>Expense Agent</code> (arrastra desde el punto de <strong>tools</strong>, línea punteada, como las otras).</li>
+<li><strong>6.</strong> Abre <code>Expense Agent</code> → <strong>System Message</strong> y añade al final:</li>
 </ul>
-<pre><code>If the user asks about their spending, call List Expenses to look it up.
+<pre><code>If the user asks about their spending (a total, a category total, a count or a list), call List Expenses to fetch all saved rows, then compute the answer yourself.
 </code></pre>
 <ul>
-<li><strong>6.</strong> <strong>Di:</strong> <em>"Cierra el círculo: construyes los datos VIÉNDOLOS y los consultas HABLANDO."</em></li>
+<li><strong>7.</strong> <strong>Di:</strong> <em>"Cierra el círculo: construyes los datos VIÉNDOLOS y los consultas HABLANDO."</em></li>
 </ul>
-<h2 id="variacion-2-botones-de-aprobarrechazar-hitl-real-5-min">Variación 2 — Botones de Aprobar/Rechazar (HITL real) (5 min) 🛡️</h2>
+<blockquote>
+<p><strong>Si responde "no tienes gastos":</strong> revisa en <strong>Overview → Data tables → <code>expenses</code></strong> que hay filas y con qué <code>category</code> se guardaron. El filtro exacto por texto era justo lo que fallaba; por eso aquí devolvemos todo.</p>
+</blockquote>
+<h2 id="variacion-1b-gasto-entre-fechas-2-min">Variación 1B — Gasto entre fechas (2 min) 📅</h2>
+<p><strong>Qué logras:</strong> <em>"¿cuánto gasté en marzo de 2026?"</em> o <em>"entre el 1 y el 15 de abril"</em>.</p>
+<blockquote>
+<p><strong>No hace falta ningún nodo nuevo.</strong> Como <code>List Expenses</code> (Variación 1) ya devuelve <strong>todas</strong> las filas, solo hay que decirle al agente que puede filtrar por fecha. Las fechas se guardan como <code>YYYY-MM-DD</code> (p.ej. <code>2026-03-12</code>), así que ordenan bien como texto: <strong>todo marzo de 2026 empieza por <code>2026-03</code></strong>.</p>
+</blockquote>
+<ul>
+<li><strong>1.</strong> Abre <code>Expense Agent</code> → <strong>System Message</strong> y añade:</li>
+</ul>
+<pre><code>You can also answer by date range. expense_date is YYYY-MM-DD. For &quot;March 2026&quot; use rows from 2026-03-01 to 2026-03-31; for a custom range use the from/to dates the user gives. Sum only the rows inside the range.
+</code></pre>
+<ul>
+<li><strong>2.</strong> <em>(Opcional)</em> añade la misma pista al final de la <strong>Description</strong> de <code>List Expenses</code>: <em>"…also supports totals for a date range (dates are YYYY-MM-DD)."</em></li>
+<li><strong>3.</strong> <strong>Prueba:</strong> <em>"¿Cuánto gasté en marzo de 2026?"</em> → <em>"¿y entre el 10 y el 20 de marzo?"</em></li>
+<li><strong>4.</strong> <strong>Di:</strong> <em>"Como el agente ya tiene todas las filas, filtrar por fecha es solo pedírselo — sin tocar el workflow."</em></li>
+</ul>
+<blockquote>
+<p><strong>Para una tabla grande:</strong> convierte <code>expense_date</code> a columna <strong>Date</strong> y filtra en el propio nodo con <code>&gt;=</code> / <code>&lt;=</code> usando <code>$fromAI('from')</code> y <code>$fromAI('to')</code>, así no traes todo. Para el curso, filtrar en el agente es más simple y fiable.</p>
+</blockquote>
+<h2 id="variacion-2-botones-de-aprobarrechazar-hitl-real-6-min">Variación 2 — Botones de Aprobar/Rechazar (HITL real) (6 min) 🛡️</h2>
 <p><strong>Qué logras:</strong> un humano aprueba los gastos <code>review</code> <strong>antes</strong> de guardarlos; los limpios pasan solos.</p>
+<blockquote>
+<p><strong>Clave (importante):</strong> para poder ramificar por <code>status</code> necesitas que el agente devuelva <strong>datos estructurados</strong>, no solo texto. Sin parser, <code>$json.output</code> es la frase de respuesta y <code>.status</code> <strong>no existe</strong>. Así que añades un <strong>Structured Output Parser</strong> (el mismo patrón del Proyecto 1) y sacas el guardado del agente a un nodo aparte.</p>
+</blockquote>
 <ul>
-<li><strong>1.</strong> Abre <code>Expense Agent</code> → <strong>System Message</strong>: para un gasto <code>review</code>, que <strong>NO</strong> llame a Log Expense; que solo responda el resumen y termine.</li>
-<li><strong>2.</strong> Detrás del agente añade un nodo <strong>IF</strong> → condición:</li>
+<li><strong>1.</strong> Al <code>Expense Agent</code> activa <strong>Require Specific Output Format</strong> y conéctale un <strong>Structured Output Parser</strong> (sub-nodo, línea punteada) con un <strong>JSON de ejemplo</strong>:</li>
+</ul>
+<pre><code>{ &quot;reply&quot;: &quot;Te registro el café de Café Central.&quot;,
+  &quot;status&quot;: &quot;approved&quot;,
+  &quot;vendor&quot;: &quot;Café Central&quot;, &quot;expense_date&quot;: &quot;2026-03-12&quot;,
+  &quot;total&quot;: 12.40, &quot;currency&quot;: &quot;EUR&quot;, &quot;category&quot;: &quot;Meals&quot; }
+</code></pre>
+<p><code>status</code> será <code>approved</code> o <code>review</code>. Ahora <code>$json.output</code> es un <strong>objeto</strong> → ya existe <code>$json.output.status</code>.</p>
+<ul>
+<li><strong>2.</strong> En el <strong>System Message</strong>: el agente ya <strong>no guarda</strong> — quita Log Expense del flujo; solo decide y rellena esos campos. (Deja <code>Find Similar Expenses</code>: sigue detectando duplicados.)</li>
+<li><strong>3.</strong> Detrás del agente añade un nodo <strong>IF</strong> → condición:</li>
 </ul>
 <pre><code>{{ $json.output.status }}   equals   review
 </code></pre>
 <ul>
-<li><strong>3.</strong> Rama <strong>true</strong> → nodo <strong>Chat · Send and Wait for Response (Approval)</strong> con botones <strong>Aprobar / Rechazar</strong> (el mismo de la variación HITL de P1).</li>
-<li><strong>4.</strong> <strong>Aprobar</strong> → <strong>Data Table · Insert Row</strong> (guarda en <code>expenses</code>). <strong>Rechazar</strong> → no guarda.</li>
-<li><strong>5.</strong> Rama <strong>false</strong> (gastos limpios) → directo a <strong>Data Table · Insert Row</strong>.</li>
-<li><strong>6.</strong> <strong>Di:</strong> <em>"El agente decide, la persona solo toca lo dudoso. Human-in-the-loop de verdad."</em></li>
+<li><strong>4.</strong> Rama <strong>true</strong> (review) → <strong>Chat · Send and Wait for Response (Approval)</strong> con botones <strong>Aprobar / Rechazar</strong> (el de la variación HITL de P1).</li>
+<li><strong>5.</strong> <strong>Aprobar</strong> → <strong>Data Table · Insert Row</strong> en <code>expenses</code>, mapeando los campos desde <code>$json.output</code> (vendor, total…). <strong>Rechazar</strong> → no guarda.</li>
+<li><strong>6.</strong> Rama <strong>false</strong> (approved) → directo a <strong>Data Table · Insert Row</strong>.</li>
+<li><strong>7.</strong> <strong>Di:</strong> <em>"El agente decide y estructura; la persona solo toca lo dudoso, y el guardado vive fuera del agente. Human-in-the-loop de verdad."</em></li>
 </ul>
 <h2 id="variacion-3-digest-semanal-5-min">Variación 3 — Digest semanal (5 min)</h2>
 <p><strong>Qué logras:</strong> cada lunes te llega un resumen de los gastos en <code>review</code>.</p>

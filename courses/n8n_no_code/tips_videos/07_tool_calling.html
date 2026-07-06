@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guion — Capítulo 07: Tool Calling (workflow 09_tool_calling_trip_briefing.json)</title>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#171a23; --panel2:#1e2230; --ink:#e8eaf0; --muted:#9aa3b2;
+    --line:#2a2f3e; --accent:#36a3ff; --say:#4aa3ff; --do:#36c98b; --warn:#ffb84d;
+    --quote:#c08bff; --code:#0b0d13; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+
+  aside{position:sticky;top:0;height:100vh;overflow:auto;background:var(--panel);
+    border-right:1px solid var(--line);padding:20px 16px}
+  aside h1{font-size:14px;margin:0 0 16px;line-height:1.4}
+  .nav a{display:block;color:var(--muted);text-decoration:none;padding:7px 11px;
+    border-radius:10px;font-size:13px;margin-bottom:2px;border:1px solid transparent;line-height:1.35}
+  .nav a.h3{padding-left:24px;font-size:12.5px}
+  .nav a:hover{background:var(--panel2);color:var(--ink)}
+  .nav a.active{background:var(--panel2);color:var(--ink);border-color:var(--line)}
+
+  main{padding:36px 48px;max-width:980px}
+  main h1{font-size:26px;margin:0 0 18px;line-height:1.3}
+  main h2{font-size:21px;margin:44px 0 14px;padding-top:22px;border-top:1px solid var(--line)}
+  main h3{font-size:17px;margin:30px 0 10px;color:var(--accent)}
+  main h4{font-size:15px;margin:22px 0 8px;color:var(--tip,#caa45a)}
+  main a{color:var(--accent)}
+  main blockquote{margin:12px 0;padding:10px 16px;border-left:3px solid var(--say);
+    background:var(--panel);border-radius:0 10px 10px 0;color:#cfe3ff}
+  main blockquote p{margin:0}
+  main strong{color:#d6f5e7}
+  main code{background:var(--code);border:1px solid var(--line);border-radius:6px;
+    padding:1px 6px;font-size:.9em}
+  main pre{position:relative;background:var(--code);border:1px solid var(--line);
+    border-radius:10px;padding:14px 16px;overflow-x:auto}
+  main pre code{background:none;border:0;padding:0;font-size:13.5px;line-height:1.55}
+  .copy{position:absolute;top:8px;right:8px;background:var(--panel2);color:var(--muted);
+    border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:12px;cursor:pointer}
+  .copy:hover{color:var(--ink)}
+  main table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14.5px}
+  main th,main td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+  main th{background:var(--panel2)}
+  main tr:nth-child(even) td{background:var(--panel)}
+  main hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+  main ul,main ol{padding-left:26px}
+  main li{margin:5px 0}
+
+  @media(max-width:860px){.wrap{grid-template-columns:1fr}aside{position:static;height:auto}main{padding:24px 20px}}
+  @media print{aside{display:none}.wrap{grid-template-columns:1fr}.copy{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<aside>
+  <h1>Guion — Capítulo 07: Tool Calling (workflow 09_tool_calling_trip_briefing.json)</h1>
+  <nav class="nav">
+    <a href="#concepto">Concepto</a>
+    <a href="#flujo-del-workflow-el-demo-final">Flujo del workflow (el demo final)</a>
+    <a href="#los-nodos-de-un-vistazo-leelo-primero">🗺️ Los nodos de un vistazo (léelo primero)</a>
+    <a href="#preparacion-antes-de-grabar-checklist">🔧 Preparación ANTES de grabar (checklist)</a>
+    <a href="#urls-para-tener-a-mano">🔗 URLs para tener a mano</a>
+    <a href="#0-opcional-cold-open-el-gancho-20s">0 · (Opcional) Cold open — el gancho (20s)</a>
+    <a href="#1-como-funciona-el-tool-calling-15-min">1 · Cómo funciona el tool calling (1.5 min)</a>
+    <a href="#2-como-elige-la-herramienta-1-min">2 · Cómo elige la herramienta (1 min)</a>
+    <a href="#3-read-only-vs-write-la-regla-de-oro-15-min">3 · Read-only vs Write — la regla de oro (1.5 min)</a>
+    <a href="#4-escribir-buenas-descripciones-15-min">4 · Escribir buenas descripciones (1.5 min)</a>
+    <a href="#5-http-request-tool-fromai-25-min">5 · HTTP Request Tool + $fromAI() (2.5 min)</a>
+    <a class="h3" href="#mini-demo-cuanto-importa-la-descripcion-del-parametro-opcional-potente">Mini-demo: ¿cuánto importa la descripción del parámetro? (opcional, potente)</a>
+    <a href="#6-guardrails-1-min">6 · Guardrails (1 min)</a>
+    <a href="#7-demo-el-trip-briefing-agent-3-4-min">7 · DEMO — el Trip Briefing Agent (3-4 min)</a>
+    <a class="h3" href="#ensenale-el-cerebro">Enséñale el cerebro</a>
+    <a class="h3" href="#ejecuta-y-mira-como-piensa">Ejecuta y mira cómo PIENSA</a>
+    <a class="h3" href="#fuerzale-a-elegir-distinto-ensena-el-poder-de-la-descripcion">Fuérzale a elegir distinto (enseña el poder de la descripción)</a>
+    <a class="h3" href="#la-puerta-de-aprobacion">La puerta de aprobación</a>
+    <a href="#si-algo-va-mal-debug-en-directo">🐞 Si algo va mal (debug en directo)</a>
+    <a href="#variacion-1-otra-api-con-fromai-4-min">Variación 1 — Otra API con $fromAI (4 min)</a>
+    <a href="#variacion-2-human-review-por-tool-hitl-nativo-4-min">Variación 2 — Human review por tool (HITL nativo) (4 min) 🛡️</a>
+    <a href="#variacion-3-enviar-de-verdad-tras-aprobar-3-min">Variación 3 — Enviar de verdad tras aprobar (3 min)</a>
+    <a href="#variacion-4-mcp-tools-de-fuera-opcional-avanzado">Variación 4 — MCP: tools de fuera (opcional, avanzado)</a>
+    <a href="#cierre-30s">Cierre (30s)</a>
+    <a href="#avisos-de-grabacion">⚠️ Avisos de grabación</a>
+  </nav>
+</aside>
+<main>
+<h1 id="guion-capitulo-07-tool-calling-workflow-09_tool_calling_trip_briefingjson">Guion — Capítulo 07: Tool Calling (workflow <code>09_tool_calling_trip_briefing.json</code>)</h1>
+<h2 id="concepto">Concepto</h2>
+<p>En el Cap. 06 el agente ya usaba herramientas (Calculator, Wikipedia). Aquí abrimos la caja: <strong>cómo</strong> funciona el tool calling, <strong>cómo diseñar</strong> herramientas que el agente use bien, y <strong>cómo mantenerlo seguro</strong>.
+La idea grande: <strong>el modelo no ejecuta herramientas — las pide.</strong> Tú le das un menú (nombre + descripción), él decide cuál llamar y con qué datos, y n8n la ejecuta. Todo el arte está en <strong>la descripción</strong>.
+Y una regla que vale oro: <strong>si una herramienta cambia algo en el mundo real, necesita aprobación humana antes de ejecutarse.</strong></p>
+<h2 id="flujo-del-workflow-el-demo-final">Flujo del workflow (el demo final)</h2>
+<pre><code>Run: Trip Briefing ──▶ Input — Trip Request ──▶ Trip Briefing Agent ──▶ Wait — Approval ──▶ Output — Approved
+(Manual)              (destino)                 (elige herramienta)     (⏸️ humano)         (brief aprobado)
+                                                     ┊ sub-nodos (read-only)
+                                        ┌────────────┼─────────────┐
+                                   get_weather    Wikipedia    Google Search
+                                   (HTTP+$fromAI) (hechos)     (info de hoy)
+</code></pre>
+<p><strong>Requisitos:</strong> OpenRouter + <strong>SerpAPI</strong> (key gratis) + n8n. Wikipedia y wttr.in no piden credencial.</p>
+<hr />
+<h2 id="los-nodos-de-un-vistazo-leelo-primero">🗺️ Los nodos de un vistazo (léelo primero)</h2>
+<table>
+<thead>
+<tr>
+<th>Nodo</th>
+<th>Qué es</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Run: Trip Briefing</strong></td>
+<td>Disparador manual (le das a Execute)</td>
+</tr>
+<tr>
+<td><strong>Input — Trip Request</strong></td>
+<td>El destino y qué quieres ("brief de Lisboa este finde")</td>
+</tr>
+<tr>
+<td><strong>Trip Briefing Agent</strong></td>
+<td>El agente: <strong>elige</strong> herramienta y escribe el brief</td>
+</tr>
+<tr>
+<td><strong>OpenRouter Chat Model</strong></td>
+<td>El cerebro del agente</td>
+</tr>
+<tr>
+<td><strong>get_weather</strong></td>
+<td>Tool HTTP: tiempo real vía <code>wttr.in</code>, la ciudad la rellena <code>$fromAI</code></td>
+</tr>
+<tr>
+<td><strong>Wikipedia</strong></td>
+<td>Tool: hechos estables (historia, monumentos)</td>
+</tr>
+<tr>
+<td><strong>Google Search</strong></td>
+<td>Tool (SerpAPI): info de HOY (eventos, precios)</td>
+</tr>
+<tr>
+<td><strong>Wait — Approval</strong></td>
+<td>⏸️ Pausa hasta que un humano aprueba</td>
+</tr>
+<tr>
+<td><strong>Output — Approved</strong></td>
+<td>El brief final, marcado <code>approved</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Las 3 tools son de solo lectura</strong> → el agente investiga libre; lo que se "envía" queda detrás del Wait.</p>
+<hr />
+<h2 id="preparacion-antes-de-grabar-checklist">🔧 Preparación ANTES de grabar (checklist)</h2>
+<ol>
+<li><strong>Importa</strong> el workflow (Import from URL):</li>
+</ol>
+<pre><code>https://raw.githubusercontent.com/ezponda/ai-agents-course/main/courses/n8n_no_code/book/_static/workflows/09_tool_calling_trip_briefing.json
+</code></pre>
+<ol>
+<li><strong>Credenciales:</strong> OpenRouter (modelo barato actual) + <strong>SerpAPI</strong> (key gratis en serpapi.com, va en el nodo Google Search).</li>
+<li><strong>Modelo</strong> en OpenRouter Chat Model: <code>openai/gpt-4o-mini</code> (o el que uses).</li>
+<li><strong>Prueba de humo:</strong> <strong>Execute Workflow</strong> → abre <code>Trip Briefing Agent → Logs</code> (¿qué tools llamó?) → el run se para en <code>Wait — Approval</code> → abre el nodo, copia la <strong>URL</strong>, ábrela para aprobar.</li>
+<li>Ten a mano la pestaña de <strong>Logs</strong> del agente: es LA pantalla del capítulo.</li>
+</ol>
+<h2 id="urls-para-tener-a-mano">🔗 URLs para tener a mano</h2>
+<table>
+<thead>
+<tr>
+<th>Para qué</th>
+<th>URL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Doc del capítulo</td>
+<td>https://ezponda.github.io/ai-agents-course/07_tool_calling.html</td>
+</tr>
+<tr>
+<td>HTTP Request Tool (docs)</td>
+<td>https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest/</td>
+</tr>
+<tr>
+<td>Anthropic — Advanced Tool Use</td>
+<td>https://www.anthropic.com/engineering/advanced-tool-use</td>
+</tr>
+<tr>
+<td>Código de las tools de n8n</td>
+<td>https://github.com/n8n-io/n8n/tree/master/packages/%40n8n/nodes-langchain/nodes/tools</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="guion-de-grabacion-de-arriba-abajo">🎬 GUION DE GRABACIÓN (de arriba abajo)</h1>
+<h2 id="0-opcional-cold-open-el-gancho-20s">0 · (Opcional) Cold open — el gancho (20s)</h2>
+<blockquote>
+<p>Grábalo al final. En pantalla: el agente eligiendo <code>get_weather</code> en los Logs y el run parándose en el Wait.
+- <strong>Di:</strong> <em>"Le pido a un agente un brief de viaje. Sin que yo le diga cómo, decide llamar a la API del tiempo, buscar en Wikipedia y en Google… y al final me pide permiso antes de 'enviarlo'. Eso es tool calling bien hecho. Vamos a verlo por dentro."</em></p>
+</blockquote>
+<h2 id="1-como-funciona-el-tool-calling-15-min">1 · Cómo funciona el tool calling (1.5 min)</h2>
+<ul>
+<li><strong>Di:</strong> <em>"Cuando conectas herramientas a un agente, le das un </em><em>menú</em><em>. Ojo a esto: el modelo </em><em>no ejecuta</em><em> la herramienta. La </em><em>pide</em><em>, y n8n la ejecuta y le devuelve el resultado."</em></li>
+<li><strong>Di (el bucle):</strong> <em>"Es el mismo bucle ReAct del capítulo anterior: </em><em>Razona → Llama a la herramienta → Observa el resultado → Repite o Responde</em><em>. El agente da vueltas hasta que tiene lo que necesita."</em></li>
+<li><strong>Di:</strong> <em>"¿Con qué decide? Tres cosas: el </em><em>nombre</em><em> y la </em><em>descripción</em><em> de cada tool, la </em><em>pregunta</em><em> del usuario y el </em><em>System Message</em><em>. Si algo está flojo, elige mal o se lo inventa."</em></li>
+</ul>
+<h2 id="2-como-elige-la-herramienta-1-min">2 · Cómo elige la herramienta (1 min)</h2>
+<ul>
+<li><strong>Di:</strong> <em>"Tú NO escribes 'si el usuario pregunta X, usa la tool Y'. Eso es lo viejo. Aquí n8n manda todas las descripciones al modelo y ÉL decide."</em></li>
+<li><strong>Di (la clave):</strong> <em>"Por eso </em><em>la descripción es la señal principal</em><em>. Las built-in (Wikipedia, Calculator) la traen escrita por dentro; en las tuyas (HTTP, Workflow) la escribes tú. El System Message es solo para </em><em>reglas extra</em><em> — 'prueba Wikipedia primero', 'no envíes sin preguntar' — no para describir tools."</em></li>
+</ul>
+<h2 id="3-read-only-vs-write-la-regla-de-oro-15-min">3 · Read-only vs Write — la regla de oro (1.5 min)</h2>
+<ul>
+<li><strong>Di:</strong> <em>"La distinción más importante del diseño de herramientas: </em><em>de lectura</em><em> vs </em><em>de escritura</em><em>."</em></li>
+<li><strong>Read-only</strong> (Wikipedia, Calculator, tiempo, buscar): solo <strong>leen</strong>. Si el agente se equivoca, como mucho traes un dato irrelevante. <strong>Se permiten libres.</strong></li>
+<li><strong>Write</strong> (enviar email, crear ticket, borrar, publicar): <strong>cambian el mundo</strong>. Si se equivoca, mandas un email vergonzoso o borras algo.</li>
+<li><strong>Di (regla de oro):</strong> <em>"</em><em>Si una herramienta cambia algo real, necesita aprobación humana antes de ejecutarse.</em><em> Y da al agente solo las tools que necesita: privilegio mínimo. Un asistente de investigación no necesita 'enviar email'."</em></li>
+</ul>
+<h2 id="4-escribir-buenas-descripciones-15-min">4 · Escribir buenas descripciones (1.5 min)</h2>
+<ul>
+<li><strong>Di:</strong> <em>"Anthropic es tajante: 'da descripciones extremadamente detalladas, es de lejos el factor más importante'. Escríbela como se la explicarías a alguien que entra nuevo: qué hace, cuándo usarla, cuándo </em><em>NO</em><em>, y qué entra y sale."</em></li>
+<li><strong>[Enséñalo en pantalla]</strong> — el patrón:</li>
+</ul>
+<pre><code>Use this tool when [situación].
+Do NOT use when [contra-situación].
+Input: [qué necesita]
+Output: [qué devuelve]
+</code></pre>
+<ul>
+<li><strong>Di (el test del límite):</strong> <em>"Si no puedes decir en una frase POR QUÉ el agente elegiría la tool A en vez de la B, sus descripciones se solapan y va a adivinar. Afínalas hasta que la frontera sea obvia."</em></li>
+<li><strong>Di:</strong> <em>"Y si elige mal: </em><em>mejora la descripción</em><em>, no metas lógica enrevesada en el System Message."</em></li>
+</ul>
+<h2 id="5-http-request-tool-fromai-25-min">5 · HTTP Request Tool + <code>$fromAI()</code> (2.5 min)</h2>
+<ul>
+<li><strong>Di:</strong> <em>"Las built-in cubren lo común. Pero ¿y tu API interna, o el tiempo? El </em><em>HTTP Request Tool</em><em> deja al agente llamar a CUALQUIER URL — y él decide cuándo y </em><em>con qué valores</em><em>."</em></li>
+<li><strong>[Abre <code>get_weather</code>]</strong> — enseña la URL:</li>
+</ul>
+<pre><code>https://wttr.in/{{ $fromAI('city', 'The destination city name in English, e.g. Lisbon or Paris', 'string') }}
+</code></pre>
+<ul>
+<li><strong>Di (<code>$fromAI</code>):</strong> <em>"Esta función le dice al modelo: 'aquí tienes que poner tú un valor'. Tres argumentos: </em><em>key</em><em> (el nombre que ve), </em><em>description</em><em> (qué poner) y </em><em>type</em><em>. Si el usuario dice '¿qué tiempo hace en Lisboa?', el agente rellena <code>city</code> con <code>Lisbon</code>."</em></li>
+<li><strong>Di (el botón ✨):</strong> <em>"La forma fácil de meterlo: pasa el ratón por el campo, sale la </em><em>estrellita ✨</em><em>, clic, y n8n te genera el <code>$fromAI</code>. Solo editas la descripción."</em></li>
+</ul>
+<h3 id="mini-demo-cuanto-importa-la-descripcion-del-parametro-opcional-potente">Mini-demo: ¿cuánto importa la descripción del parámetro? (opcional, potente)</h3>
+<blockquote>
+<p>Enséñalo en los <strong>Logs</strong> del agente con "¿qué tiempo hace en Lisboa?".
+- <strong>1 · Descrito (recomendado)</strong> — el modelo rellena limpio, <code>Lisbon</code>:</p>
+</blockquote>
+<pre><code>https://wttr.in/{{ $fromAI('city', 'The destination city in English, e.g. Lisbon or Paris', 'string') }}
+</code></pre>
+<ul>
+<li><strong>2 · Placeholder pelado</strong> — sin descripción, y lo arreglas en el System Message:</li>
+</ul>
+<pre><code>https://wttr.in/{{ $fromAI('query') }}
+</code></pre>
+<pre><code>When you call get_weather, pass ONLY the destination city name in English — no extra words, just the city (e.g. &quot;Lisbon&quot;).
+</code></pre>
+<blockquote>
+<p>Funciona, pero es frágil: a veces manda "weather in Lisbon" y la URL se rompe.</p>
+</blockquote>
+<ul>
+<li><strong>3 · Fijo (sin <code>$fromAI</code>)</strong> — hardcodeas la ciudad:</li>
+</ul>
+<pre><code>https://wttr.in/Lisbon
+</code></pre>
+<blockquote>
+<p>Ahora el agente <strong>no puede</strong> cambiar de ciudad: siempre Lisboa. Deja de ser agéntico.</p>
+</blockquote>
+<ul>
+<li><strong>Di:</strong> <em>"Describir el parámetro (estado 1) mueve el trabajo de tu prompt a la herramienta, donde el modelo lo gestiona fiable. Igual que una buena descripción de tool."</em></li>
+</ul>
+<h2 id="6-guardrails-1-min">6 · Guardrails (1 min)</h2>
+<ul>
+<li><strong>Di:</strong> <em>"Aun con buenas descripciones, un agente se puede desmadrar. Lo esencial:"</em></li>
+<li><strong>Max Iterations</strong> 5-10 (Agente → Settings, el engranaje): corta bucles infinitos.</li>
+<li><strong>Reglas en el System Message:</strong> "llama a Wikipedia como mucho 2 veces", "si una tool falla, explica el error y para".</li>
+<li><strong>Puerta de aprobación:</strong> para tools de escritura, un <strong>Wait</strong> antes de la acción para que un humano revise.</li>
+</ul>
+<hr />
+<h2 id="7-demo-el-trip-briefing-agent-3-4-min">7 · DEMO — el Trip Briefing Agent (3-4 min)</h2>
+<p><strong>La misión:</strong> das un destino → el agente trae el <strong>tiempo</strong> (API en vivo), busca <strong>monumentos</strong> en Wikipedia y <strong>eventos de esta semana</strong> en Google → y un <strong>humano aprueba</strong> antes de "enviar".</p>
+<h3 id="ensenale-el-cerebro">Enséñale el cerebro</h3>
+<ul>
+<li><strong>[Abre <code>Trip Briefing Agent</code> → Options → System Message]</strong> — recórrelo: define las 3 tools y <strong>cuándo usar cada una</strong> (estable→Wikipedia, de hoy→Google, tiempo→get_weather) y pide un brief de 4-6 bullets.</li>
+<li><strong>Di:</strong> <em>"Fíjate: aquí no hay 'if'. Solo describo cada herramienta y su frontera, y el agente decide."</em></li>
+</ul>
+<h3 id="ejecuta-y-mira-como-piensa">Ejecuta y mira cómo PIENSA</h3>
+<ul>
+<li>Pulsa <strong>Execute Workflow</strong>.</li>
+<li><strong>[Abre <code>Trip Briefing Agent</code> → Logs]</strong></li>
+<li><strong>Di:</strong> <em>"Esta es la pantalla clave. Veis qué tools llamó y con qué input: <code>get_weather</code> con <code>city: Lisbon</code>, Wikipedia para los monumentos, Google para lo de esta semana. Esa elección es el agente trabajando."</em></li>
+</ul>
+<h3 id="fuerzale-a-elegir-distinto-ensena-el-poder-de-la-descripcion">Fuérzale a elegir distinto (enseña el poder de la descripción)</h3>
+<table>
+<thead>
+<tr>
+<th>Le pides</th>
+<th>Qué debería hacer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>What's the weather in Lisbon this weekend?</code></td>
+<td>solo <code>get_weather</code></td>
+</tr>
+<tr>
+<td><code>Tell me about the history of the Belém Tower</code></td>
+<td>Wikipedia (hecho estable)</td>
+</tr>
+<tr>
+<td><code>What concerts are on in Lisbon this weekend?</code></td>
+<td>Google Search (info de hoy)</td>
+</tr>
+<tr>
+<td><code>Trip brief for Lisbon this weekend</code></td>
+<td>las tres</td>
+</tr>
+</tbody>
+</table>
+<h3 id="la-puerta-de-aprobacion">La puerta de aprobación</h3>
+<ul>
+<li><strong>Di:</strong> <em>"El run se ha </em><em>parado</em><em> en <code>Wait — Approval</code>. Todo lo anterior era lectura; nada se ha 'enviado'."</em></li>
+<li><strong>[Abre <code>Wait — Approval</code>]</strong> → copia la <strong>URL</strong> → ábrela → el run continúa a <code>Output — Approved</code>.</li>
+<li><strong>Di (el patrón):</strong> <em>"El patrón siempre es el mismo: </em><em>la IA prepara → el humano aprueba → el sistema envía</em><em>. Aquí paramos en aprobar; en producción, después del Wait conectas el envío real (email, chat)."</em></li>
+</ul>
+<hr />
+<h2 id="si-algo-va-mal-debug-en-directo">🐞 Si algo va mal (debug en directo)</h2>
+<table>
+<thead>
+<tr>
+<th>Síntoma</th>
+<th>Mira</th>
+<th>Arréglalo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No usa ninguna tool</td>
+<td>¿La descripción es clara?</td>
+<td>Añade "Use this tool when…"</td>
+</tr>
+<tr>
+<td>Usa la tool equivocada</td>
+<td>¿Se solapan las descripciones?</td>
+<td>Añade "Do NOT use when…"</td>
+</tr>
+<tr>
+<td>Llama en bucle</td>
+<td>¿Le sirve el resultado?</td>
+<td>Revisa el output, mejora la query</td>
+</tr>
+<tr>
+<td>Ignora el resultado</td>
+<td>¿System Message muy restrictivo?</td>
+<td>Afloja la instrucción</td>
+</tr>
+<tr>
+<td>La tool da error</td>
+<td>¿Credenciales puestas?</td>
+<td>Settings → Credentials (SerpAPI)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Siempre igual: <strong>clic en el agente → mira los Steps/Logs → qué tools llamó, con qué input, y si usó el resultado.</strong></p>
+</blockquote>
+<hr />
+<h1 id="parte-2-variaciones-para-alargar-el-video">🎬 PARTE 2 — Variaciones (para alargar el vídeo)</h1>
+<blockquote>
+<p>Cada variación es una receta corta: <strong>qué nodo tocar → abrirlo → qué cambiar.</strong></p>
+</blockquote>
+<h2 id="variacion-1-otra-api-con-fromai-4-min">Variación 1 — Otra API con <code>$fromAI</code> (4 min)</h2>
+<p><strong>Qué logras:</strong> el agente llama a una API tuya, no solo al tiempo.</p>
+<ul>
+<li><strong>1.</strong> Copia <code>get_weather</code> (Ctrl+C → Ctrl+V) → renómbralo (p.ej. <code>Recipe Search</code>).</li>
+<li><strong>2.</strong> Cambia la <strong>URL</strong> por tu endpoint y mete un <code>$fromAI</code> en el término de búsqueda:</li>
+</ul>
+<pre><code>https://www.themealdb.com/api/json/v1/1/search.php?s={{ $fromAI('query', 'A simple English food term like chicken or pasta', 'string') }}
+</code></pre>
+<ul>
+<li><strong>3.</strong> Reescribe la <strong>Description</strong> (cuándo usarla, qué devuelve, y "if meals:null, no recipes").</li>
+<li><strong>4.</strong> <strong>Di:</strong> <em>"Misma mecánica: el agente decide cuándo llamar y rellena el hueco."</em></li>
+</ul>
+<h2 id="variacion-2-human-review-por-tool-hitl-nativo-4-min">Variación 2 — Human review por tool (HITL nativo) (4 min) 🛡️</h2>
+<p><strong>Qué logras:</strong> en vez de aprobar TODO el brief, apruebas solo la llamada peligrosa.</p>
+<ul>
+<li><strong>1.</strong> Añade una tool de <strong>escritura</strong> (p.ej. enviar email/Telegram).</li>
+<li><strong>2.</strong> En el conector de esa tool, activa el <strong>Human review</strong> (n8n reciente) → Slack/Telegram/Gmail.</li>
+<li><strong>3.</strong> Al llamarla, el run <strong>pausa</strong> y te pregunta aprobar/denegar <strong>esa</strong> acción.</li>
+<li><strong>4.</strong> <strong>Di:</strong> <em>"Review por tool cuando solo ALGO es peligroso; el Wait del final cuando quieres aprobar el resultado entero."</em></li>
+</ul>
+<h2 id="variacion-3-enviar-de-verdad-tras-aprobar-3-min">Variación 3 — Enviar de verdad tras aprobar (3 min)</h2>
+<p><strong>Qué logras:</strong> cerrar el ciclo "prepara → aprueba → envía".</p>
+<ul>
+<li><strong>1.</strong> Detrás de <code>Output — Approved</code>, añade <strong>Send Email (SMTP)</strong> o <strong>Telegram</strong>.</li>
+<li><strong>2.</strong> Cuerpo del mensaje: <code>{{ $json.trip_brief }}</code>.</li>
+<li><strong>3.</strong> <strong>Di:</strong> <em>"Ahora el humano aprueba y el sistema envía. El patrón completo de producción."</em></li>
+</ul>
+<h2 id="variacion-4-mcp-tools-de-fuera-opcional-avanzado">Variación 4 — MCP: tools de fuera (opcional, avanzado)</h2>
+<p><strong>Qué logras:</strong> usar herramientas alojadas fuera de n8n (Notion, Slack, tu servidor).</p>
+<ul>
+<li><strong>1.</strong> Añade <strong>MCP Client Tool</strong> como sub-nodo del agente.</li>
+<li><strong>2.</strong> Configura el <strong>SSE Endpoint</strong> del servidor MCP (+ auth si hace falta).</li>
+<li><strong>3.</strong> Elige qué tools exponer (All / Selected).</li>
+<li><strong>4.</strong> <strong>Di:</strong> <em>"MCP es potente pero añade complejidad. Para el curso, las built-in bastan; MCP cuando necesitas algo que no está en n8n."</em></li>
+</ul>
+<hr />
+<h2 id="cierre-30s">Cierre (30s)</h2>
+<ul>
+<li><strong>Di:</strong> <em>"Tool calling es esto: el modelo pide, n8n ejecuta, y la </em><em>descripción</em><em> manda. Las de lectura, libres; las de escritura, detrás de una aprobación humana. Con eso ya construyes agentes que hacen cosas de verdad… sin que te den un susto."</em></li>
+</ul>
+<h2 id="avisos-de-grabacion">⚠️ Avisos de grabación</h2>
+<ol>
+<li><strong>SerpAPI necesita key</strong> (gratis) o Google Search falla — ponla antes de grabar.</li>
+<li><strong>La pantalla clave es <code>Trip Briefing Agent → Logs</code>:</strong> ahí se ve la elección de tool y el input de <code>$fromAI</code>.</li>
+<li><strong>El run se PARA en el Wait:</strong> para continuar, abre el nodo y abre su URL (no esperes nada automático).</li>
+<li><strong>Modelo:</strong> <code>gpt-4o-mini</code> va bien; si compartes, pon <strong>Max Iterations</strong> 5-8.</li>
+<li><strong>Coste:</strong> cada vuelta del bucle es una llamada al LLM; con las 3 tools puede dar 2-4 vueltas por brief.</li>
+<li><strong>wttr.in y Wikipedia</strong> no piden credencial — si el tiempo falla, suele ser la ciudad mal formada (revisa el <code>$fromAI</code>).</li>
+</ol>
+</main>
+</div>
+<script>
+// Botón "copiar" en cada bloque de código
+document.querySelectorAll('main pre').forEach(pre => {
+  const btn = document.createElement('button');
+  btn.className = 'copy'; btn.textContent = 'copiar';
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(pre.querySelector('code').innerText.trimEnd());
+    btn.textContent = '✓ copiado';
+    setTimeout(() => btn.textContent = 'copiar', 1500);
+  });
+  pre.appendChild(btn);
+});
+// Scrollspy: resalta en el sidebar la sección visible
+const links = [...document.querySelectorAll('.nav a')];
+const byId = Object.fromEntries(links.map(a => [a.getAttribute('href').slice(1), a]));
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(a => a.classList.remove('active'));
+      byId[e.target.id]?.classList.add('active');
+    }
+  });
+}, {rootMargin: '0px 0px -75% 0px'});
+document.querySelectorAll('main h2[id], main h3[id]').forEach(h => obs.observe(h));
+</script>
+</body>
+</html>

@@ -260,38 +260,74 @@ Cena con un cliente para cerrar el contrato
 
 **Qué logras:** el mismo asistente **captura** recibos (subes foto) Y **responde** preguntas ("¿cuánto llevo en Meals?").
 
+> **Ojo (dos trampas):** al copiar `Log Expense` heredas su descripción ("Adds one expense row…"), que es de **escritura** → hay que **reescribirla** para lectura o el agente no sabe qué hace. Y **no filtres por categoría**: un filtro `equals` exacto falla con "total" y con cualquier diferencia de mayúsculas. Devuelve **todas** las filas y deja que el agente sume.
+
 - **1.** Copia el nodo `Log Expense` (clic → Ctrl+C → Ctrl+V) y renómbralo `List Expenses`.
-- **2.** Ábrelo → **Operation:** `Insert Row` → **`Get Row(s)`**.
-- **3.** **Filtro:** columna `category` · condición `equals` · en el **valor**, pega:
+- **2.** Ábrelo → **Operation:** `Insert Row` → **`Get Row(s)`**, y **deja el filtro vacío** (que devuelva todas las filas).
+- **3.** **Reescribe la Description** (esto es lo que lee el agente) — pega:
 
 ```
-={{ $fromAI('category', 'categoría a consultar, p.ej. Meals', 'string') }}
+Look up expenses already saved. Returns ALL expense rows (vendor, expense_date, total, currency, category, status). Use it whenever the user asks how much they have spent — a grand total, a total by category, a count or a list. Do the adding/filtering yourself from the rows returned.
 ```
 
-- **4.** Conéctalo al `Expense Agent` (arrastra desde el punto de **tools**, línea punteada, como las otras).
-- **5.** Abre `Expense Agent` → **System Message** y añade al final:
+- **4.** **Settings** (pestaña de arriba) → activa **Always Output Data** (si la tabla está vacía, devuelve `[]` en vez de parar el flujo).
+- **5.** Conéctalo al `Expense Agent` (arrastra desde el punto de **tools**, línea punteada, como las otras).
+- **6.** Abre `Expense Agent` → **System Message** y añade al final:
 
 ```
-If the user asks about their spending, call List Expenses to look it up.
+If the user asks about their spending (a total, a category total, a count or a list), call List Expenses to fetch all saved rows, then compute the answer yourself.
 ```
 
-- **6.** **Di:** *"Cierra el círculo: construyes los datos VIÉNDOLOS y los consultas HABLANDO."*
+- **7.** **Di:** *"Cierra el círculo: construyes los datos VIÉNDOLOS y los consultas HABLANDO."*
 
-## Variación 2 — Botones de Aprobar/Rechazar (HITL real) (5 min) 🛡️
+> **Si responde "no tienes gastos":** revisa en **Overview → Data tables → `expenses`** que hay filas y con qué `category` se guardaron. El filtro exacto por texto era justo lo que fallaba; por eso aquí devolvemos todo.
+
+## Variación 1B — Gasto entre fechas (2 min) 📅
+
+**Qué logras:** *"¿cuánto gasté en marzo de 2026?"* o *"entre el 1 y el 15 de abril"*.
+
+> **No hace falta ningún nodo nuevo.** Como `List Expenses` (Variación 1) ya devuelve **todas** las filas, solo hay que decirle al agente que puede filtrar por fecha. Las fechas se guardan como `YYYY-MM-DD` (p.ej. `2026-03-12`), así que ordenan bien como texto: **todo marzo de 2026 empieza por `2026-03`**.
+
+- **1.** Abre `Expense Agent` → **System Message** y añade:
+
+```
+You can also answer by date range. expense_date is YYYY-MM-DD. For "March 2026" use rows from 2026-03-01 to 2026-03-31; for a custom range use the from/to dates the user gives. Sum only the rows inside the range.
+```
+
+- **2.** *(Opcional)* añade la misma pista al final de la **Description** de `List Expenses`: *"…also supports totals for a date range (dates are YYYY-MM-DD)."*
+- **3.** **Prueba:** *"¿Cuánto gasté en marzo de 2026?"* → *"¿y entre el 10 y el 20 de marzo?"*
+- **4.** **Di:** *"Como el agente ya tiene todas las filas, filtrar por fecha es solo pedírselo — sin tocar el workflow."*
+
+> **Para una tabla grande:** convierte `expense_date` a columna **Date** y filtra en el propio nodo con `>=` / `<=` usando `$fromAI('from')` y `$fromAI('to')`, así no traes todo. Para el curso, filtrar en el agente es más simple y fiable.
+
+## Variación 2 — Botones de Aprobar/Rechazar (HITL real) (6 min) 🛡️
 
 **Qué logras:** un humano aprueba los gastos `review` **antes** de guardarlos; los limpios pasan solos.
 
-- **1.** Abre `Expense Agent` → **System Message**: para un gasto `review`, que **NO** llame a Log Expense; que solo responda el resumen y termine.
-- **2.** Detrás del agente añade un nodo **IF** → condición:
+> **Clave (importante):** para poder ramificar por `status` necesitas que el agente devuelva **datos estructurados**, no solo texto. Sin parser, `$json.output` es la frase de respuesta y `.status` **no existe**. Así que añades un **Structured Output Parser** (el mismo patrón del Proyecto 1) y sacas el guardado del agente a un nodo aparte.
+
+- **1.** Al `Expense Agent` activa **Require Specific Output Format** y conéctale un **Structured Output Parser** (sub-nodo, línea punteada) con un **JSON de ejemplo**:
+
+```
+{ "reply": "Te registro el café de Café Central.",
+  "status": "approved",
+  "vendor": "Café Central", "expense_date": "2026-03-12",
+  "total": 12.40, "currency": "EUR", "category": "Meals" }
+```
+
+`status` será `approved` o `review`. Ahora `$json.output` es un **objeto** → ya existe `$json.output.status`.
+
+- **2.** En el **System Message**: el agente ya **no guarda** — quita Log Expense del flujo; solo decide y rellena esos campos. (Deja `Find Similar Expenses`: sigue detectando duplicados.)
+- **3.** Detrás del agente añade un nodo **IF** → condición:
 
 ```
 {{ $json.output.status }}   equals   review
 ```
 
-- **3.** Rama **true** → nodo **Chat · Send and Wait for Response (Approval)** con botones **Aprobar / Rechazar** (el mismo de la variación HITL de P1).
-- **4.** **Aprobar** → **Data Table · Insert Row** (guarda en `expenses`). **Rechazar** → no guarda.
-- **5.** Rama **false** (gastos limpios) → directo a **Data Table · Insert Row**.
-- **6.** **Di:** *"El agente decide, la persona solo toca lo dudoso. Human-in-the-loop de verdad."*
+- **4.** Rama **true** (review) → **Chat · Send and Wait for Response (Approval)** con botones **Aprobar / Rechazar** (el de la variación HITL de P1).
+- **5.** **Aprobar** → **Data Table · Insert Row** en `expenses`, mapeando los campos desde `$json.output` (vendor, total…). **Rechazar** → no guarda.
+- **6.** Rama **false** (approved) → directo a **Data Table · Insert Row**.
+- **7.** **Di:** *"El agente decide y estructura; la persona solo toca lo dudoso, y el guardado vive fuera del agente. Human-in-the-loop de verdad."*
 
 ## Variación 3 — Digest semanal (5 min)
 
