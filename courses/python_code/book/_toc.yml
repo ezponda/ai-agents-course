@@ -23,6 +23,7 @@ parts:
       - file: 13_typed_output_and_di
       - file: 14_memory_and_history
       - file: 15_guardrails_and_validation
+      - file: 15b_testing_agents
       - file: 16_evals_and_observability
       - file: 17_knowledge_agent_rag
       - file: 18_mcp_tools

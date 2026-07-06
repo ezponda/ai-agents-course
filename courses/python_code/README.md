@@ -12,8 +12,8 @@ Python, from the raw agent loop up to LangGraph, all runnable in Google Colab.
 
 | Block | Tool | What you learn |
 |-------|------|----------------|
-| **0 · Pure Python core** | raw `openai` SDK | What an agent *is*: the loop by hand, workflows, memory. "This is how Claude Code works." |
-| **1 · PydanticAI** | `pydantic-ai` | The clean, typed agent: tools, memory, guardrails, evals — up to the **knowledge agent (RAG)**. |
+| **0 · Pure Python core** | raw `openai` SDK | What an agent *is*: the loop by hand, workflows, memory — then how a real **coding agent** and **context engineering** work. "This is how Claude Code works." |
+| **1 · PydanticAI** | `pydantic-ai` | The clean, typed agent: tools, memory, guardrails, offline testing, evals — up to the **knowledge agent (RAG)**. |
 | **2 · LangGraph** | `langgraph` + `langchain` | State, graphs, persistence, human-in-the-loop, multi-agent. The visual payoff. |
 | **3 · Production** | `fastapi` | Deploy as code, connect your app, projects, "which tool when". |
 
@@ -26,20 +26,22 @@ Python, from the raw agent loop up to LangGraph, all runnable in Google Colab.
   and carries an "Open in Colab" badge.
 - **Language: English** (same as the n8n book).
 
-## Contents (34 notebooks)
+## Contents (37 notebooks)
 
-Numbering leaves gaps on purpose — the tens digit is the block, and remaining gaps (`07–09`, `29`)
+Numbering leaves gaps on purpose — the tens digit is the block, and remaining gaps (`09`, `29`)
 are headroom for future notebooks without renumbering.
 
-- **Block 0** — `00`–`06` (7): what an agent is, setup, structured output, the raw tool loop,
-  workflow patterns, reflection + human-in-the-loop, memory.
-- **Block 1** — `10`–`19` (11): raw↔PydanticAI Rosetta, first agent, tools (incl. a real wttr.in
-  tool), typed output + DI, memory, guardrails (incl. read/write tool safety), evals +
-  observability + error-analysis, the knowledge agent (RAG), **using** an MCP server (`18`),
-  **building** an MCP server with FastMCP (`18b`), debugging agents.
+- **Block 0** — `00`–`08` (9): what an agent is, setup, structured output, the raw tool loop,
+  workflow patterns, reflection + human-in-the-loop, memory, **building a coding agent** (`07`),
+  **context engineering** (`08`).
+- **Block 1** — `10`–`19` (12): raw↔PydanticAI Rosetta, first agent, tools (incl. a real wttr.in
+  tool), typed output + DI, memory, guardrails (incl. read/write tool safety), **offline testing
+  with `TestModel`/`FunctionModel`** (`15b`), evals + observability + error-analysis, the knowledge
+  agent (RAG), **using** an MCP server (`18`), **building** an MCP server with FastMCP (`18b`),
+  debugging agents.
 - **Block 2** — `20`–`28` (9): agent-as-graph Rosetta, StateGraph, the agent loop as a graph,
-  persistence, human-in-the-loop, cyclic reflection, multi-agent, agentic RAG, long-term memory
-  (the Store).
+  persistence, human-in-the-loop, cyclic reflection, multi-agent, self-corrective RAG, long-term
+  memory (the Store).
 - **Block 3** — `30`–`33` (5): deploy with FastAPI + streaming, connect your app, the **capstone
   project** (Data Analyst Agent — code-execution tool + memory + guardrails + eval), a second
   project (**Smart Onboarding**, `32b`), "which tool when".
@@ -55,8 +57,8 @@ next major to avoid a breaking release landing mid-lesson. See `requirements.txt
 | Package | Verified | Pin |
 |---------|----------|-----|
 | `openai` | 2.x | `>=2,<3` |
-| `pydantic-ai-slim[openai]` | **2.2** | `>=2.0,<3.0` |
-| `pydantic-evals` | 2.2 | `>=2.0,<3.0` |
+| `pydantic-ai-slim[openai]` | **2.5** | `>=2.0,<3.0` |
+| `pydantic-evals` | 2.5 | `>=2.0,<3.0` |
 | `langchain` / `langgraph` / `langchain-openai` | 1.3 / 1.2 / 1.3 | `>=1.x,<2.0` |
 | `sentence-transformers` (RAG) | 5.x | `>=3,<6` |
 
