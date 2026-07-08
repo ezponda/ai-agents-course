@@ -2,6 +2,79 @@
 
 > Compañera del **Proyecto 7 (Salon Booking Assistant)**. Aquí NO se arrastran nodos: se le dan **prompts a un coding agent** (Claude Code, Cursor, Codex…) para que **genere el workflow de n8n** módulo a módulo, y al final se monta un **harness de evaluación automático** que prueba el resultado y lo juzga con una IA.
 
+## 🖥️ ¿Qué es un "coding agent"? (para abrir la clase)
+
+**En una frase:** un chat normal te *aconseja*; un coding agent *actúa* — lee tus ficheros, escribe código, ejecuta comandos y repite, hasta terminar.
+
+<div style="display:flex;gap:16px;flex-wrap:wrap;margin:18px 0">
+  <div style="flex:1 1 300px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px">
+    <div style="font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Chat normal</div>
+    <div style="font-size:18px;font-weight:600;margin:6px 0 10px;color:var(--ink)">Tú ⇄ el modelo · solo texto</div>
+    <div style="color:var(--ink)">Aconseja, redacta, explica, razona. Le pides algo y te responde.</div>
+    <div style="margin-top:12px;color:#ff9a9a;font-size:14px">✕ No toca tus ficheros &nbsp;·&nbsp; ✕ no ejecuta comandos &nbsp;·&nbsp; ✕ no importa nada a n8n</div>
+  </div>
+  <div style="flex:1 1 300px;background:var(--panel);border:1px solid var(--do);border-radius:14px;padding:16px">
+    <div style="font-size:12.5px;color:var(--do);text-transform:uppercase;letter-spacing:.06em">Coding agent</div>
+    <div style="font-size:18px;font-weight:600;margin:6px 0 10px;color:var(--ink)">Tú das un objetivo · el modelo ACTÚA, en bucle</div>
+    <div style="color:var(--ink)">📖 Lee tus ficheros &nbsp;·&nbsp; ✍️ escribe código &nbsp;·&nbsp; ⚙️ ejecuta comandos &nbsp;·&nbsp; 👀 mira el error y reintenta.</div>
+    <div style="margin-top:12px;color:var(--do);font-size:14px">✓ Trabaja en tu máquina &nbsp;·&nbsp; ✓ tú apruebas y le pegas los errores</div>
+  </div>
+</div>
+
+<div style="background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:16px 0">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:14px;color:var(--ink)">
+    <span style="background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:6px 12px">🎯 Objetivo <b>(tú)</b></span>
+    <span style="color:var(--muted)">→</span>
+    <span style="background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:6px 12px">🧠 Piensa un plan</span>
+    <span style="color:var(--muted)">→</span>
+    <span style="background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:6px 12px">⚙️ Actúa · ficheros · terminal</span>
+    <span style="color:var(--muted)">→</span>
+    <span style="background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:6px 12px">👀 Observa el resultado</span>
+    <span style="color:var(--warn);font-weight:600">↺ repite</span>
+    <span style="color:var(--muted)">→</span>
+    <span style="background:rgba(54,201,139,.15);border:1px solid var(--do);border-radius:999px;padding:6px 12px">✔ Listo</span>
+  </div>
+  <div style="color:var(--muted);font-size:13px;margin-top:12px">En esta práctica ese "actúa" es <b>escribir el JSON del workflow de n8n</b>; tú lo importas, pruebas y le pegas lo que falle. <b style="color:var(--ink)">Tú eres el runtime.</b></div>
+</div>
+
+## 🧭 El panorama: del chat al agente autónomo
+
+> Dónde cae cada herramienta según **cuánto actúa** (eje →) y **cuánta autonomía** tiene (eje ↑). Colores: 🔵 Anthropic · 🟢 OpenAI · 🟡 open source · 🟣 otros. **★ = el que usamos en esta práctica.**
+
+<div style="background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 8px;margin:16px 0">
+<svg viewBox="0 0 760 460" style="width:100%;height:auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+  <line x1="100" y1="400" x2="732" y2="400" stroke="#2a2f3e" stroke-width="1.5"/>
+  <line x1="100" y1="400" x2="100" y2="48" stroke="#2a2f3e" stroke-width="1.5"/>
+  <polygon points="740,400 726,394 726,406" fill="#2a2f3e"/>
+  <polygon points="100,40 94,54 106,54" fill="#2a2f3e"/>
+  <text x="416" y="438" fill="#9aa3b2" font-size="13" text-anchor="middle">cuánto ACTÚA  →  (toca ficheros · ejecuta · hace tareas)</text>
+  <text fill="#9aa3b2" font-size="13" text-anchor="middle" transform="translate(64,224) rotate(-90)">cuánta AUTONOMÍA  →  (trabaja solo / async)</text>
+  <text x="110" y="392" fill="#6b7280" font-size="11">solo responde · tú apruebas</text>
+  <circle cx="150" cy="366" r="6" fill="#36a3ff"/><text x="162" y="370" fill="#e8eaf0" font-size="13">Claude.ai (chat)</text>
+  <circle cx="472" cy="298" r="6" fill="#c08bff"/><text x="472" y="285" fill="#e8eaf0" font-size="13" text-anchor="middle">Cursor / Windsurf</text>
+  <circle cx="596" cy="258" r="6" fill="#ffb84d"/><text x="584" y="262" fill="#e8eaf0" font-size="13" text-anchor="end">OpenCode</text>
+  <circle cx="627" cy="210" r="6" fill="#36a3ff"/><text x="639" y="214" fill="#e8eaf0" font-size="13">★ Claude Code</text>
+  <circle cx="646" cy="176" r="6" fill="#36c98b"/><text x="634" y="172" fill="#e8eaf0" font-size="13" text-anchor="end">OpenAI Codex</text>
+  <circle cx="497" cy="142" r="6" fill="#c08bff"/><text x="485" y="146" fill="#e8eaf0" font-size="13" text-anchor="end">GitHub Copilot (agente)</text>
+  <circle cx="422" cy="96" r="6" fill="#36a3ff"/><text x="422" y="83" fill="#e8eaf0" font-size="13" text-anchor="middle">Claude Cowork</text>
+  <circle cx="658" cy="96" r="6" fill="#c08bff"/><text x="670" y="100" fill="#e8eaf0" font-size="13">Devin</text>
+</svg>
+</div>
+
+> **Cómo leerlo:** abajo-izquierda = solo habla y tú mandas (el chat). Derecha = te toca la máquina de verdad. Arriba = trabaja solo, incluso con el portátil cerrado (Cowork, Devin). En esta práctica vivimos en **★ Claude Code**: corre en tu máquina y escribe el JSON de n8n que luego importas.
+
+| Herramienta | Quién | Dónde corre | Autonomía | Modelo · coste | Para qué (en una frase) |
+|---|---|---|---|---|---|
+| **Claude.ai (chat)** | Anthropic | Navegador / app (nube) | Turno a turno | Claude · gratis y Pro | Preguntar, aprender, prototipos con Artifacts. **No toca tu máquina.** |
+| **★ Claude Code** | Anthropic | Tu terminal / IDE (+ web) | Bucle; tú apruebas | Claude · Pro/Max | Programar de verdad en tu repo. *(Es el que estás usando ahora.)* |
+| **Claude Cowork** | Anthropic | Nube · desktop · móvil | **Autónomo / async** | Claude · planes de pago | El poder de un coding agent, pero para **trabajo de oficina no-código** (informes, docs, hojas) — trabaja aunque cierres el portátil. |
+| **OpenAI Codex** | OpenAI | Terminal · IDE · ChatGPT · GitHub | Bucle + delegación cloud | OpenAI · planes de pago | El rival directo de Claude Code, en el ecosistema OpenAI. |
+| **OpenCode** | SST (open source) | Tu terminal | Plan → Build; tú apruebas | **Cualquier modelo (BYOM)** · gratis (MIT) | Coding agent sin jaula: eliges el modelo y tu código no sale de tu máquina. |
+
+**Otros que sonarán en clase:** **Cursor / Windsurf** (editores de código con IA — Cursor es de los líderes) · **GitHub Copilot** (el veterano; ahora con *Agent Mode* y un agente async que abre Pull Requests) · **Gemini CLI** (el agente de terminal de Google, open source) · **Devin** (un "ingeniero autónomo" en la nube al que le delegas tareas enteras) · **Aider / Cline** (open source, trae-tu-modelo; Aider en terminal, Cline como extensión de VS Code).
+
+> Las **4 preguntas** que despejan el miedo de "¿me va a tocar el ordenador?": (1) ¿corre en un chat o en mi máquina? (2) ¿apruebo cada paso o va solo? (3) ¿es de un solo fabricante o puedo cambiarle el modelo? (4) ¿gratis/abierto o de pago?
+
 ## 🎯 Qué es esto y para quién
 
 Los alumnos **ya han construido el Proyecto 7 a mano**. Ahora lo reconstruyen **dirigiendo a un agente de código**. El objetivo doble:
