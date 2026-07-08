@@ -88,9 +88,10 @@
     <a class="h3" href="#escenario-5-prompt-injection">Escenario 5 — Prompt injection</a>
     <a href="#5-abrir-al-mundo-que-entre-la-gente-al-chat-2-3-min">5 · Abrir al mundo: que entre la gente al chat (2-3 min)</a>
     <a class="h3" href="#por-que-hace-falta-dilo-asi">Por qué hace falta (dilo así)</a>
-    <a class="h3" href="#opcion-a-tunel-integrado-de-n8n-lo-mas-facil-recomendado-para-clase">Opción A — Túnel integrado de n8n (lo más fácil; recomendado para clase)</a>
-    <a class="h3" href="#opcion-b-ngrok-url-propia">Opción B — ngrok (URL propia)</a>
-    <a class="h3" href="#opcion-c-ya-desplegado-en-un-servidor-lo-de-verdad">Opción C — Ya desplegado en un servidor (lo de VERDAD)</a>
+    <a class="h3" href="#opcion-a-ngrok-recomendado-fiable">Opción A — ngrok (recomendado, fiable) ⭐</a>
+    <a class="h3" href="#opcion-b-cloudflared-alternativa-sin-cuenta">Opción B — cloudflared (alternativa sin cuenta)</a>
+    <a class="h3" href="#opcion-c-el-tunel-integrado-tunnel-solo-si-de-verdad-funciona">Opción C — El túnel integrado --tunnel (solo si de verdad funciona)</a>
+    <a class="h3" href="#opcion-d-ya-desplegado-en-un-servidor-lo-de-verdad">Opción D — Ya desplegado en un servidor (lo de VERDAD)</a>
     <a class="h3" href="#lo-importante">Lo importante</a>
     <a href="#6-cierre-30s">6 · Cierre (30s)</a>
     <a href="#analisis-de-los-tres-prompts-3-min">📋 Análisis de los tres prompts (3 min)</a>
@@ -493,53 +494,50 @@ Chat Model   Memory   Escalate to Lola   Info Agent   Agenda Agent
 <ul>
 <li><strong>Di:</strong> <em>"Mi n8n escucha en <code>localhost:5678</code>: eso solo lo ve MI ordenador. Si le paso el enlace a alguien, en su móvil <code>localhost</code> es su propio teléfono, no el mío. Necesito un </em><em>túnel</em><em>: un servicio que abre una URL pública en internet y reenvía el tráfico a mi localhost. Y n8n tiene que </em><em>saber</em><em> su URL pública, o la página del chat intentará enviar los mensajes a localhost y fallará."</em></li>
 </ul>
-<h3 id="opcion-a-tunel-integrado-de-n8n-lo-mas-facil-recomendado-para-clase">Opción A — Túnel integrado de n8n (lo más fácil; recomendado para clase)</h3>
-<p><strong>Qué es un túnel (para decirlo en clase):</strong>
-- <strong>Di:</strong> <em>"Mi n8n corre en mi portátil y normalmente solo lo veo yo. Un </em><em>túnel</em><em> crea una </em><em>dirección web pública</em><em> en internet y reenvía a quien la visite hasta el n8n de mi portátil — como una puerta de entrada temporal. Mientras mi portátil esté encendido y el comando corriendo, esa dirección funciona desde cualquier móvil."</em></p>
-<p><strong>Step 1 — Arranca n8n con el túnel.</strong> En la terminal:</p>
-<pre><code>n8n start --tunnel
+<blockquote>
+<p>⚠️ <strong>El túnel integrado <code>n8n start --tunnel</code> está ROTO en versiones recientes de n8n (2.26+):</strong> ya no levanta URL pública. Se nota porque al arrancar imprime <code>Editor is now accessible via: http://localhost:5678</code> y <strong>ninguna línea <code>Tunnel URL: …</code></strong>, y la Chat URL del nodo se queda en <code>localhost</code>. <strong>No lo uses en clase — usa ngrok</strong> (Opción A).</p>
+<p><strong>La idea (dilo así):</strong> un túnel necesita DOS cosas a la vez — (1) el túnel corriendo, y (2) que <strong>n8n sepa su URL pública</strong> (<code>WEBHOOK_URL</code>). Si falta la 2, la página del chat llama a <code>localhost</code> y falla en el móvil del alumno.</p>
+</blockquote>
+<h3 id="opcion-a-ngrok-recomendado-fiable">Opción A — ngrok (recomendado, fiable) ⭐</h3>
+<blockquote>
+<p>Con ngrok <strong>NO se usa <code>--tunnel</code></strong>: son dos formas alternativas de lo mismo, y ngrok es la que funciona. Necesitas <strong>dos terminales</strong>.</p>
+</blockquote>
+<p><strong>Prep (una sola vez):</strong> cuenta gratis en <code>ngrok.com</code> → pega tu token:</p>
+<pre><code>ngrok config add-authtoken TU_TOKEN
 </code></pre>
-<blockquote>
-<p>Al arrancar, n8n imprime en la terminal una <strong>URL pública</strong> tipo <code>https://xxxx.hooks.n8n.cloud</code>. Esa es la "puerta de entrada" — <strong>aún no</strong> es el enlace del chat.</p>
-</blockquote>
-<p><strong>Step 2 — Activa el workflow.</strong> Arriba a la derecha, pon el workflow en <strong>Active</strong>. (El chat público solo funciona con la URL de <strong>producción</strong>, no con la de test.)</p>
-<p><strong>Step 3 — Coge el ENLACE DEL CHAT.</strong> Abre <code>When chat message received</code>: ahí verás el <strong>Chat URL</strong> (la página pública del chat). Con el túnel activo debe empezar por <code>https://xxxx.hooks.n8n.cloud/…/chat</code>.</p>
-<blockquote>
-<p>Si todavía pusiera <code>localhost</code>, cámbiale <strong>solo el principio</strong> por la URL pública del túnel y deja el final (<code>/webhook/…/chat</code>) igual.</p>
-</blockquote>
-<p><strong>Step 4 — Eso es lo que pasas a los alumnos.</strong> Ese enlace <code>https://…/chat</code> (por email, por chat, o como QR). No tienen que instalar nada.</p>
-<p><strong>Qué hacen ellos:</strong>
-- Abren el enlace en el navegador del <strong>móvil</strong>.
-- Ven la página de chat y escriben (p.ej. <em>"¿cuánto cuesta un tinte?"</em>).
-- Cada alumno tiene <strong>su propia conversación y memoria</strong> — n8n da un <code>sessionId</code> distinto a cada visitante.</p>
-<blockquote>
-<p>Solo para clase/demo: tu portátil tiene que seguir <strong>encendido</strong> y el comando <strong>corriendo</strong>. Si cierras la terminal o reinicias, la URL <strong>cambia</strong> y hay que volver a repartir el enlace.</p>
-</blockquote>
-<h3 id="opcion-b-ngrok-url-propia">Opción B — ngrok (URL propia)</h3>
-<ul>
-<li><strong>Step 1.</strong> Levanta el túnel al puerto de n8n:</li>
-</ul>
+<p><strong>Step 1 — Arranca ngrok</strong> (terminal 1, déjala abierta):</p>
 <pre><code>ngrok http 5678
 </code></pre>
-<ul>
-<li><strong>Step 2.</strong> Copia la URL que te da (tipo <code>https://xxxx.ngrok-free.app</code>) y <strong>arranca n8n diciéndole su URL pública</strong>:</li>
-</ul>
-<pre><code>export WEBHOOK_URL=https://xxxx.ngrok-free.app
-n8n start
+<p>Copia la línea <strong>Forwarding</strong> → <code>https://XXXX.ngrok-free.app</code>.</p>
+<p><strong>Step 2 — Arranca n8n diciéndole su URL pública</strong> (terminal 2, <strong>SIN</strong> <code>--tunnel</code>; si ya tenías n8n corriendo, páralo antes con Ctrl+C):</p>
+<pre><code>WEBHOOK_URL=https://XXXX.ngrok-free.app n8n start
 </code></pre>
-<ul>
-<li><strong>Step 3.</strong> <code>When chat message received</code> → Make Public → copia la <strong>URL del chat</strong> → ábrela en el móvil.<blockquote>
-<p>ngrok gratis <strong>cambia la URL</strong> al reiniciar y muestra una página de aviso la primera vez. Cloudflare Tunnel (<code>cloudflared</code>) es una alternativa gratis más estable.</p>
+<p><strong>Step 3 — Publica el workflow.</strong> Botón <strong>Publish</strong> (arriba a la derecha; en versiones nuevas sustituye al antiguo toggle "Active").</p>
+<p><strong>Step 4 — Coge el enlace del chat.</strong> Abre <code>When chat message received</code> → <strong>Chat URL</strong>: ahora empieza por tu ngrok:</p>
+<pre><code>https://XXXX.ngrok-free.app/webhook/&lt;id&gt;/chat
+</code></pre>
+<p>Ese es el que repartes (email, chat o QR). No instalan nada.</p>
+<p><strong>Step 5 — Pruébalo tú</strong> en el móvil con <strong>datos</strong> (no el wifi de casa) → demuestra que es público de verdad. En el editor, pestaña <strong>Executions</strong>, ves las conversaciones llegar en directo.</p>
+<p><strong>Qué hacen los alumnos:</strong> abren el enlace en el móvil. ngrok gratis muestra una <strong>página de aviso</strong> la primera vez → pulsan <strong>"Visit Site"</strong>. Cada uno recibe su propio <code>sessionId</code> (su conversación y su memoria).</p>
+<blockquote>
+<p>Tu portátil tiene que seguir <strong>encendido</strong> con ngrok + n8n corriendo. Si reinicias ngrok, la URL <strong>cambia</strong> y hay que repartirla de nuevo.</p>
 </blockquote>
-</li>
-</ul>
-<h3 id="opcion-c-ya-desplegado-en-un-servidor-lo-de-verdad">Opción C — Ya desplegado en un servidor (lo de VERDAD)</h3>
+<h3 id="opcion-b-cloudflared-alternativa-sin-cuenta">Opción B — cloudflared (alternativa sin cuenta)</h3>
+<p>Mismo patrón que ngrok, sin registro (instala con <code>brew install cloudflared</code> si no lo tienes):</p>
+<pre><code>cloudflared tunnel --url http://localhost:5678
+</code></pre>
+<p>Copia la URL <code>https://xxxx.trycloudflare.com</code> y arranca n8n con:</p>
+<pre><code>WEBHOOK_URL=https://xxxx.trycloudflare.com n8n start
+</code></pre>
+<h3 id="opcion-c-el-tunel-integrado-tunnel-solo-si-de-verdad-funciona">Opción C — El túnel integrado <code>--tunnel</code> (solo si de verdad funciona)</h3>
+<p><code>n8n start --tunnel</code> hacía las dos cosas de golpe (túnel + URL pública). Cómodo <strong>cuando funciona</strong>, pero en 2.26+ suele no levantar nada. Úsalo <strong>solo</strong> si al arrancar ves una línea <code>Tunnel URL: https://…hooks.n8n.cloud</code>. Si ves <code>localhost</code>, olvídalo y ve a la Opción A.</p>
+<h3 id="opcion-d-ya-desplegado-en-un-servidor-lo-de-verdad">Opción D — Ya desplegado en un servidor (lo de VERDAD)</h3>
 <blockquote>
 <p>Si n8n vive en un servidor (Railway, un VPS…), <strong>no necesitas túnel ni ngrok</strong>: el servidor YA tiene una URL pública fija en internet.</p>
 </blockquote>
 <ul>
 <li><strong>Step 1.</strong> Despliega n8n en un servidor → es el <strong>Proyecto 5 (Deploy)</strong>. Arranca con su propia URL pública (p.ej. <code>https://tu-salon.up.railway.app</code>).</li>
-<li><strong>Step 2.</strong> Activa el workflow.</li>
+<li><strong>Step 2.</strong> Publica el workflow (<strong>Publish</strong>).</li>
 <li><strong>Step 3.</strong> Abre <code>When chat message received</code> → copia el <strong>Chat URL</strong> (ya es público y <strong>no cambia</strong>).</li>
 <li><strong>Step 4.</strong> Ese enlace es el que das al salón / a los clientes — para siempre, y <strong>sin tu portátil encendido</strong>.</li>
 </ul>
