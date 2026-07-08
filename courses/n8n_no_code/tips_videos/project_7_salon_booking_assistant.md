@@ -147,7 +147,7 @@ openai/gpt-4o-mini
 ### 3.2 · `Receptionist` — el prompt estrella ⭐ (3 min)
 - **[Click → Options → System Message. Léelo con calma: es el 80% del proyecto.]**
 - **Fíjate y cuéntalo por partes:**
-  - **La fecha:** `Today is {{ $now… }}` — los modelos no saben qué día es hoy; sin esto, "el viernes que viene" falla.
+  - **La fecha:** `Today is {{ $now… }}` — los modelos no saben qué día es hoy; sin esto, "el viernes que viene" falla. ⚠️ El campo System Message tiene que estar en **modo Expression** (icono de expresión / borde morado); si está en Fixed, n8n manda el `{{ }}` como texto literal y el modelo lo copia tal cual en su respuesta. Los tres agentes (Receptionist, Agenda, Info) llevan esta línea.
   - **Catálogo cerrado:** "You can ONLY help with these four tasks" — lista cerrada, no "en general".
   - **Recoge antes de delegar:** junta servicio, día, hora y nombre, y llama al Agenda Agent **una vez** con todo.
   - **Confirma antes de escribir:** solo reserva/cancela **después** de que el cliente diga "sí". Leer es gratis; escribir compromete.
