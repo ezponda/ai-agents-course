@@ -3,17 +3,17 @@
  "nodes": [
   {
    "parameters": {
-    "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/09b_testing_and_evaluating_ai_workflows.html)\n## Evaluating a RAG workflow\n**Goal:** Run the RAG assistant against a fixed **test dataset** (Data Table `rag_eval_cases`) — one row per case — and score it: retrieval vs. answer, deterministic checks first, an LLM judge only where needed.\n\n### Two parts\n1. **Ingest (top):** upload the handbook once so the in-memory store is filled.\n2. **Evaluate (bottom):** Evaluation Trigger → map row → agent → deterministic scores → metrics.\n\n⚠️ **Re-index first.** The vector store is **in-memory** — run the Form ingest in the SAME session before the evaluation, or the store is empty.\n\n⚠️ **No shared memory during eval** — each row is an independent case.\n\n⚠️ Evaluation Trigger / Evaluation node labels & versions vary by n8n release — verify in your UI.",
-    "height": 360,
-    "width": 640
+    "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/09b_testing_and_evaluating_ai_workflows.html)\n## Evaluating a RAG workflow\n**Goal:** Run the RAG assistant against a fixed **test dataset** (Data Table `rag_eval_cases`) — one row per case — and score it with **valid** metrics: a per-case `case_passed`, plus a separate `retrieval_hit` for the retrieval branch.\n\n### Two parts\n1. **Ingest (top):** upload the handbook once so the store is filled.\n2. **Evaluate (bottom):** trigger → map row → **two branches** (answer via the agent, retrieval via a direct vector-store query) → merge → score → metrics.\n\n⚠️ **Re-index first** (in-memory store). ⚠️ **No shared memory** (each row independent). ⚠️ `retrieval_hit` is meaningful only on rows with `expected_retrieval_contains`; read it filtered to those rows. ⚠️ Evaluation / vector-store `load` node labels vary by n8n version — verify in your UI.",
+    "height": 380,
+    "width": 680
    },
    "id": "22000000-0000-4000-8000-0000000000s1",
    "name": "NOTE",
    "type": "n8n-nodes-base.stickyNote",
    "typeVersion": 1,
    "position": [
-    -1200,
-    -460
+    -1340,
+    -540
    ]
   },
   {
@@ -39,8 +39,8 @@
    "name": "Upload Document (Form)",
    "type": "n8n-nodes-base.formTrigger",
    "position": [
-    -1180,
-    -260
+    -1320,
+    -320
    ],
    "webhookId": "rag-doc-upload-form",
    "typeVersion": 2.2
@@ -54,8 +54,8 @@
    "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
    "typeVersion": 1,
    "position": [
-    -940,
-    -260
+    -1080,
+    -320
    ],
    "id": "22000000-0000-4000-8000-000000000011",
    "name": "Vector Store — Insert"
@@ -68,8 +68,8 @@
    "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
    "typeVersion": 1,
    "position": [
-    -940,
-    -80
+    -1080,
+    -140
    ],
    "id": "22000000-0000-4000-8000-000000000012",
    "name": "Embeddings Google Gemini"
@@ -82,8 +82,8 @@
    "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
    "typeVersion": 1,
    "position": [
-    -780,
-    -80
+    -920,
+    -140
    ],
    "id": "22000000-0000-4000-8000-000000000013",
    "name": "Default Data Loader"
@@ -96,8 +96,8 @@
    "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
    "typeVersion": 1,
    "position": [
-    -620,
-    -80
+    -760,
+    -140
    ],
    "id": "22000000-0000-4000-8000-000000000014",
    "name": "Recursive Character Text Splitter"
@@ -118,8 +118,8 @@
    "type": "n8n-nodes-base.evaluationTrigger",
    "typeVersion": 4.6,
    "position": [
-    -1180,
-    220
+    -1320,
+    140
    ]
   },
   {
@@ -141,8 +141,8 @@
    "type": "n8n-nodes-base.set",
    "typeVersion": 3.4,
    "position": [
-    -900,
-    220
+    -1080,
+    140
    ]
   },
   {
@@ -157,8 +157,8 @@
    "name": "AI Agent — Document Assistant",
    "type": "@n8n/n8n-nodes-langchain.agent",
    "position": [
-    -560,
-    220
+    -620,
+    140
    ],
    "typeVersion": 3
   },
@@ -171,8 +171,8 @@
    "name": "OpenRouter Chat Model",
    "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
    "position": [
-    -640,
-    420
+    -700,
+    340
    ],
    "typeVersion": 1
   },
@@ -186,8 +186,8 @@
    "name": "Vector Store — Search",
    "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
    "position": [
-    -360,
-    420
+    -460,
+    340
    ],
    "typeVersion": 1
   },
@@ -200,8 +200,8 @@
    "name": "Embeddings Google Gemini1",
    "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
    "position": [
-    -360,
-    600
+    -460,
+    520
    ],
    "typeVersion": 1
   },
@@ -210,34 +210,101 @@
     "assignments": {
      "assignments": [
       {
-       "id": "d1",
-       "name": "answered",
+       "id": "a1",
+       "name": "case_passed",
        "type": "number",
-       "value": "={{ $json.output.includes(\"I don't have that information\") ? 0 : 1 }}"
-      },
-      {
-       "id": "d2",
-       "name": "refused_when_absent",
-       "type": "number",
-       "value": "={{ $('Run test cases').item.json.should_refuse == 'yes' ? ($json.output.includes(\"I don't have that information\") ? 1 : 0) : 1 }}"
-      },
-      {
-       "id": "d3",
-       "name": "contains_expected",
-       "type": "number",
-       "value": "={{ $('Run test cases').item.json.expected_contains ? ($json.output.toLowerCase().includes($('Run test cases').item.json.expected_contains.toLowerCase()) ? 1 : 0) : 1 }}"
+       "value": "={{ $('Run test cases').item.json.should_refuse == 'yes'  ? ( $json.output.toLowerCase().includes(\"i don't have that information\") ? 1 : 0 )  : ( ( !$json.output.toLowerCase().includes(\"i don't have that information\") )      && ( !$('Run test cases').item.json.expected_contains           || $json.output.toLowerCase().includes(($('Run test cases').item.json.expected_contains + '').toLowerCase()) )      ? 1 : 0 ) }}"
       }
      ]
     },
     "options": {}
    },
    "id": "22000000-0000-4000-8000-000000000032",
-   "name": "Score deterministically",
+   "name": "Score answer",
    "type": "n8n-nodes-base.set",
    "typeVersion": 3.4,
    "position": [
-    -280,
-    220
+    -360,
+    140
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "load",
+    "memoryKey": "doc_store",
+    "prompt": "={{ $json.chatInput }}",
+    "topK": 4
+   },
+   "id": "22000000-0000-4000-8000-000000000040",
+   "name": "Retrieve chunks",
+   "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+   "typeVersion": 1,
+   "position": [
+    -760,
+    600
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "22000000-0000-4000-8000-000000000041",
+   "name": "Embeddings (retrieval)",
+   "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+   "typeVersion": 1,
+   "position": [
+    -760,
+    780
+   ]
+  },
+  {
+   "parameters": {
+    "aggregate": "aggregateAllItemData",
+    "options": {}
+   },
+   "id": "22000000-0000-4000-8000-000000000042",
+   "name": "Aggregate chunks",
+   "type": "n8n-nodes-base.aggregate",
+   "typeVersion": 1,
+   "position": [
+    -540,
+    600
+   ]
+  },
+  {
+   "parameters": {
+    "assignments": {
+     "assignments": [
+      {
+       "id": "r1",
+       "name": "retrieval_hit",
+       "type": "number",
+       "value": "={{ $('Run test cases').item.json.expected_retrieval_contains  ? ( JSON.stringify($json.data).toLowerCase().includes(($('Run test cases').item.json.expected_retrieval_contains + '').toLowerCase()) ? 1 : 0 )  : null }}"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "22000000-0000-4000-8000-000000000043",
+   "name": "Score retrieval",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    -360,
+    600
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "combine",
+    "combineBy": "combineByPosition",
+    "options": {}
+   },
+   "id": "22000000-0000-4000-8000-000000000050",
+   "name": "Merge answer + retrieval",
+   "type": "n8n-nodes-base.merge",
+   "typeVersion": 3.2,
+   "position": [
+    -120,
+    340
    ]
   },
   {
@@ -247,32 +314,26 @@
      "assignments": [
       {
        "id": "e1",
-       "name": "contains_expected",
+       "name": "case_passed",
        "type": "number",
-       "value": "={{ $json.contains_expected }}"
+       "value": "={{ $json.case_passed }}"
       },
       {
        "id": "e2",
-       "name": "refused_when_absent",
+       "name": "retrieval_hit",
        "type": "number",
-       "value": "={{ $json.refused_when_absent }}"
-      },
-      {
-       "id": "e3",
-       "name": "answered",
-       "type": "number",
-       "value": "={{ $json.answered }}"
+       "value": "={{ $json.retrieval_hit }}"
       }
      ]
     }
    },
-   "id": "22000000-0000-4000-8000-000000000033",
+   "id": "22000000-0000-4000-8000-000000000051",
    "name": "Record metrics",
    "type": "n8n-nodes-base.evaluation",
    "typeVersion": 4.6,
    "position": [
-    -20,
-    220
+    120,
+    340
    ]
   }
  ],
@@ -339,6 +400,11 @@
       "node": "AI Agent — Document Assistant",
       "type": "main",
       "index": 0
+     },
+     {
+      "node": "Retrieve chunks",
+      "type": "main",
+      "index": 0
      }
     ]
    ]
@@ -376,18 +442,73 @@
     ]
    ]
   },
+  "Embeddings (retrieval)": {
+   "ai_embedding": [
+    [
+     {
+      "node": "Retrieve chunks",
+      "type": "ai_embedding",
+      "index": 0
+     }
+    ]
+   ]
+  },
   "AI Agent — Document Assistant": {
    "main": [
     [
      {
-      "node": "Score deterministically",
+      "node": "Score answer",
       "type": "main",
       "index": 0
      }
     ]
    ]
   },
-  "Score deterministically": {
+  "Retrieve chunks": {
+   "main": [
+    [
+     {
+      "node": "Aggregate chunks",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Aggregate chunks": {
+   "main": [
+    [
+     {
+      "node": "Score retrieval",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Score answer": {
+   "main": [
+    [
+     {
+      "node": "Merge answer + retrieval",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Score retrieval": {
+   "main": [
+    [
+     {
+      "node": "Merge answer + retrieval",
+      "type": "main",
+      "index": 1
+     }
+    ]
+   ]
+  },
+  "Merge answer + retrieval": {
    "main": [
     [
      {

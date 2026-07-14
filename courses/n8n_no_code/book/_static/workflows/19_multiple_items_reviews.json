@@ -3,7 +3,7 @@
  "nodes": [
   {
    "parameters": {
-    "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/03b_working_with_multiple_items.html)\n## Working with Multiple Items\n**Goal:** See n8n's item model in action — one item with a list inside → **Split Out** (many items) → **Filter** → **Aggregate** (back to one). Watch the item count change: **1 → 5 → 2 → 1**.\n\n### Requirements\n- Just n8n. No credentials, no AI, no API key.\n\n### Try it\n1. **Execute workflow**.\n2. Click each node and read the **item count** in the output panel.",
+    "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/03b_working_with_multiple_items.html)\n## Working with Multiple Items\n**Goal:** See n8n's item model in action — one item with a list inside → **Split Out** (many items) → **Filter** → **Aggregate** (back to one). Watch the item count change: **1 → 5 → 3 → 1**.\n\n### Requirements\n- Just n8n. No credentials, no AI, no API key.\n\n### Try it\n1. **Execute workflow**.\n2. Click each node and read the **item count** in the output panel.",
     "height": 340,
     "width": 620
    },
