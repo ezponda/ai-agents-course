@@ -1,18 +1,18 @@
 {
- "name": "Appendix B2 — Reliability Drill (retry + fail-closed)",
+ "name": "Appendix B2 — Reliability Drill (retry + Stop And Error)",
  "nodes": [
   {
    "parameters": {
-    "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/appendix_b2_production_reliability.html)\n## Reliability drill — Retry + Timeout + fail-closed\n**Goal:** See the node-level reliability settings in one place. The HTTP node **retries** on failure with a delay, gives up after a **timeout**, and on final failure routes to the **error output** so you can **fail closed** (stop) instead of pretending it worked.\n\n### Where the settings live\nOpen **Call an API → Settings**: *Retry On Fail*, *Max Tries*, *Wait Between Tries*, and *On Error* (Stop / Continue / Continue (error output)). *Timeout* is in the node's **Options**.\n\n⚠️ Retries suit **transient** errors (429/500/timeout). Do **not** auto-retry validation or permission errors — fix the request instead.",
-    "height": 360,
-    "width": 640
+    "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/appendix_b2_production_reliability.html)\n## Reliability drill — Retry, Timeout, and a REAL hard stop\n**Goal:** Watch the reliability settings actually fire. The URL is set to `https://httpbin.org/status/503` so the call **fails**: the node **retries** with a delay, times out on hangs, routes to the **error output**, and the **Stop And Error** node makes the whole execution **fail** (a true fail-closed — not a workflow that finishes 'green' with a failure message).\n\n### Where the settings live\nOpen **Call an API → Settings**: *Retry On Fail*, *Max Tries*, *Wait Between Tries*, *On Error* → *Continue (error output)*. *Timeout* is in **Options**.\n\n### See the success path too\nChange the URL to `https://httpbin.org/get` and re-run — now the top branch runs and nothing errors.\n\n⚠️ Retries suit **transient** errors (429/500/503/timeout). Do **not** auto-retry validation/permission errors.",
+    "height": 400,
+    "width": 660
    },
    "id": "23000000-0000-4000-8000-0000000000s1",
    "name": "NOTE",
    "type": "n8n-nodes-base.stickyNote",
    "typeVersion": 1,
    "position": [
-    -1000,
+    -1020,
     -260
    ]
   },
@@ -24,12 +24,12 @@
    "typeVersion": 1,
    "position": [
     -1000,
-    40
+    60
    ]
   },
   {
    "parameters": {
-    "url": "https://httpbin.org/get",
+    "url": "https://httpbin.org/status/503",
     "options": {
      "timeout": 10000
     }
@@ -40,7 +40,7 @@
    "typeVersion": 4.2,
    "position": [
     -760,
-    40
+    60
    ],
    "retryOnFail": true,
    "maxTries": 3,
@@ -78,19 +78,33 @@
        "id": "1",
        "name": "result",
        "type": "string",
-       "value": "All retries failed. STOP here — do not record success or send anything. (fail closed)"
+       "value": "All retries failed. Stopping — do not record success or send anything."
       }
      ]
     },
     "options": {}
    },
    "id": "23000000-0000-4000-8000-000000000004",
-   "name": "Failed → fail closed",
+   "name": "Build failure alert",
    "type": "n8n-nodes-base.set",
    "typeVersion": 3.4,
    "position": [
     -520,
-    160
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "errorType": "errorMessage",
+    "errorMessage": "API unavailable after retries — failing closed (nothing was recorded)."
+   },
+   "id": "23000000-0000-4000-8000-000000000005",
+   "name": "Stop And Error",
+   "type": "n8n-nodes-base.stopAndError",
+   "typeVersion": 1,
+   "position": [
+    -280,
+    180
    ]
   }
  ],
@@ -117,7 +131,18 @@
     ],
     [
      {
-      "node": "Failed → fail closed",
+      "node": "Build failure alert",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Build failure alert": {
+   "main": [
+    [
+     {
+      "node": "Stop And Error",
       "type": "main",
       "index": 0
      }
