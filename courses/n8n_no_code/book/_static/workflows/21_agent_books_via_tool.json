@@ -1,0 +1,163 @@
+{
+ "name": "07b — Agent books via safe tool",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/07b_reliable_tools_and_subworkflows.html)\n## Agent → safe tool (with approval)\n**Goal:** One high-level, safe tool instead of many low-level ones. The agent collects details and calls **book_appointment** (the sub-workflow 20). The model fills `appointment_id` and `action`; **`customer_id` comes from the trusted session, never from the model**.\n\n### Setup\n1. Import & save **20_book_appointment_subworkflow** first.\n2. In **book_appointment (tool)** select that workflow, and enable **Require Human Approval** (or add a Send-and-Wait review) so risky calls pause for a person.\n\n⚠️ Verify the tool's approval option and input mapping in your n8n version's UI.",
+    "height": 360,
+    "width": 640
+   },
+   "id": "21000000-0000-4000-8000-0000000000s1",
+   "name": "NOTE",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -1180,
+    -320
+   ]
+  },
+  {
+   "parameters": {
+    "options": {}
+   },
+   "id": "21000000-0000-4000-8000-000000000001",
+   "name": "When chat message received",
+   "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+   "typeVersion": 1.1,
+   "position": [
+    -1160,
+    40
+   ]
+  },
+  {
+   "parameters": {
+    "promptType": "define",
+    "text": "={{ $json.chatInput }}",
+    "options": {
+     "systemMessage": "You help a customer manage their salon appointment.\n\nRules:\n- To cancel an appointment, call the book_appointment tool with action='cancel' and the appointment_id.\n- ALWAYS repeat the details back and get an explicit 'yes' before calling the tool.\n- You do NOT decide who the customer is. Identity (customer_id) is provided by the system, never by you or the user.\n- If the tool returns status 'denied' or 'invalid', explain it plainly — do not retry with different ids."
+    }
+   },
+   "id": "21000000-0000-4000-8000-000000000002",
+   "name": "Salon Assistant",
+   "type": "@n8n/n8n-nodes-langchain.agent",
+   "typeVersion": 3,
+   "position": [
+    -900,
+    40
+   ]
+  },
+  {
+   "parameters": {
+    "model": "openai/gpt-4o-mini",
+    "options": {}
+   },
+   "id": "21000000-0000-4000-8000-000000000003",
+   "name": "OpenRouter Chat Model",
+   "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+   "typeVersion": 1,
+   "position": [
+    -980,
+    240
+   ]
+  },
+  {
+   "parameters": {
+    "sessionIdType": "customKey",
+    "sessionKey": "={{ $json.sessionId }}",
+    "contextWindowLength": 10
+   },
+   "id": "21000000-0000-4000-8000-000000000004",
+   "name": "Simple Memory",
+   "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+   "typeVersion": 1.3,
+   "position": [
+    -820,
+    240
+   ]
+  },
+  {
+   "parameters": {
+    "name": "book_appointment",
+    "description": "Cancel a salon appointment. Provide appointment_id and action='cancel'. customer_id is supplied by the system.",
+    "workflowId": {
+     "__rl": true,
+     "mode": "list",
+     "value": "",
+     "cachedResultName": "07b — book_appointment (safe sub-workflow)"
+    },
+    "workflowInputs": {
+     "mappingMode": "defineBelow",
+     "value": {
+      "customer_id": "={{ $json.sessionId }}",
+      "appointment_id": "={{ $fromAI('appointment_id','The id of the appointment to cancel','string') }}",
+      "action": "={{ $fromAI('action','The action to perform, e.g. cancel','string') }}"
+     },
+     "matchingColumns": [],
+     "schema": []
+    }
+   },
+   "id": "21000000-0000-4000-8000-000000000005",
+   "name": "book_appointment (tool)",
+   "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+   "typeVersion": 2.2,
+   "position": [
+    -640,
+    240
+   ]
+  }
+ ],
+ "connections": {
+  "When chat message received": {
+   "main": [
+    [
+     {
+      "node": "Salon Assistant",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "OpenRouter Chat Model": {
+   "ai_languageModel": [
+    [
+     {
+      "node": "Salon Assistant",
+      "type": "ai_languageModel",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Simple Memory": {
+   "ai_memory": [
+    [
+     {
+      "node": "Salon Assistant",
+      "type": "ai_memory",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "book_appointment (tool)": {
+   "ai_tool": [
+    [
+     {
+      "node": "Salon Assistant",
+      "type": "ai_tool",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "active": false,
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ },
+ "tags": []
+}
