@@ -11,6 +11,7 @@ parts:
       - file: 01_setup
       - file: 02_quick_start
       - file: 03_core_concepts
+      - file: 03b_working_with_multiple_items
       - file: 04_workflow_examples
         sections:
           - file: 04a_prompt_chaining

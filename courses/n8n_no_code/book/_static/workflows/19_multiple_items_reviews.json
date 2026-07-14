@@ -1,0 +1,167 @@
+{
+ "name": "03b — Working with Multiple Items (reviews)",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/03b_working_with_multiple_items.html)\n## Working with Multiple Items\n**Goal:** See n8n's item model in action — one item with a list inside → **Split Out** (many items) → **Filter** → **Aggregate** (back to one). Watch the item count change: **1 → 5 → 2 → 1**.\n\n### Requirements\n- Just n8n. No credentials, no AI, no API key.\n\n### Try it\n1. **Execute workflow**.\n2. Click each node and read the **item count** in the output panel.",
+    "height": 340,
+    "width": 620
+   },
+   "id": "19000000-0000-4000-8000-0000000000s1",
+   "name": "NOTE",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -840,
+    -260
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "19000000-0000-4000-8000-000000000001",
+   "name": "When clicking 'Execute'",
+   "type": "n8n-nodes-base.manualTrigger",
+   "typeVersion": 1,
+   "position": [
+    -820,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "assignments": {
+     "assignments": [
+      {
+       "id": "a1",
+       "name": "reviews",
+       "type": "array",
+       "value": "={{ [\n  { \"product\": \"Wireless Mouse\", \"rating\": 5, \"text\": \"Fast and comfortable, battery lasts weeks.\" },\n  { \"product\": \"Wireless Mouse\", \"rating\": 2, \"text\": \"Stopped connecting after a week.\" },\n  { \"product\": \"USB-C Hub\",      \"rating\": 4, \"text\": \"Solid, runs a little warm.\" },\n  { \"product\": \"USB-C Hub\",      \"rating\": 1, \"text\": \"Died on day two. Avoid.\" },\n  { \"product\": \"Laptop Stand\",   \"rating\": 3, \"text\": \"Sturdy but wobbles at full height.\" }\n] }}"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "19000000-0000-4000-8000-000000000002",
+   "name": "One item, a list inside",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    -600,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "fieldToSplitOut": "reviews",
+    "options": {}
+   },
+   "id": "19000000-0000-4000-8000-000000000003",
+   "name": "Split Out reviews",
+   "type": "n8n-nodes-base.splitOut",
+   "typeVersion": 1,
+   "position": [
+    -380,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "c1",
+       "leftValue": "={{ $json.rating }}",
+       "rightValue": 3,
+       "operator": {
+        "type": "number",
+        "operation": "lte"
+       }
+      }
+     ],
+     "combinator": "and"
+    }
+   },
+   "id": "19000000-0000-4000-8000-000000000004",
+   "name": "Keep low ratings (<= 3)",
+   "type": "n8n-nodes-base.filter",
+   "typeVersion": 2.2,
+   "position": [
+    -160,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "aggregate": "aggregateAllItemData",
+    "options": {}
+   },
+   "id": "19000000-0000-4000-8000-000000000005",
+   "name": "Aggregate back to one item",
+   "type": "n8n-nodes-base.aggregate",
+   "typeVersion": 1,
+   "position": [
+    60,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "When clicking 'Execute'": {
+   "main": [
+    [
+     {
+      "node": "One item, a list inside",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One item, a list inside": {
+   "main": [
+    [
+     {
+      "node": "Split Out reviews",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Split Out reviews": {
+   "main": [
+    [
+     {
+      "node": "Keep low ratings (<= 3)",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Keep low ratings (<= 3)": {
+   "main": [
+    [
+     {
+      "node": "Aggregate back to one item",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "active": false,
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ },
+ "tags": []
+}
