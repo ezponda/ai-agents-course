@@ -1,0 +1,350 @@
+{
+ "name": "07b — book_appointment (safe sub-workflow)",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/07b_reliable_tools_and_subworkflows.html)\n## book_appointment — a safe sub-workflow\n**Goal:** The deterministic half of a booking tool. It takes explicit inputs, **validates them**, checks the caller **owns** the appointment, performs the write, and returns a small structured result. The AI never sees the credentials or the rules — only this contract.\n\n### Inputs (from the caller)\n`customer_id` (trusted, from the session — NOT the model), `appointment_id`, `action`.\n\n### Setup\nData Table `appointments` with columns: `id`, `date`, `time`, `service`, `client_name`, `customer_id`, `status`.\n\n⚠️ **Educational workflow.** The check-then-write here is **not** concurrency-safe — see *Appendix B2: Production Reliability* for atomic booking.",
+    "height": 360,
+    "width": 640
+   },
+   "id": "20000000-0000-4000-8000-0000000000s1",
+   "name": "NOTE",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -1180,
+    -300
+   ]
+  },
+  {
+   "parameters": {
+    "inputSource": "workflowInputs",
+    "workflowInputs": {
+     "values": [
+      {
+       "name": "customer_id",
+       "type": "string"
+      },
+      {
+       "name": "appointment_id",
+       "type": "string"
+      },
+      {
+       "name": "action",
+       "type": "string"
+      }
+     ]
+    }
+   },
+   "id": "20000000-0000-4000-8000-000000000001",
+   "name": "When called",
+   "type": "n8n-nodes-base.executeWorkflowTrigger",
+   "typeVersion": 1.1,
+   "position": [
+    -1160,
+    40
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "={{ $j",
+       "leftValue": "={{ $json.customer_id }}",
+       "rightValue": "",
+       "operator": {
+        "type": "string",
+        "operation": "notEmpty"
+       }
+      },
+      {
+       "id": "={{ $j",
+       "leftValue": "={{ $json.action }}",
+       "rightValue": "",
+       "operator": {
+        "type": "string",
+        "operation": "notEmpty"
+       }
+      }
+     ],
+     "combinator": "and"
+    }
+   },
+   "id": "20000000-0000-4000-8000-000000000002",
+   "name": "Validate input",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    -940,
+    40
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "get",
+    "dataTableId": {
+     "__rl": true,
+     "mode": "name",
+     "value": "appointments"
+    },
+    "filters": {
+     "conditions": [
+      {
+       "keyName": "id",
+       "condition": "eq",
+       "keyValue": "={{ $('When called').item.json.appointment_id }}"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "20000000-0000-4000-8000-000000000003",
+   "name": "Find appointment",
+   "type": "n8n-nodes-base.dataTable",
+   "typeVersion": 1,
+   "position": [
+    -700,
+    -40
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "own",
+       "leftValue": "={{ $json.customer_id }}",
+       "rightValue": "={{ $('When called').item.json.customer_id }}",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    }
+   },
+   "id": "20000000-0000-4000-8000-000000000004",
+   "name": "Caller owns it?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    -460,
+    -40
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "update",
+    "dataTableId": {
+     "__rl": true,
+     "mode": "name",
+     "value": "appointments"
+    },
+    "filters": {
+     "conditions": [
+      {
+       "keyName": "id",
+       "condition": "eq",
+       "keyValue": "={{ $('When called').item.json.appointment_id }}"
+      }
+     ]
+    },
+    "columns": {
+     "mappingMode": "defineBelow",
+     "value": {
+      "status": "cancelled"
+     },
+     "matchingColumns": [],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "20000000-0000-4000-8000-000000000005",
+   "name": "Apply change (cancel)",
+   "type": "n8n-nodes-base.dataTable",
+   "typeVersion": 1,
+   "position": [
+    -220,
+    -120
+   ]
+  },
+  {
+   "parameters": {
+    "assignments": {
+     "assignments": [
+      {
+       "id": "s1",
+       "name": "status",
+       "type": "string",
+       "value": "ok"
+      },
+      {
+       "id": "s2",
+       "name": "message",
+       "type": "string",
+       "value": "=Appointment {{ $('When called').item.json.appointment_id }} was cancelled."
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "20000000-0000-4000-8000-000000000006",
+   "name": "Return: done",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    20,
+    -120
+   ]
+  },
+  {
+   "parameters": {
+    "assignments": {
+     "assignments": [
+      {
+       "id": "s1",
+       "name": "status",
+       "type": "string",
+       "value": "denied"
+      },
+      {
+       "id": "s2",
+       "name": "message",
+       "type": "string",
+       "value": "That appointment does not belong to this customer."
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "20000000-0000-4000-8000-000000000007",
+   "name": "Return: not allowed",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    -220,
+    60
+   ]
+  },
+  {
+   "parameters": {
+    "assignments": {
+     "assignments": [
+      {
+       "id": "s1",
+       "name": "status",
+       "type": "string",
+       "value": "invalid"
+      },
+      {
+       "id": "s2",
+       "name": "message",
+       "type": "string",
+       "value": "Missing required fields (customer_id and action)."
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "20000000-0000-4000-8000-000000000008",
+   "name": "Return: invalid",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    -700,
+    180
+   ]
+  }
+ ],
+ "connections": {
+  "When called": {
+   "main": [
+    [
+     {
+      "node": "Validate input",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Validate input": {
+   "main": [
+    [
+     {
+      "node": "Find appointment",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Return: invalid",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Find appointment": {
+   "main": [
+    [
+     {
+      "node": "Caller owns it?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Caller owns it?": {
+   "main": [
+    [
+     {
+      "node": "Apply change (cancel)",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Return: not allowed",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Apply change (cancel)": {
+   "main": [
+    [
+     {
+      "node": "Return: done",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "active": false,
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ },
+ "tags": []
+}

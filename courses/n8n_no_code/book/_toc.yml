@@ -11,6 +11,7 @@ parts:
       - file: 01_setup
       - file: 02_quick_start
       - file: 03_core_concepts
+      - file: 03b_working_with_multiple_items
       - file: 04_workflow_examples
         sections:
           - file: 04a_prompt_chaining
@@ -20,8 +21,10 @@ parts:
       - file: 05_reflection_pattern
       - file: 06_first_ai_agent
       - file: 07_tool_calling
+      - file: 07b_reliable_tools_and_subworkflows
       - file: 08_guardrails_safety
       - file: 09_rag
+      - file: 09b_testing_and_evaluating_ai_workflows
       - file: 10_multi_agent_systems
       - file: 11_choosing_your_tool
   - caption: Projects
@@ -39,6 +42,7 @@ parts:
     chapters:
       - file: appendix_a_node_toolbox
       - file: appendix_b_going_live
+      - file: appendix_b2_production_reliability
       - file: appendix_c_ai_nodes
       - file: appendix_d_prompt_engineering
       - file: appendix_e_prompt_engineering_agents
