@@ -42,6 +42,7 @@ parts:
     chapters:
       - file: appendix_a_node_toolbox
       - file: appendix_b_going_live
+      - file: appendix_b2_production_reliability
       - file: appendix_c_ai_nodes
       - file: appendix_d_prompt_engineering
       - file: appendix_e_prompt_engineering_agents

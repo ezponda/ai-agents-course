@@ -1,0 +1,136 @@
+{
+ "name": "Appendix B2 — Reliability Drill (retry + fail-closed)",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/appendix_b2_production_reliability.html)\n## Reliability drill — Retry + Timeout + fail-closed\n**Goal:** See the node-level reliability settings in one place. The HTTP node **retries** on failure with a delay, gives up after a **timeout**, and on final failure routes to the **error output** so you can **fail closed** (stop) instead of pretending it worked.\n\n### Where the settings live\nOpen **Call an API → Settings**: *Retry On Fail*, *Max Tries*, *Wait Between Tries*, and *On Error* (Stop / Continue / Continue (error output)). *Timeout* is in the node's **Options**.\n\n⚠️ Retries suit **transient** errors (429/500/timeout). Do **not** auto-retry validation or permission errors — fix the request instead.",
+    "height": 360,
+    "width": 640
+   },
+   "id": "23000000-0000-4000-8000-0000000000s1",
+   "name": "NOTE",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -1000,
+    -260
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "23000000-0000-4000-8000-000000000001",
+   "name": "When clicking 'Execute'",
+   "type": "n8n-nodes-base.manualTrigger",
+   "typeVersion": 1,
+   "position": [
+    -1000,
+    40
+   ]
+  },
+  {
+   "parameters": {
+    "url": "https://httpbin.org/get",
+    "options": {
+     "timeout": 10000
+    }
+   },
+   "id": "23000000-0000-4000-8000-000000000002",
+   "name": "Call an API",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    -760,
+    40
+   ],
+   "retryOnFail": true,
+   "maxTries": 3,
+   "waitBetweenTries": 2000,
+   "onError": "continueErrorOutput"
+  },
+  {
+   "parameters": {
+    "assignments": {
+     "assignments": [
+      {
+       "id": "1",
+       "name": "result",
+       "type": "string",
+       "value": "API call succeeded — carry on."
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "23000000-0000-4000-8000-000000000003",
+   "name": "Success → continue",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    -520,
+    -60
+   ]
+  },
+  {
+   "parameters": {
+    "assignments": {
+     "assignments": [
+      {
+       "id": "1",
+       "name": "result",
+       "type": "string",
+       "value": "All retries failed. STOP here — do not record success or send anything. (fail closed)"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "23000000-0000-4000-8000-000000000004",
+   "name": "Failed → fail closed",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    -520,
+    160
+   ]
+  }
+ ],
+ "connections": {
+  "When clicking 'Execute'": {
+   "main": [
+    [
+     {
+      "node": "Call an API",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Call an API": {
+   "main": [
+    [
+     {
+      "node": "Success → continue",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Failed → fail closed",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "active": false,
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ },
+ "tags": []
+}
