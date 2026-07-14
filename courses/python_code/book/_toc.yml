@@ -40,6 +40,7 @@ parts:
       - file: 26_multi_agent_supervisor
       - file: 27_agentic_rag
       - file: 28_long_term_memory
+      - file: 29_testing_and_reliability
   - caption: "Block 3 · Production & projects"
     chapters:
       - file: 30_deploy_fastapi
