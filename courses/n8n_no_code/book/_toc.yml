@@ -24,6 +24,7 @@ parts:
       - file: 07b_reliable_tools_and_subworkflows
       - file: 08_guardrails_safety
       - file: 09_rag
+      - file: 09b_testing_and_evaluating_ai_workflows
       - file: 10_multi_agent_systems
       - file: 11_choosing_your_tool
   - caption: Projects

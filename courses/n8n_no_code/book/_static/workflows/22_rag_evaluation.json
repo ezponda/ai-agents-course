@@ -1,0 +1,410 @@
+{
+ "name": "09b — RAG Evaluation",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "📖 [Course documentation](https://ezponda.github.io/ai-agents-course/09b_testing_and_evaluating_ai_workflows.html)\n## Evaluating a RAG workflow\n**Goal:** Run the RAG assistant against a fixed **test dataset** (Data Table `rag_eval_cases`) — one row per case — and score it: retrieval vs. answer, deterministic checks first, an LLM judge only where needed.\n\n### Two parts\n1. **Ingest (top):** upload the handbook once so the in-memory store is filled.\n2. **Evaluate (bottom):** Evaluation Trigger → map row → agent → deterministic scores → metrics.\n\n⚠️ **Re-index first.** The vector store is **in-memory** — run the Form ingest in the SAME session before the evaluation, or the store is empty.\n\n⚠️ **No shared memory during eval** — each row is an independent case.\n\n⚠️ Evaluation Trigger / Evaluation node labels & versions vary by n8n release — verify in your UI.",
+    "height": 360,
+    "width": 640
+   },
+   "id": "22000000-0000-4000-8000-0000000000s1",
+   "name": "NOTE",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -1200,
+    -460
+   ]
+  },
+  {
+   "parameters": {
+    "formTitle": "Upload Document",
+    "formDescription": "Upload a PDF or text file to create a searchable knowledge base.",
+    "formFields": {
+     "values": [
+      {
+       "fieldLabel": "Document",
+       "fieldType": "file",
+       "acceptFileTypes": ".pdf,.txt,.md",
+       "requiredField": true
+      }
+     ]
+    },
+    "options": {
+     "respondWith": "text",
+     "formSubmittedText": "Document uploaded and indexed successfully! You can now open the Chat in n8n to ask questions."
+    }
+   },
+   "id": "22000000-0000-4000-8000-000000000010",
+   "name": "Upload Document (Form)",
+   "type": "n8n-nodes-base.formTrigger",
+   "position": [
+    -1180,
+    -260
+   ],
+   "webhookId": "rag-doc-upload-form",
+   "typeVersion": 2.2
+  },
+  {
+   "parameters": {
+    "mode": "insert",
+    "memoryKey": "doc_store",
+    "clearStore": true
+   },
+   "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+   "typeVersion": 1,
+   "position": [
+    -940,
+    -260
+   ],
+   "id": "22000000-0000-4000-8000-000000000011",
+   "name": "Vector Store — Insert"
+  },
+  {
+   "parameters": {
+    "modelName": "text-embedding-004",
+    "options": {}
+   },
+   "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+   "typeVersion": 1,
+   "position": [
+    -940,
+    -80
+   ],
+   "id": "22000000-0000-4000-8000-000000000012",
+   "name": "Embeddings Google Gemini"
+  },
+  {
+   "parameters": {
+    "dataType": "binary",
+    "options": {}
+   },
+   "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+   "typeVersion": 1,
+   "position": [
+    -780,
+    -80
+   ],
+   "id": "22000000-0000-4000-8000-000000000013",
+   "name": "Default Data Loader"
+  },
+  {
+   "parameters": {
+    "chunkSize": 400,
+    "chunkOverlap": 100
+   },
+   "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+   "typeVersion": 1,
+   "position": [
+    -620,
+    -80
+   ],
+   "id": "22000000-0000-4000-8000-000000000014",
+   "name": "Recursive Character Text Splitter"
+  },
+  {
+   "parameters": {
+    "source": "dataTable",
+    "dataTableId": {
+     "__rl": true,
+     "mode": "name",
+     "value": "rag_eval_cases"
+    },
+    "limitRows": false,
+    "options": {}
+   },
+   "id": "22000000-0000-4000-8000-000000000030",
+   "name": "Run test cases",
+   "type": "n8n-nodes-base.evaluationTrigger",
+   "typeVersion": 4.6,
+   "position": [
+    -1180,
+    220
+   ]
+  },
+  {
+   "parameters": {
+    "assignments": {
+     "assignments": [
+      {
+       "id": "m1",
+       "name": "chatInput",
+       "type": "string",
+       "value": "={{ $json.question }}"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "22000000-0000-4000-8000-000000000031",
+   "name": "Map row → input",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    -900,
+    220
+   ]
+  },
+  {
+   "parameters": {
+    "promptType": "define",
+    "text": "={{ $json.chatInput }}",
+    "options": {
+     "systemMessage": "You are a helpful document assistant.\n\nRules:\n- ALWAYS search the document knowledge base before answering.\n- Answer ONLY based on the information found in the uploaded document.\n- If the document does not contain the answer, say: \"I don't have that information in the uploaded document.\"\n- Keep answers concise and friendly.\n- Do not make up information."
+    }
+   },
+   "id": "22000000-0000-4000-8000-000000000020",
+   "name": "AI Agent — Document Assistant",
+   "type": "@n8n/n8n-nodes-langchain.agent",
+   "position": [
+    -560,
+    220
+   ],
+   "typeVersion": 3
+  },
+  {
+   "parameters": {
+    "model": "openai/gpt-4o-mini",
+    "options": {}
+   },
+   "id": "22000000-0000-4000-8000-000000000021",
+   "name": "OpenRouter Chat Model",
+   "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+   "position": [
+    -640,
+    420
+   ],
+   "typeVersion": 1
+  },
+  {
+   "parameters": {
+    "mode": "retrieve-as-tool",
+    "memoryKey": "doc_store",
+    "toolDescription": "Knowledge base containing the uploaded document. Use this to answer any question about the document content."
+   },
+   "id": "22000000-0000-4000-8000-000000000022",
+   "name": "Vector Store — Search",
+   "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+   "position": [
+    -360,
+    420
+   ],
+   "typeVersion": 1
+  },
+  {
+   "parameters": {
+    "modelName": "text-embedding-004",
+    "options": {}
+   },
+   "id": "22000000-0000-4000-8000-000000000023",
+   "name": "Embeddings Google Gemini1",
+   "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+   "position": [
+    -360,
+    600
+   ],
+   "typeVersion": 1
+  },
+  {
+   "parameters": {
+    "assignments": {
+     "assignments": [
+      {
+       "id": "d1",
+       "name": "answered",
+       "type": "number",
+       "value": "={{ $json.output.includes(\"I don't have that information\") ? 0 : 1 }}"
+      },
+      {
+       "id": "d2",
+       "name": "refused_when_absent",
+       "type": "number",
+       "value": "={{ $('Run test cases').item.json.should_refuse == 'yes' ? ($json.output.includes(\"I don't have that information\") ? 1 : 0) : 1 }}"
+      },
+      {
+       "id": "d3",
+       "name": "contains_expected",
+       "type": "number",
+       "value": "={{ $('Run test cases').item.json.expected_contains ? ($json.output.toLowerCase().includes($('Run test cases').item.json.expected_contains.toLowerCase()) ? 1 : 0) : 1 }}"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "22000000-0000-4000-8000-000000000032",
+   "name": "Score deterministically",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    -280,
+    220
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "setMetrics",
+    "metrics": {
+     "assignments": [
+      {
+       "id": "e1",
+       "name": "contains_expected",
+       "type": "number",
+       "value": "={{ $json.contains_expected }}"
+      },
+      {
+       "id": "e2",
+       "name": "refused_when_absent",
+       "type": "number",
+       "value": "={{ $json.refused_when_absent }}"
+      },
+      {
+       "id": "e3",
+       "name": "answered",
+       "type": "number",
+       "value": "={{ $json.answered }}"
+      }
+     ]
+    }
+   },
+   "id": "22000000-0000-4000-8000-000000000033",
+   "name": "Record metrics",
+   "type": "n8n-nodes-base.evaluation",
+   "typeVersion": 4.6,
+   "position": [
+    -20,
+    220
+   ]
+  }
+ ],
+ "connections": {
+  "Upload Document (Form)": {
+   "main": [
+    [
+     {
+      "node": "Vector Store — Insert",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Embeddings Google Gemini": {
+   "ai_embedding": [
+    [
+     {
+      "node": "Vector Store — Insert",
+      "type": "ai_embedding",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Default Data Loader": {
+   "ai_document": [
+    [
+     {
+      "node": "Vector Store — Insert",
+      "type": "ai_document",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Recursive Character Text Splitter": {
+   "ai_textSplitter": [
+    [
+     {
+      "node": "Default Data Loader",
+      "type": "ai_textSplitter",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Run test cases": {
+   "main": [
+    [
+     {
+      "node": "Map row → input",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Map row → input": {
+   "main": [
+    [
+     {
+      "node": "AI Agent — Document Assistant",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "OpenRouter Chat Model": {
+   "ai_languageModel": [
+    [
+     {
+      "node": "AI Agent — Document Assistant",
+      "type": "ai_languageModel",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Vector Store — Search": {
+   "ai_tool": [
+    [
+     {
+      "node": "AI Agent — Document Assistant",
+      "type": "ai_tool",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Embeddings Google Gemini1": {
+   "ai_embedding": [
+    [
+     {
+      "node": "Vector Store — Search",
+      "type": "ai_embedding",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "AI Agent — Document Assistant": {
+   "main": [
+    [
+     {
+      "node": "Score deterministically",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Score deterministically": {
+   "main": [
+    [
+     {
+      "node": "Record metrics",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "active": false,
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ },
+ "tags": []
+}
