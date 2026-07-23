@@ -52,3 +52,4 @@ parts:
     chapters:
       - file: appendix_prompt_engineering
       - file: appendix_resources
+      - file: appendix_learning_path

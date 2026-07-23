@@ -2,6 +2,9 @@
  * Reading progress bar - shows how much of the page has been read
  */
 document.addEventListener('DOMContentLoaded', function() {
+    // Guard: the CI toolchain can emit the script tag twice per page
+    if (document.getElementById('reading-progress')) return;
+
     // Create progress bar element
     const progressBar = document.createElement('div');
     progressBar.id = 'reading-progress';

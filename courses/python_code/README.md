@@ -26,9 +26,9 @@ Python, from the raw agent loop up to LangGraph, all runnable in Google Colab.
   and carries an "Open in Colab" badge.
 - **Language: English** (same as the n8n book).
 
-## Contents (37 notebooks)
+## Contents (39 notebooks)
 
-Numbering leaves gaps on purpose — the tens digit is the block, and remaining gaps (`09`, `29`)
+Numbering leaves gaps on purpose — the tens digit is the block, and remaining gaps (`09`)
 are headroom for future notebooks without renumbering.
 
 - **Block 0** — `00`–`08` (9): what an agent is, setup, structured output, the raw tool loop,
@@ -39,13 +39,14 @@ are headroom for future notebooks without renumbering.
   with `TestModel`/`FunctionModel`** (`15b`), evals + observability + error-analysis, the knowledge
   agent (RAG), **using** an MCP server (`18`), **building** an MCP server with FastMCP (`18b`),
   debugging agents.
-- **Block 2** — `20`–`28` (9): agent-as-graph Rosetta, StateGraph, the agent loop as a graph,
+- **Block 2** — `20`–`29` (10): agent-as-graph Rosetta, StateGraph, the agent loop as a graph,
   persistence, human-in-the-loop, cyclic reflection, multi-agent, self-corrective RAG, long-term
-  memory (the Store).
+  memory (the Store), **testing and reliability** (`29`).
 - **Block 3** — `30`–`33` (5): deploy with FastAPI + streaming, connect your app, the **capstone
   project** (Data Analyst Agent — code-execution tool + memory + guardrails + eval), a second
   project (**Smart Onboarding**, `32b`), "which tool when".
-- **Appendices** — prompt engineering, resources.
+- **Appendices** — prompt engineering, resources, **the AI Agents Engineer path** (careers,
+  interview prep, external courses).
 
 Most notebooks carry a `🔧 Common issues (and fixes)` troubleshooting dropdown.
 
