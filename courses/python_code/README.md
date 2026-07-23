@@ -3,7 +3,7 @@
 The **code** counterpart of the no-code n8n course (`../n8n_no_code/`). Teaches AI agents in
 Python, from the raw agent loop up to LangGraph, all runnable in Google Colab.
 
-> 📖 **Live:** [ezponda.github.io/ai-agents-course/python](https://ezponda.github.io/ai-agents-course/python/).
+> **Live:** [ezponda.github.io/ai-agents-course/python](https://ezponda.github.io/ai-agents-course/python/).
 > Every push to `main` rebuilds and republishes it via `.github/workflows/deploy-book.yml`.
 > Build locally with `make build-python`. When you change anything under `_static/` (CSS/JS), use a
 > clean build so Sphinx recopies it: `jupyter-book build courses/python_code/book --all`.
@@ -14,7 +14,7 @@ Python, from the raw agent loop up to LangGraph, all runnable in Google Colab.
 |-------|------|----------------|
 | **0 · Pure Python core** | raw `openai` SDK | What an agent *is*: the loop by hand, workflows, memory — then how a real **coding agent** and **context engineering** work. "This is how Claude Code works." |
 | **1 · PydanticAI** | `pydantic-ai` | The clean, typed agent: tools, memory, guardrails, offline testing, evals — up to the **knowledge agent (RAG)**. |
-| **2 · LangGraph** | `langgraph` + `langchain` | State, graphs, persistence, human-in-the-loop, multi-agent. The visual payoff. |
+| **2 · LangGraph** | `langgraph` + `langchain` | State, graphs, persistence, human-in-the-loop, multi-agent. The visual model. |
 | **3 · Production** | `fastapi` | Deploy as code, connect your app, projects, "which tool when". |
 
 ## Design decisions
