@@ -5,7 +5,7 @@ This file helps Claude Code maintain consistency when editing the student-facing
 ## Quick Reference
 
 **Build command:** `make build-n8n` (or `make clean-n8n && make build-n8n`)
-**Book source:** `courses/n8n_no_code/book/*.ipynb`
+**Book source:** `courses/n8n_no_code/book/*.md` (MyST Markdown pages)
 **Workflow JSONs:** `courses/n8n_no_code/book/_static/workflows/*.json`
 **Output:** `courses/n8n_no_code/book/_build/html/`
 
@@ -52,7 +52,7 @@ https://github.com/ezponda/ai-agents-course/blob/main/courses/n8n_no_code/book/_
 - Basic LLM Chain outputs to `text`
 - AI Agent outputs to `output`
 - Always verify field names in the actual workflow JSON before documenting
-- **Keep notebooks and workflow JSONs in sync.** If you change a prompt or field value in a notebook, update the corresponding workflow JSON too (and vice versa).
+- **Keep course pages and workflow JSONs in sync.** If you change a prompt or field value in a page, update the corresponding workflow JSON too (and vice versa).
 
 ### 5. Links
 - Check that documentation links work (n8n docs change frequently)
@@ -62,27 +62,27 @@ https://github.com/ezponda/ai-agents-course/blob/main/courses/n8n_no_code/book/_
 
 | Category | Pattern | Example |
 |----------|---------|---------|
-| Course chapters | `NN_name.ipynb` | `01_setup.ipynb` |
-| Projects | `project_N_name.ipynb` | `project_1_recipe_assistant.ipynb` |
-| Appendices | `appendix_X_name.ipynb` (X = A–Z) | `appendix_a_node_toolbox.ipynb` |
+| Course chapters | `NN_name.md` | `01_setup.md` |
+| Projects | `project_N_name.md` | `project_1_recipe_assistant.md` |
+| Appendices | `appendix_X_name.md` (X = A–Z) | `appendix_a_node_toolbox.md` |
 
-Titles inside the notebook must match: `# Project 1: Recipe Assistant`, `# Appendix A: Node Toolbox`.
+Titles inside the page must match: `# Project 1: Recipe Assistant`, `# Appendix A: Node Toolbox`.
 
 The verification script (check 6) enforces sequential letters/numbers.
 
 ### 7. If You Rename or Delete a Workflow JSON
-Search all `.ipynb` files for references and update them:
+Search all `.md` pages for references and update them:
 ```bash
 grep -r "filename.json" courses/n8n_no_code/book/
 ```
 
-### 8. If You Rename or Delete a Notebook
+### 8. If You Rename or Delete a Chapter Page
 Update **all five** places:
-1. `_toc.yml` — `file:` entry (stem without `.ipynb`)
+1. `_toc.yml` — `file:` entry (stem without `.md`)
 2. `check_references.py` — `NOTEBOOK_WORKFLOW_MAP` key (if present)
 3. Workflow JSON sticky notes — `ezponda.github.io/ai-agents-course/{stem}.html` URLs
-4. Cross-references in other notebooks — Jupyter Book `[text](file_stem)` links
-5. Course Structure table in `00_introduction.ipynb` (if title/position changed)
+4. Cross-references in other pages — Jupyter Book `[text](file_stem)` links
+5. Course Structure table in `00_introduction.md` (if title/position changed)
 
 Then run `python3 courses/n8n_no_code/check_references.py` — it catches broken sticky-note URLs (check 9) and TOC/intro mismatches (check 5).
 
@@ -94,13 +94,13 @@ python3 courses/n8n_no_code/check_references.py
 ```
 
 **What it checks:**
-1. All JSON workflow references in notebooks exist
+1. All JSON workflow references in course pages exist
 2. All workflow JSON files are valid
 3. Documented prompts match actual workflow prompts (warns if mismatch)
 4. Reports unreferenced / missing workflows
-5. `_toc.yml` ↔ Course Structure table in `00_introduction.ipynb`
+5. `_toc.yml` ↔ Course Structure table in `00_introduction.md`
 6. Title naming conventions (Appendix A–Z, Project 1–N sequential)
-7. Workflow-documenting notebooks have import URL, download, build-from-scratch
+7. Workflow-documenting pages have import URL, download, build-from-scratch
 8. `{download}` directives point to existing files
 9. Sticky notes in workflow JSONs have valid `ezponda.github.io` URLs
 10. (Optional, `--check-urls`) HEAD-request all external URLs
@@ -173,7 +173,7 @@ Every workflow JSON must include a Sticky Note with:
 
 ### 12. Data Flow Dropdowns
 
-For each workflow example in the notebooks, add a collapsible dropdown showing the detailed data transformation at each step.
+For each workflow example in the course pages, add a collapsible dropdown showing the detailed data transformation at each step.
 
 **MyST syntax:**
 ```markdown
@@ -257,25 +257,25 @@ Each workflow example should include a step-by-step tutorial dropdown that allow
 
 ### 14. Course Structure Table (Introduction)
 
-The intro page (`00_introduction.ipynb`) has a "Course Structure" table that must stay in sync with `_toc.yml`.
+The intro page (`00_introduction.md`) has a "Course Structure" table that must stay in sync with `_toc.yml`.
 
 When adding, removing, or renaming chapters:
 1. Update `_toc.yml`
-2. Update the table in `00_introduction.ipynb` (cell with "## Course Structure")
+2. Update the table in `00_introduction.md` (section "## Course Structure")
 
 The table provides "What you'll do" descriptions that the TOC sidebar doesn't have, so keep both.
 
 ## Common Edits
 
 **Add a new chapter:**
-1. Create the `.ipynb` file
+1. Create the `.md` file
 2. Add to `_toc.yml`
-3. Update the Course Structure table in `00_introduction.ipynb`
+3. Update the Course Structure table in `00_introduction.md`
 
 **Add a new workflow example:**
 1. Add JSON to `book/_static/workflows/`
 2. **Add Sticky Note with course documentation link** (see section 9)
-3. Add section in the relevant `.ipynb` with GitHub link
+3. Add section in the relevant `.md` page with GitHub link
 4. **Add "Build from scratch" dropdown** (see section 11) — verify all values match JSON
 5. Include node-by-node table with actual node names
 6. Include data flow diagram showing INPUT → OUTPUT

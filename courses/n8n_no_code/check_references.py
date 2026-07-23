@@ -3,13 +3,13 @@
 Check n8n course for broken references, consistency, and structure.
 
 Checks:
- 1. JSON workflow files referenced in notebooks exist
+ 1. JSON workflow files referenced in course pages exist
  2. Workflow JSON files are valid and have 'nodes' key
  3. Documented prompts match actual workflow prompts (60 % word overlap)
  4. Reference summary (unreferenced / missing workflows)
- 5. _toc.yml ↔ Course Structure table in 00_introduction.ipynb
+ 5. _toc.yml ↔ Course Structure table in 00_introduction.md
  6. Title naming conventions (Appendix A–Z, Project 1–N, no accidental prefixes)
- 7. Workflow-documenting notebooks have import URL, download, build-from-scratch
+ 7. Workflow-documenting pages have import URL, download, build-from-scratch
  8. {download} directives point to existing files
  9. Sticky notes in workflow JSONs have valid ezponda.github.io URLs
 10. Deprecated $node['...'] syntax in workflow JSONs
@@ -35,25 +35,16 @@ WORKFLOWS_DIR = SCRIPT_DIR / "book" / "_static" / "workflows"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-_notebook_cache: dict[str, dict] = {}
+_page_cache: dict[str, str] = {}
 
 
-def read_notebook(path: Path) -> dict:
-    """Parse an .ipynb file and return its dict.  Results are cached."""
+def read_page(path: Path) -> str:
+    """Read a MyST .md course page and return its text.  Results are cached."""
     key = str(path)
-    if key not in _notebook_cache:
+    if key not in _page_cache:
         with open(path, "r", encoding="utf-8") as f:
-            _notebook_cache[key] = json.load(f)
-    return _notebook_cache[key]
-
-
-def get_notebook_markdown(nb_data: dict) -> str:
-    """Join all markdown cell sources into one string."""
-    parts: list[str] = []
-    for cell in nb_data.get("cells", []):
-        if cell.get("cell_type") == "markdown":
-            parts.append("".join(cell.get("source", [])))
-    return "\n\n".join(parts)
+            _page_cache[key] = f.read()
+    return _page_cache[key]
 
 
 def find_json_references(content: str) -> list[str]:
@@ -66,19 +57,18 @@ def find_json_references(content: str) -> list[str]:
 # Check 1 — notebook JSON references
 # ---------------------------------------------------------------------------
 def check_notebooks():
-    """Check all notebooks for broken JSON references."""
+    """Check all course pages for broken JSON references."""
     issues = []
 
     if not BOOK_DIR.exists():
         print(f"  Warning: Book directory not found: {BOOK_DIR}")
         return issues
 
-    for notebook_path in sorted(BOOK_DIR.glob("*.ipynb")):
+    for page_path in sorted(BOOK_DIR.glob("*.md")):
         try:
-            with open(notebook_path, "r", encoding="utf-8") as f:
-                content = f.read()
+            content = read_page(page_path)
         except Exception as e:
-            issues.append(f"Could not read {notebook_path.name}: {e}")
+            issues.append(f"Could not read {page_path.name}: {e}")
             continue
 
         json_refs = find_json_references(content)
@@ -86,7 +76,7 @@ def check_notebooks():
             json_path = WORKFLOWS_DIR / json_file
             if not json_path.exists():
                 issues.append(
-                    f"{notebook_path.name}: References missing file '{json_file}'"
+                    f"{page_path.name}: References missing file '{json_file}'"
                 )
 
     return issues
@@ -155,33 +145,28 @@ def extract_prompts_from_workflow(json_path: Path) -> dict[str, str]:
     return prompts
 
 
-def extract_prompts_from_notebook(notebook_path: Path) -> dict[str, str]:
-    """Extract documented prompts from code blocks in a notebook."""
+def extract_prompts_from_notebook(page_path: Path) -> dict[str, str]:
+    """Extract documented prompts from code blocks in a course page."""
     prompts = {}
     try:
-        nb_data = read_notebook(notebook_path)
+        source = read_page(page_path)
     except Exception:
         return prompts
 
-    for cell in nb_data.get("cells", []):
-        if cell.get("cell_type") != "markdown":
+    pattern = (
+        r'\*\*([^*]+?)(?:\s*—\s*[^*]+)?(?:\s*\([^)]+\))?:\*\*'
+        r'\s*\n```\n(.*?)\n```'
+    )
+    matches = re.findall(pattern, source, re.DOTALL)
+
+    for name, content in matches:
+        name = name.strip()
+        content = content.strip()
+        if content.startswith("{") or content.startswith("https://") or "INPUT" in content:
             continue
-
-        source = "".join(cell.get("source", []))
-        pattern = (
-            r'\*\*([^*]+?)(?:\s*—\s*[^*]+)?(?:\s*\([^)]+\))?:\*\*'
-            r'\s*\n```\n(.*?)\n```'
-        )
-        matches = re.findall(pattern, source, re.DOTALL)
-
-        for name, content in matches:
-            name = name.strip()
-            content = content.strip()
-            if content.startswith("{") or content.startswith("https://") or "INPUT" in content:
-                continue
-            if '"customer_name"' in content or '"sentiment"' in content:
-                continue
-            prompts[name] = content
+        if '"customer_name"' in content or '"sentiment"' in content:
+            continue
+        prompts[name] = content
 
     return prompts
 
@@ -198,39 +183,39 @@ def normalize_prompt(text: str) -> str:
 
 # Map of notebooks → workflow files they document
 NOTEBOOK_WORKFLOW_MAP = {
-    "04a_prompt_chaining.ipynb": ["01_prompt_chaining.json"],
-    "04b_routing.ipynb": ["02_routing.json"],
-    "04c_parallelization.ipynb": ["03_parallelization.json"],
-    "04d_human_in_the_loop.ipynb": ["04_human_in_the_loop.json"],
-    "06_first_ai_agent.ipynb": [
+    "04a_prompt_chaining.md": ["01_prompt_chaining.json"],
+    "04b_routing.md": ["02_routing.json"],
+    "04c_parallelization.md": ["03_parallelization.json"],
+    "04d_human_in_the_loop.md": ["04_human_in_the_loop.json"],
+    "06_first_ai_agent.md": [
         "05_ai_agent_basics_calculator_memory.json",
         "06_ai_agent_tools_serpapi_calculator.json",
         "07_ai_agent_chat_trigger_memory.json",
     ],
-    "appendix_d_prompt_engineering.ipynb": [
+    "appendix_d_prompt_engineering.md": [
         "08_prompt_engineering_comparison.json",
     ],
-    "project_1_recipe_assistant.ipynb": [
+    "project_1_recipe_assistant.md": [
         "10_recipe_assistant.json",
     ],
-    "appendix_b_going_live.ipynb": [
+    "appendix_b_going_live.md": [
         "going_live_schedule.json",
         "going_live_webhook.json",
         "going_live_error.json",
     ],
-    "project_2_ask_your_data.ipynb": [
+    "project_2_ask_your_data.md": [
         "11_ask_your_data.json",
     ],
-    "09_rag.ipynb": [
+    "09_rag.md": [
         "14_rag_faq_bot.json",
     ],
-    "10_multi_agent_systems.ipynb": [
+    "10_multi_agent_systems.md": [
         "15_multi_agent_content_pipeline.json",
     ],
-    "project_5_connect_your_app.ipynb": [
+    "project_6_connect_your_app.md": [
         "16_connect_your_app.json",
     ],
-    "project_6_salon_booking_assistant.ipynb": [
+    "project_7_salon_booking_assistant.md": [
         "17_salon_booking_multiagent.json",
     ],
 }
@@ -293,7 +278,7 @@ def list_referenced_vs_available():
 
     referenced: set[str] = set()
     if BOOK_DIR.exists():
-        for notebook_path in BOOK_DIR.glob("*.ipynb"):
+        for notebook_path in BOOK_DIR.glob("*.md"):
             try:
                 with open(notebook_path, "r", encoding="utf-8") as f:
                     content = f.read()
@@ -334,36 +319,32 @@ def _parse_toc() -> dict[str, list[str]]:
 
 
 def _parse_intro_table() -> dict[str, list[str]]:
-    """Return {section: [file_stem, ...]} from the Course Structure cell.
+    """Return {section: [file_stem, ...]} from the Course Structure section.
 
     Maps intro table rows back to file stems using the TOC for lookup.
     """
-    intro_path = BOOK_DIR / "00_introduction.ipynb"
-    nb_data = read_notebook(intro_path)
+    intro_path = BOOK_DIR / "00_introduction.md"
+    intro_text = read_page(intro_path)
 
-    # Find the Course Structure cell
+    # Slice out the "## Course Structure" section (up to the next ## heading)
     structure_text = ""
-    for cell in nb_data.get("cells", []):
-        if cell.get("cell_type") != "markdown":
-            continue
-        src = "".join(cell.get("source", []))
-        if "## Course Structure" in src:
-            structure_text = src
-            break
+    m = re.search(r"^## Course Structure$.*?(?=^## |\Z)", intro_text,
+                  re.MULTILINE | re.DOTALL)
+    if m:
+        structure_text = m.group(0)
 
     if not structure_text:
         return {}
 
-    # Build a map from readable title → file stem using TOC + notebook titles
+    # Build a map from readable title → file stem using TOC + page titles
     toc_sections = _parse_toc()
     title_to_stem: dict[str, str] = {}
     for _section, stems in toc_sections.items():
         for stem in stems:
-            nb_path = BOOK_DIR / f"{stem}.ipynb"
+            nb_path = BOOK_DIR / f"{stem}.md"
             if nb_path.exists():
                 try:
-                    nd = read_notebook(nb_path)
-                    md = get_notebook_markdown(nd)
+                    md = read_page(nb_path)
                     m = re.match(r"#\s+(.+)", md)
                     if m:
                         raw_title = m.group(1).strip()
@@ -425,16 +406,16 @@ def check_toc_sync():
     issues: list[str] = []
 
     toc_path = BOOK_DIR / "_toc.yml"
-    intro_path = BOOK_DIR / "00_introduction.ipynb"
+    intro_path = BOOK_DIR / "00_introduction.md"
     if not toc_path.exists() or not intro_path.exists():
-        issues.append("Missing _toc.yml or 00_introduction.ipynb")
+        issues.append("Missing _toc.yml or 00_introduction.md")
         return issues
 
     toc_sections = _parse_toc()
     intro_sections = _parse_intro_table()
 
     if not intro_sections:
-        issues.append("Could not find Course Structure table in 00_introduction.ipynb")
+        issues.append("Could not find Course Structure table in 00_introduction.md")
         return issues
 
     # Map TOC caption → intro section key
@@ -479,22 +460,21 @@ def check_title_patterns():
     appendix_stems = toc_sections.get("Appendices", [])
     expected_letter = ord("A")
     for stem in appendix_stems:
-        nb_path = BOOK_DIR / f"{stem}.ipynb"
+        nb_path = BOOK_DIR / f"{stem}.md"
         if not nb_path.exists():
-            issues.append(f"{stem}.ipynb: file not found")
+            issues.append(f"{stem}.md: file not found")
             continue
-        nb_data = read_notebook(nb_path)
-        md = get_notebook_markdown(nb_data)
+        md = read_page(nb_path)
         m = re.match(r"#\s+Appendix\s+([A-Z]):\s+", md)
         if not m:
             issues.append(
-                f"{stem}.ipynb: title must match '# Appendix [A-Z]: ...'"
+                f"{stem}.md: title must match '# Appendix [A-Z]: ...'"
             )
             continue
         actual_letter = m.group(1)
         if ord(actual_letter) != expected_letter:
             issues.append(
-                f"{stem}.ipynb: expected Appendix {chr(expected_letter)}, "
+                f"{stem}.md: expected Appendix {chr(expected_letter)}, "
                 f"found Appendix {actual_letter}"
             )
         expected_letter += 1
@@ -503,22 +483,21 @@ def check_title_patterns():
     project_stems = toc_sections.get("Projects", [])
     expected_num = 1
     for stem in project_stems:
-        nb_path = BOOK_DIR / f"{stem}.ipynb"
+        nb_path = BOOK_DIR / f"{stem}.md"
         if not nb_path.exists():
-            issues.append(f"{stem}.ipynb: file not found")
+            issues.append(f"{stem}.md: file not found")
             continue
-        nb_data = read_notebook(nb_path)
-        md = get_notebook_markdown(nb_data)
+        md = read_page(nb_path)
         m = re.match(r"#\s+Project\s+(\d+):\s+", md)
         if not m:
             issues.append(
-                f"{stem}.ipynb: title must match '# Project N: ...'"
+                f"{stem}.md: title must match '# Project N: ...'"
             )
             continue
         actual_num = int(m.group(1))
         if actual_num != expected_num:
             issues.append(
-                f"{stem}.ipynb: expected Project {expected_num}, "
+                f"{stem}.md: expected Project {expected_num}, "
                 f"found Project {actual_num}"
             )
         expected_num += 1
@@ -526,21 +505,20 @@ def check_title_patterns():
     # --- Course chapters: warn if they accidentally say "Appendix" or "Project" ---
     course_stems = toc_sections.get("Course", [])
     for stem in course_stems:
-        nb_path = BOOK_DIR / f"{stem}.ipynb"
+        nb_path = BOOK_DIR / f"{stem}.md"
         if not nb_path.exists():
             continue
-        nb_data = read_notebook(nb_path)
-        md = get_notebook_markdown(nb_data)
+        md = read_page(nb_path)
         m = re.match(r"#\s+(.+)", md)
         if m:
             title = m.group(1).strip()
             if re.match(r"Appendix\s+[A-Z]:", title):
                 warnings.append(
-                    f"{stem}.ipynb: course chapter has 'Appendix' prefix"
+                    f"{stem}.md: course chapter has 'Appendix' prefix"
                 )
             if re.match(r"Project\s+\d+:", title):
                 warnings.append(
-                    f"{stem}.ipynb: course chapter has 'Project' prefix"
+                    f"{stem}.md: course chapter has 'Project' prefix"
                 )
 
     return issues, warnings
@@ -560,12 +538,10 @@ def check_notebook_structure():
             continue
 
         try:
-            nb_data = read_notebook(nb_path)
+            md = read_page(nb_path)
         except Exception:
-            issues.append(f"{notebook_name}: could not read notebook")
+            issues.append(f"{notebook_name}: could not read page")
             continue
-
-        md = get_notebook_markdown(nb_data)
 
         for wf_file in workflow_files:
             # Import URL
@@ -609,7 +585,7 @@ def check_download_directives():
 
     pattern = re.compile(r"\{download\}`[^<]*<([^>]+)>`")
 
-    for nb_path in sorted(BOOK_DIR.glob("*.ipynb")):
+    for nb_path in sorted(BOOK_DIR.glob("*.md")):
         try:
             with open(nb_path, "r", encoding="utf-8") as f:
                 content = f.read()
@@ -678,11 +654,11 @@ def check_sticky_notes():
             # Check page corresponds to a notebook
             if page_part.endswith(".html"):
                 stem = page_part[:-5]  # strip .html
-                nb_file = BOOK_DIR / f"{stem}.ipynb"
+                nb_file = BOOK_DIR / f"{stem}.md"
                 if not nb_file.exists():
                     issues.append(
                         f"{json_path.name}: sticky note URL references "
-                        f"'{stem}.ipynb' which does not exist"
+                        f"'{stem}.md' which does not exist"
                     )
 
             # If build exists, verify anchor
@@ -757,7 +733,7 @@ def check_external_urls():
     url_pattern = re.compile(r"https://[^\s\"\'\)\]\\>`]+")
     all_urls: set[str] = set()
 
-    for nb_path in sorted(BOOK_DIR.glob("*.ipynb")):
+    for nb_path in sorted(BOOK_DIR.glob("*.md")):
         try:
             with open(nb_path, "r", encoding="utf-8") as f:
                 content = f.read()

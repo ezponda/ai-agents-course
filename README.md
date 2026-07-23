@@ -108,7 +108,7 @@ ai-agents-course/
 │   │   ├── book/                      # Jupyter Book source (served at site root)
 │   │   │   ├── _config.yml
 │   │   │   ├── _toc.yml
-│   │   │   ├── *.ipynb                # Chapter notebooks
+│   │   │   ├── *.md                   # Chapter pages (MyST Markdown)
 │   │   │   └── _static/
 │   │   │       └── workflows/         # Example workflow JSONs
 │   │   └── check_references.py        # Reference/consistency checker

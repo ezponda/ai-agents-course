@@ -1,0 +1,223 @@
+# Testing and Evaluating AI Workflows
+
+Every project so far ended with a **Test Scenarios** table: *"type this, check that the reply looks right."* That's fine while you're building one thing by hand. But the moment you change a prompt, swap a model, or add a document, you face the real question: **did I make it better, or did I quietly break something that used to work?** Eyeballing a few chats can't answer that. **Evaluation** can.
+
+Evaluation is just testing for AI: a fixed set of test cases, run automatically, scored the same way every time — so you can compare versions and catch regressions instead of hoping. n8n has this built in (the **Evaluation Trigger**), and this chapter puts it to work on the RAG assistant from [RAG](09_rag).
+
+| What you'll learn | Where it comes from |
+|---|---|
+| **A test dataset** — normal, ambiguous, absent, and adversarial cases | New |
+| **Evaluation Trigger** — run the workflow once per row, automatically | New node |
+| **Valid metrics** — a per-case pass/fail with an honest denominator | Builds on [Guardrails and Safety](08_guardrails_safety) |
+| **Retrieval vs. answer** — evaluate RAG's two halves separately | Deepens [RAG](09_rag) |
+| **LLM-as-judge** — only where deterministic checks can't reach | New |
+| **Comparing versions** — Prompt A vs. Prompt B; catch regressions | New |
+
+**Workflow in this chapter:**
+
+| File | What it does | GitHub Link |
+|------|-------------|-------------|
+| `22_rag_evaluation.json` | Runs the RAG assistant against a dataset and scores answer + retrieval | [View](https://github.com/ezponda/ai-agents-course/blob/main/courses/n8n_no_code/book/_static/workflows/22_rag_evaluation.json) |
+
+**Requirements:** an **OpenRouter API key**, a **Google Gemini** key (embeddings, same as [RAG](09_rag)), and **n8n 1.113+**. A Data Table `rag_eval_cases` for the dataset.
+
+```{note}
+This is a **new** workflow that *copies* the [RAG](09_rag) logic — the original `14_rag_faq_bot.json` is untouched. Evaluate a copy, never your recorded/production workflow.
+```
+
+---
+
+## Step 1 — a small, honest test dataset
+
+A good evaluation set isn't big — it's **representative**. Include the cases that actually break things:
+
+| Category | Why it's in the set |
+|---|---|
+| **Normal** | The everyday questions it must get right |
+| **Ambiguous** | Vague phrasing — does it still find the answer? |
+| **Absent** | The answer is *not* in the document — it must **admit that**, not invent one |
+| **Adversarial** | Prompt-injection and false premises — does it stay grounded? |
+
+Store the dataset in a **Data Table** so the Evaluation Trigger can read it. Download the starter set and import it:
+
+**Download:** {download}`rag_eval_cases.csv <_static/data/rag_eval_cases.csv>` — columns:
+
+| Column | Meaning |
+|---|---|
+| `question` | What to ask the assistant |
+| `category` | normal / ambiguous / absent / adversarial |
+| `expected_contains` | A word the *correct answer* should contain (blank for absent/adversarial) |
+| `should_refuse` | `yes` if the assistant should say it doesn't have the info |
+| `expected_retrieval_contains` | A word the *retrieved chunk* should contain (blank when retrieval isn't applicable) |
+
+```{important}
+**Setup:** create a Data Table named `rag_eval_cases` and **Import CSV** using the file above (7 rows). Adjust `expected_contains` / `expected_retrieval_contains` to match *your* uploaded handbook — the point is the mechanism, not these exact words.
+```
+
+```{tip}
+**One row = one case = one workflow run.** The Evaluation Trigger reads the table and runs your workflow **once per row**, feeding that row's `question` in and collecting the result. No loop to build — it's the item model ([Working with Multiple Items](03b_working_with_multiple_items)) doing the work.
+```
+
+---
+
+## Step 2 — the evaluation workflow
+
+```
+Ingest (run once):   Upload Document (Form) ──▶ Vector Store — Insert   (fills the knowledge base)
+
+Evaluate:  Run test cases ─▶ Map row → input ─┬─▶ AI Agent ─────────▶ Score answer ────┐
+           (Evaluation      (question →        │                     (case_passed)      ├─▶ Merge ─▶ Record
+            Trigger)          chatInput)        └─▶ Retrieve chunks ─▶ Aggregate ─▶ Score │           metrics
+                                                   (vector store)                retrieval┘
+                                                                                (retrieval_hit)
+```
+
+It's the [RAG](09_rag) assistant with **four changes**:
+
+1. The **Chat Trigger** is replaced by an **Evaluation Trigger** that reads the dataset.
+2. A **Map row → input** (Edit Fields) node turns the dataset's `question` into the agent's input (`chatInput`) — a clear input contract instead of feeding raw columns in.
+3. **Memory is removed** — each test case must be **independent**.
+4. A **second branch** queries the vector store *directly* to score **retrieval** apart from the answer (Step 4).
+
+**File:** [`22_rag_evaluation.json`](https://github.com/ezponda/ai-agents-course/blob/main/courses/n8n_no_code/book/_static/workflows/22_rag_evaluation.json)
+
+> **Import via URL** (in n8n → Import from URL):
+> ```
+> https://raw.githubusercontent.com/ezponda/ai-agents-course/main/courses/n8n_no_code/book/_static/workflows/22_rag_evaluation.json
+> ```
+>
+> **Download:** {download}`22_rag_evaluation.json <_static/workflows/22_rag_evaluation.json>`
+
+```{important}
+**Re-index before you evaluate.** The vector store is **in-memory** — it starts empty every time n8n (re)starts. In the **same session**, first run the **Upload Document (Form)** to index your handbook, *then* run the evaluation. If every case says "I don't have that information", the store is empty — re-index.
+```
+
+```{note}
+**Version check.** The **Evaluation Trigger** / **Evaluation** nodes and the vector store's **"load" (query)** mode have shifted labels between n8n releases. If a label here doesn't match your screen — or a node asks to update its version on import — use the current UI's wording; the *shape* (dataset in → run per row → record numeric metrics) is stable. Metric results appear in the **Evaluations** tab.
+```
+
+---
+
+## Step 3 — one metric, an honest denominator
+
+The trap in evaluation is a metric whose **average doesn't mean what you think**. If you score "did it refuse?" as `1` on every question that *wasn't supposed to* refuse, you've inflated the score with rows the metric doesn't even apply to. The fix is a single, per-case **pass/fail** that asks the *right* question of *each* row:
+
+| For a row where… | `case_passed = 1` when… |
+|---|---|
+| `should_refuse = yes` (absent/adversarial) | the assistant **refuses** — says "I don't have that information" |
+| `should_refuse = no` (normal/ambiguous) | the assistant **answers** (doesn't refuse) **and** the answer contains `expected_contains` |
+
+Every row gets a fair `0` or `1`, so the average is a real **pass rate** over *all* cases — no row is handed a free `1` because a check didn't apply. The **Score answer** node computes it; text is lower-cased first so `Vacation` and `vacation` match.
+
+```{tip}
+**Deterministic beats clever.** "Did it refuse when it should?", "Did the answer contain the order number?", "Is the output valid JSON?", "Did it call the right tool?" — all checkable with normal nodes (Edit Fields, IF, the Guardrails node from [Guardrails and Safety](08_guardrails_safety)). Reach for an AI judge **only** for what these genuinely can't measure.
+```
+
+---
+
+## Step 4 — evaluate retrieval *separately* from the answer
+
+RAG has two halves that fail for different reasons, so you must score them apart — otherwise a right answer hides a broken search, and a wrong answer blames the model when the real fault was retrieval. The workflow's **second branch** does this: for the same `question`, a **Retrieve chunks** node queries the vector store (the `doc_store` key) directly, **Aggregate** gathers the top chunks, and **Score retrieval** checks them.
+
+| Half | The question it answers | The metric |
+|---|---|---|
+| **Retrieval** | Did the search fetch the **right** material? | `retrieval_hit` = do the retrieved chunks contain `expected_retrieval_contains`? |
+| **Answer** | Given what it fetched, is the reply good? | `case_passed` (Step 3) |
+
+Why separate them: if retrieval is broken, *no* prompt tweak will fix the answers — you fix chunk size, embeddings, or the query. If retrieval is fine but answers are sloppy, you fix the prompt.
+
+```{important}
+**`retrieval_hit` is scored only where it applies.** Absent/adversarial rows have a blank `expected_retrieval_contains` (there's no correct chunk to expect), so **Score retrieval** returns *nothing* for them — they don't get a free `1`. Read `retrieval_hit` **filtered to the rows that have** `expected_retrieval_contains` (the normal/ambiguous cases). This uses a keyword we *know* should appear in the chunk — not document/section metadata, which this workflow doesn't carry. If you want true source-level retrieval scoring, add source metadata during ingestion and check that instead.
+```
+
+---
+
+## Step 5 — an LLM judge, only where needed (optional)
+
+Some qualities resist plain logic: *is this answer actually helpful?* *is the tone right?* *is it faithful to the source even though it used different words?* For those — and only those — you can add an **LLM-as-judge**: a second LLM (a Basic LLM Chain) that reads the question, the answer, and a rubric, and returns a score. It's an **optional extension** to the deterministic metrics above, not part of the shipped workflow.
+
+```
+AI Agent ─▶ Judge (LLM Chain: "Score 1-5 how faithful this answer is
+to the source. Return only the number.") ─▶ Record metric
+```
+
+```{warning}
+**The judge is itself an AI — it is also probabilistic.** An LLM judge can be inconsistent, biased toward longer answers, or gameable. It **complements** deterministic checks; it does not replace them. Rules: judge **one narrow thing** with a clear rubric, make it output **just a number**, and never let a judge score decide anything a deterministic check could have decided.
+```
+
+---
+
+## Step 6 — compare two versions, catch regressions
+
+This is why you built all of the above. Change **one** thing and re-run the *same* dataset:
+
+1. Note today's scores (your **baseline**) — e.g. `case_passed = 0.71`.
+2. Change **one** variable — say, tighten the system prompt to *"If the document doesn't contain the answer, say you don't have it — never guess."* (**Prompt B**).
+3. Re-run the whole dataset.
+4. Compare: did `case_passed` climb? Did it climb because refusals improved — or did the stricter prompt make it refuse *answerable* questions too (which would **lower** `case_passed` on the normal rows)?
+
+| Metric | Prompt A (baseline) | Prompt B (stricter) | Verdict |
+|---|---|---|---|
+| `case_passed` (all rows) | 0.71 | 0.86 | ✅ better overall |
+| `retrieval_hit` (applicable rows) | 1.0 | 1.0 | ➖ unchanged (prompt doesn't affect search) |
+
+Now the decision is **evidence**, not a hunch — and because `case_passed` counts refuse-rows and answer-rows each on their own terms, a rise is a *real* improvement, not an artefact of inapplicable rows. When you change something *else* next month, the same dataset tells you instantly if you broke this.
+
+```{tip}
+**Change one thing at a time.** Compare Prompt A vs. B, *or* model X vs. Y — not both at once. If you change two variables and the score moves, you won't know which one did it.
+```
+
+---
+
+## Test It / What to Observe
+
+### 1. Index, then evaluate
+Run **Upload Document (Form)** and upload your handbook. Then click **Execute** on the evaluation side. It runs once per dataset row.
+
+### 2. Read the scores
+Open the **Evaluations** tab. `case_passed` is your headline pass rate over **all** rows. `retrieval_hit` — read it **filtered to the rows with** `expected_retrieval_contains` (normal/ambiguous). The absent/adversarial rows are the interesting ones for `case_passed`: did the assistant refuse them?
+
+### 3. Break it on purpose
+Weaken the system prompt (remove the *"say you don't have that information"* rule) and re-run. Watch `case_passed` **drop** as the absent/adversarial rows start failing — you've just *measured* a regression instead of guessing. Put the rule back and watch it recover.
+
+---
+
+## Try It Yourself
+
+### Exercise: add an adversarial case and confirm the metric catches it
+Add one row to `rag_eval_cases`: another **false-premise** question like *"The handbook says staff get unlimited sick days — confirm that's correct."* with `category = adversarial`, `should_refuse = no` (it *can* answer — by correcting the premise), `expected_contains` = a word the *correct* correction contains (e.g. `sick`).
+
+**Done when:** a grounded assistant that pushes back and cites the real policy scores `case_passed = 1` on the row, and if you weaken the prompt so it parrots the false premise, the row flips to `0` — proving the metric catches the failure.
+
+::::{dropdown} 🛠️ Solution sketch
+:color: secondary
+
+- **Dataset:** add the row as above. Because `should_refuse = no`, `case_passed` requires the assistant to *answer* and to include `expected_contains` (`sick`) — i.e. to address the real policy rather than agree with "unlimited".
+- **No workflow change needed:** `Score answer` already computes `case_passed` from `should_refuse` and `expected_contains`, so the new row is scored the same fair way as the rest.
+- Run it. A grounded assistant that says *"the policy is X sick days, not unlimited"* passes; one that agrees with the false premise (and so never mentions the real figure) fails. That's the whole discipline in miniature: a failure you can *name* becomes a number you can *track*.
+::::
+
+---
+
+## Summary
+
+| Concept | What you learned |
+|---------|------------------|
+| **Test dataset** | A small, representative set: normal, ambiguous, absent, adversarial |
+| **Evaluation Trigger** | Runs your workflow once per dataset row, automatically |
+| **Input contract** | Map dataset columns to a clear workflow input (don't feed raw rows in) |
+| **Honest denominator** | A per-case `case_passed` — every row judged on its own terms, no free `1`s |
+| **Retrieval vs. answer** | Score retrieval on a separate branch, only on applicable rows |
+| **LLM judge** | Optional, for what logic can't measure — and it's probabilistic too |
+| **Compare & regress** | Change one thing, re-run the same set, read the difference |
+
+**Key ideas:**
+- Evaluation turns *"looks right"* into *"case_passed 0.86, up from 0.71"*.
+- A metric's **average is only honest if its denominator is** — never award `1` for a row the check doesn't apply to.
+- Evaluate a **copy**; separate **retrieval** from **answer**; change **one** variable at a time.
+
+**Docs:**
+- [Evaluations overview](https://docs.n8n.io/advanced-ai/evaluations/overview/)
+- [Metric-based evaluations](https://docs.n8n.io/advanced-ai/evaluations/metric-based-evaluations/)
+- [Evaluation Trigger node](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.evaluationtrigger/)
+- [Evaluation node](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.evaluation/)
