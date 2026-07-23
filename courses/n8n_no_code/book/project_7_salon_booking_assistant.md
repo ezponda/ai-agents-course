@@ -666,4 +666,4 @@ If scenario 5 (the "ignore your instructions" attack) got anywhere, defend in de
 - [Data Tables](https://docs.n8n.io/data/data-tables/)
 - [Data Table node](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.datatable/)
 - [AI Agent Tool](https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.toolaiagent/)
-- [Chat Trigger](https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.chattrigger/)
+- [Chat Trigger](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-langchain.chattrigger/)

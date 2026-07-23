@@ -1,4 +1,4 @@
-# [Production Reliability](appendix_b2_production_reliability): Production Reliability
+# Production Reliability
 
 *[Going Live](appendix_b_going_live) (Going Live)* got your workflow onto a server. This one keeps it **trustworthy** once real traffic, flaky APIs, and impatient users hit it. None of it is exotic — it's a handful of settings and habits that separate a demo from something you'd let touch a customer's money or calendar.
 

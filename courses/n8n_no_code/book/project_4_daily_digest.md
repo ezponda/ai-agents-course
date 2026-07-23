@@ -291,5 +291,5 @@ Give it a morning run and an evening run with different prompts ("what's new" vs
 **Docs:**
 - [Schedule Trigger](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.scheduletrigger/)
 - [HTTP Request](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest/)
-- [Data Tables](https://docs.n8n.io/data-tables/)
+- [Data Tables](https://docs.n8n.io/build/work-with-data/data-tables)
 - [Hacker News Search API](https://hn.algolia.com/api)

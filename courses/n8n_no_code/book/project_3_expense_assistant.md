@@ -342,4 +342,4 @@ Rewrite the policy rules in the system prompt for a real team — per-category l
 **Docs:**
 - [Chat Trigger](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-langchain.chattrigger/)
 - [AI Agent](https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.agent/)
-- [Data Tables](https://docs.n8n.io/data-tables/)
+- [Data Tables](https://docs.n8n.io/build/work-with-data/data-tables)

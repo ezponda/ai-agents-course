@@ -178,7 +178,7 @@ Loop Over Items (batch size 10)
 ```
 
 ```{important}
-**Batching and rate limits.** Public APIs cap how many calls you can make per second/minute. If you Split Out 500 rows and fire 500 requests at once, you'll get **429 Too Many Requests** and lose data. Two fixes: (1) **Loop Over Items** with a small batch size + a **Wait** node between batches, or (2) the HTTP Request node's own **Batching** option (in *Options → Batching*: items per batch + interval). You'll meet the production side of this — **Retry**, **Retry-After**, back-off — in *[Production Reliability](appendix_b2_production_reliability): Production Reliability*.
+**Batching and rate limits.** Public APIs cap how many calls you can make per second/minute. If you Split Out 500 rows and fire 500 requests at once, you'll get **429 Too Many Requests** and lose data. Two fixes: (1) **Loop Over Items** with a small batch size + a **Wait** node between batches, or (2) the HTTP Request node's own **Batching** option (in *Options → Batching*: items per batch + interval). You'll meet the production side of this — **Retry**, **Retry-After**, back-off — in *[Production Reliability](appendix_b2_production_reliability)*.
 ```
 
 ---

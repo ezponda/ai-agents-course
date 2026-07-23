@@ -54,7 +54,7 @@ def find_json_references(content: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# Check 1 — notebook JSON references
+# Check 1 — course page JSON references
 # ---------------------------------------------------------------------------
 def check_notebooks():
     """Check all course pages for broken JSON references."""
@@ -181,7 +181,7 @@ def normalize_prompt(text: str) -> str:
     return text.lower()
 
 
-# Map of notebooks → workflow files they document
+# Map of course pages → workflow files they document
 NOTEBOOK_WORKFLOW_MAP = {
     "04a_prompt_chaining.md": ["01_prompt_chaining.json"],
     "04b_routing.md": ["02_routing.json"],
@@ -222,7 +222,7 @@ NOTEBOOK_WORKFLOW_MAP = {
 
 
 def check_prompt_consistency():
-    """Check that prompts in notebooks match workflow JSONs."""
+    """Check that prompts in course pages match workflow JSONs."""
     issues = []
     warnings = []
 

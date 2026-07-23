@@ -542,8 +542,6 @@ The Simple Vector Store above loses data when n8n restarts. To make it persisten
 
 ---
 
----
-
 ## RAG vs Fine-Tuning vs Long Context
 
 There are other ways to give LLMs custom knowledge. When should you use RAG?
