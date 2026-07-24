@@ -34,7 +34,7 @@ The Python course is the code counterpart of `courses/n8n_no_code/`.
 | 0 - Pure Python core | raw `openai` SDK | The agent loop by hand: model calls, structured output, tools, workflows, reflection, memory, coding agents, context engineering, and a small agent harness |
 | 1 - PydanticAI | `pydantic-ai` | Typed agents: tools, dependency injection, memory, guardrails, testing, evals, RAG, MCP, debugging |
 | 2 - LangGraph | `langgraph` + `langchain` | State, graph control flow, persistence, interrupts, cycles, multi-agent, agentic RAG, reliability |
-| 3 - Production | `fastapi` + clients | Agent as an API, app integration, projects, framework/tool selection |
+| 3 - Production | `fastapi` + clients | Agent as an API, app integration, projects, durable approvals and effects, framework/tool selection |
 
 Use `_toc.yml` as the source of truth for ordering. If notebook counts, block ranges, or titles change, update `courses/python_code/README.md` and the root `README.md` when relevant.
 

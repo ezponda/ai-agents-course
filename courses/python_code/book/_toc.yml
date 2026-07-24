@@ -48,6 +48,7 @@ parts:
       - file: 31_connect_your_app
       - file: 32_project_data_analyst
       - file: 32b_project_onboarding
+      - file: 32c_project_resumable_coworker
       - file: 33_which_tool_when
   - caption: "Appendices"
     chapters:

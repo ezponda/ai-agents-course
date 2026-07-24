@@ -26,7 +26,7 @@ Python, from the raw agent loop up to LangGraph, all runnable in Google Colab.
   and carries an "Open in Colab" badge.
 - **Language: English** (same as the n8n book).
 
-## Contents (40 notebooks)
+## Contents (41 notebooks)
 
 Numbering leaves gaps on purpose — the tens digit is the block, with room for inserted notebooks
 without renumbering existing URLs.
@@ -42,9 +42,10 @@ without renumbering existing URLs.
 - **Block 2** — `20`–`29` (10): agent-as-graph Rosetta, StateGraph, the agent loop as a graph,
   persistence, human-in-the-loop, cyclic reflection, multi-agent, self-corrective RAG, long-term
   memory (the Store), **testing and reliability** (`29`).
-- **Block 3** — `30`–`33` (5): deploy with FastAPI + streaming, connect your app, the **capstone
+- **Block 3** — `30`–`33` (6): deploy with FastAPI + streaming, connect your app, the **capstone
   project** (Data Analyst Agent — code-execution tool + memory + guardrails + eval), a second
-  project (**Smart Onboarding**, `32b`), "which tool when".
+  project (**Smart Onboarding**, `32b`), a durable runtime project (**Atlas Resumable Coworker**,
+  `32c`), "which tool when".
 - **Appendices** — prompt engineering, resources, **the AI Agents Engineer path** (careers,
   interview prep, external courses).
 
