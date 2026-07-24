@@ -12,7 +12,7 @@ Python, from the raw agent loop up to LangGraph, all runnable in Google Colab.
 
 | Block | Tool | What you learn |
 |-------|------|----------------|
-| **0 · Pure Python core** | raw `openai` SDK | What an agent *is*: the loop by hand, workflows, memory — then how a real **coding agent** and **context engineering** work. "This is how Claude Code works." |
+| **0 · Pure Python core** | raw `openai` SDK | What an agent *is*: the loop by hand, workflows, memory — then a **coding agent**, **context engineering**, and the harness that joins the pieces. |
 | **1 · PydanticAI** | `pydantic-ai` | The clean, typed agent: tools, memory, guardrails, offline testing, evals — up to the **knowledge agent (RAG)**. |
 | **2 · LangGraph** | `langgraph` + `langchain` | State, graphs, persistence, human-in-the-loop, multi-agent. The visual model. |
 | **3 · Production** | `fastapi` | Deploy as code, connect your app, projects, "which tool when". |
@@ -26,14 +26,14 @@ Python, from the raw agent loop up to LangGraph, all runnable in Google Colab.
   and carries an "Open in Colab" badge.
 - **Language: English** (same as the n8n book).
 
-## Contents (39 notebooks)
+## Contents (40 notebooks)
 
-Numbering leaves gaps on purpose — the tens digit is the block, and remaining gaps (`09`)
-are headroom for future notebooks without renumbering.
+Numbering leaves gaps on purpose — the tens digit is the block, with room for inserted notebooks
+without renumbering existing URLs.
 
-- **Block 0** — `00`–`08` (9): what an agent is, setup, structured output, the raw tool loop,
+- **Block 0** — `00`–`09` (10): what an agent is, setup, structured output, the raw tool loop,
   workflow patterns, reflection + human-in-the-loop, memory, **building a coding agent** (`07`),
-  **context engineering** (`08`).
+  **context engineering** (`08`), and a pure-Python **agent harness capstone** (`09`).
 - **Block 1** — `10`–`19` (12): raw↔PydanticAI Rosetta, first agent, tools (incl. a real wttr.in
   tool), typed output + DI, memory, guardrails (incl. read/write tool safety), **offline testing
   with `TestModel`/`FunctionModel`** (`15b`), evals + observability + error-analysis, the knowledge

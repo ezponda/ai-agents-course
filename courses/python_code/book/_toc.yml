@@ -15,6 +15,7 @@ parts:
       - file: 06_memory_from_scratch
       - file: 07_build_a_coding_agent
       - file: 08_context_engineering
+      - file: 09_from_agent_loop_to_harness
   - caption: "Block 1 · PydanticAI"
     chapters:
       - file: 10_rosetta_raw_vs_pydanticai
