@@ -2,13 +2,18 @@
 
 [![n8n](https://img.shields.io/badge/n8n-workflow%20automation-FF6D5A)](https://n8n.io/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://python.org/)
-[![Level](https://img.shields.io/badge/Level-Beginner-brightgreen)](/)
+[![n8n Level](https://img.shields.io/badge/n8n-Beginner-brightgreen)](https://ezponda.github.io/ai-agents-course/)
+[![Python Level](https://img.shields.io/badge/Python-Beginner%20to%20Intermediate-blue)](https://ezponda.github.io/ai-agents-course/python/)
 
 ## 📚 Course
 
-**[View the n8n Course →](https://ezponda.github.io/ai-agents-course/)** — build AI agents with n8n, no code, no prior experience required.
+Choose the visual course if you want to learn the concepts without code, or the Python course if
+you want to inspect and implement the mechanisms yourself.
 
-**[View the Python Course →](https://ezponda.github.io/ai-agents-course/python/)** — the same ideas in code: the raw agent loop, then PydanticAI and LangGraph.
+| Course | For | Prerequisites | What you will build | Format |
+|--------|-----|---------------|---------------------|--------|
+| **[n8n No-Code](https://ezponda.github.io/ai-agents-course/)** | Beginners and automation practitioners | None | Visual workflows and agents with tools, memory, RAG, guardrails, evals, and seven projects | Jupyter Book + downloadable n8n workflows |
+| **[Python AI Agents](https://ezponda.github.io/ai-agents-course/python/)** | Beginner-to-intermediate Python learners | Basic Python | The raw agent loop, typed agents, RAG, MCP, evals, LangGraph, deployment patterns, and capstone projects | 41 runnable, Colab-first notebooks |
 
 ## Course Materials
 
@@ -31,7 +36,7 @@ The n8n course is available as a Jupyter Book:
 9. Guardrails & Safety — Prompt injection and output validation
 10. RAG — Teach your AI to search your own documents
 
-**Projects:** Recipe Assistant · Ask Your Data · Smart Onboarding · Deploy to Production
+**Projects:** Recipe Assistant · Ask Your Data · Expense Assistant · Daily Digest · Deploy to Production · Connect Your App · Salon Booking Assistant
 
 **Appendices:** Node Toolbox · Going Live · Specialized AI Nodes · Prompt Engineering (Basics & Agents) · Resources
 
@@ -42,9 +47,11 @@ The code counterpart, as a Jupyter Book:
 - **Book location:** `courses/python_code/book/`
 - **Live site:** [ezponda.github.io/ai-agents-course/python](https://ezponda.github.io/ai-agents-course/python/)
 
-Colab-first and model-agnostic (one `MODEL` variable via OpenRouter). Four blocks
-— pure-Python core → PydanticAI → LangGraph → production — plus capstone projects.
-See `courses/python_code/README.md` for the full chapter list.
+Colab-first and model-agnostic (one `MODEL` variable via OpenRouter). The 41-notebook path starts
+by implementing the agent loop in pure Python, then adds typed tools, memory, guardrails, offline
+testing, evals, RAG, MCP, LangGraph persistence, human approval, FastAPI, and three capstone
+projects. It teaches both how to build agents and when a deterministic workflow is the better
+choice. See `courses/python_code/README.md` for prerequisites, scope, and the full chapter list.
 
 ## Build the Books Locally
 

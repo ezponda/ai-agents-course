@@ -8,6 +8,36 @@ Python, from the raw agent loop up to LangGraph, all runnable in Google Colab.
 > Build locally with `make build-python`. When you change anything under `_static/` (CSS/JS), use a
 > clean build so Sphinx recopies it: `jupyter-book build courses/python_code/book --all`.
 
+## Who this course is for
+
+This course is for beginner-to-intermediate Python learners who want to understand what happens
+inside an agent, not only call a framework. You should be comfortable with functions, loops,
+lists and dictionaries, exceptions, and simple classes. Familiarity with APIs, notebooks, or
+`async` code helps, but is not required. No production AI experience is assumed.
+
+The live-model notebooks use an OpenRouter API key. Several lessons and offline tests can still be
+run without one, including the durable runtime project in `32c`.
+
+## What you will be able to do
+
+By the end of the course, you will be able to:
+
+- write an agent loop in plain Python and explain the tool-calling protocol;
+- decide when to use a model call, an augmented LLM, a workflow, or an agent;
+- build typed agents with tools, memory, guardrails, offline tests, evals, RAG, and MCP;
+- model persistent, human-in-the-loop, and multi-agent systems with LangGraph;
+- expose an agent through FastAPI and reason about durable approvals and external effects; and
+- choose between raw Python, PydanticAI, LangGraph, and n8n for a concrete problem.
+
+## Time and scope
+
+Allow roughly **60-90 hours** to complete all 41 notebooks and their exercises, depending on your
+Python experience and how far you take the projects. The course provides a strong engineering
+foundation and several guided builds; it is not, by itself, a production credential. For an
+interview-ready portfolio, take one project beyond the notebook with deployment, tests, traces,
+security boundaries, and measured evals. The
+[AI Agents Engineer path](book/appendix_learning_path.ipynb) describes that next step.
+
 ## The arc
 
 | Block | Tool | What you learn |
@@ -68,5 +98,3 @@ next major to avoid a breaking release landing mid-lesson. See `requirements.txt
 > `output_type`). `OpenAIChatModel` is the forward-compatible name (the v1-only spelling was the now
 > removed `OpenAIModel`). When a future major lands, re-verify and bump deliberately — don't let pip
 > pick it mid-lesson.
-
-See `../../plan_curso_python_agents_2026-07-01.html` at the repo root for the full plan.
