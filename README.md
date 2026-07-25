@@ -3,17 +3,21 @@
 [![n8n](https://img.shields.io/badge/n8n-workflow%20automation-FF6D5A)](https://n8n.io/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://python.org/)
 [![n8n Level](https://img.shields.io/badge/n8n-Beginner-brightgreen)](https://ezponda.github.io/ai-agents-course/)
-[![Python Level](https://img.shields.io/badge/Python-Beginner%20to%20Intermediate-blue)](https://ezponda.github.io/ai-agents-course/python/)
+[![Python Track](https://img.shields.io/badge/Python-Code--first-blue)](https://ezponda.github.io/ai-agents-course/python/)
 
 ## 📚 Course
 
 Choose the visual course if you want to learn the concepts without code, or the Python course if
 you want to inspect and implement the mechanisms yourself.
 
+**[View the n8n Course →](https://ezponda.github.io/ai-agents-course/)** — build AI agents visually, with no code or prior experience required.
+
+**[View the Python Course →](https://ezponda.github.io/ai-agents-course/python/)** — build the agent loop yourself, then progress to PydanticAI, LangGraph, and production patterns.
+
 | Course | For | Prerequisites | What you will build | Format |
 |--------|-----|---------------|---------------------|--------|
 | **[n8n No-Code](https://ezponda.github.io/ai-agents-course/)** | Beginners and automation practitioners | None | Visual workflows and agents with tools, memory, RAG, guardrails, evals, and seven projects | Jupyter Book + downloadable n8n workflows |
-| **[Python AI Agents](https://ezponda.github.io/ai-agents-course/python/)** | Beginner-to-intermediate Python learners | Basic Python | The raw agent loop, typed agents, RAG, MCP, evals, LangGraph, deployment patterns, and capstone projects | 41 runnable, Colab-first notebooks |
+| **[Python AI Agents](https://ezponda.github.io/ai-agents-course/python/)** | Python users who want to understand agent internals | Basic Python | The raw agent loop, typed agents, RAG, MCP, evals, LangGraph, deployment patterns, and capstone projects | 41 runnable, Colab-first notebooks |
 
 ## Course Materials
 
@@ -47,11 +51,23 @@ The code counterpart, as a Jupyter Book:
 - **Book location:** `courses/python_code/book/`
 - **Live site:** [ezponda.github.io/ai-agents-course/python](https://ezponda.github.io/ai-agents-course/python/)
 
-Colab-first and model-agnostic (one `MODEL` variable via OpenRouter). The 41-notebook path starts
-by implementing the agent loop in pure Python, then adds typed tools, memory, guardrails, offline
-testing, evals, RAG, MCP, LangGraph persistence, human approval, FastAPI, and three capstone
-projects. It teaches both how to build agents and when a deterministic workflow is the better
-choice. See `courses/python_code/README.md` for prerequisites, scope, and the full chapter list.
+Colab-first and model-agnostic (one `MODEL` variable via OpenRouter). The course assumes basic
+Python, but no previous experience building AI agents.
+
+**Course blocks:**
+1. Pure Python Core — Model calls, structured output, the tool loop, workflow patterns, memory,
+   a coding agent, context engineering, and an agent harness
+2. PydanticAI — Typed agents, tools, dependency injection, guardrails, offline testing, evals,
+   RAG, MCP, and debugging
+3. LangGraph — State graphs, persistence, human approval, cyclic reflection, multi-agent
+   systems, agentic RAG, long-term memory, and reliability
+4. Production & Projects — FastAPI, streaming, application integration, durable execution, and
+   framework selection
+
+**Projects:** Coding Agent · Agent Harness · Knowledge Agent · Data Analyst Agent · Smart
+Onboarding · Atlas Resumable Coworker
+
+See `courses/python_code/README.md` for the full 41-notebook outline.
 
 ## Build the Books Locally
 

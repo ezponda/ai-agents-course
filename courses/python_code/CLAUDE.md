@@ -21,7 +21,7 @@ jupyter-book build courses/python_code/book --all
 
 ## Audience
 
-Beginner-to-intermediate Python learners who want to understand and build AI agents in code.
+People with working Python knowledge who want to understand and build AI agents in code.
 
 Assume the learner can read simple Python, but do not assume production AI experience. The course should make agents feel mechanical and inspectable: messages, tool calls, state, traces, evals, and deployment.
 

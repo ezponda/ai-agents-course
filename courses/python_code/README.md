@@ -10,10 +10,13 @@ Python, from the raw agent loop up to LangGraph, all runnable in Google Colab.
 
 ## Who this course is for
 
-This course is for beginner-to-intermediate Python learners who want to understand what happens
-inside an agent, not only call a framework. You should be comfortable with functions, loops,
-lists and dictionaries, exceptions, and simple classes. Familiarity with APIs, notebooks, or
-`async` code helps, but is not required. No production AI experience is assumed.
+This course is for anyone with working Python knowledge who wants to understand what happens
+inside an agent, not only call a framework. It starts from first principles, but it is not an
+introduction to Python: you should be comfortable with functions, loops, lists and dictionaries,
+exceptions, and simple classes. Experienced Python developers can move quickly through the
+foundations and focus on design trade-offs, testing, reliability, and the projects. Familiarity
+with APIs, notebooks, or `async` code helps, but is not required. No production AI experience is
+assumed.
 
 The live-model notebooks use an OpenRouter API key. Several lessons and offline tests can still be
 run without one, including the durable runtime project in `32c`.
