@@ -1,12 +1,17 @@
 # Python AI Agents — Code Course
 
 The **code** counterpart of the no-code n8n course (`../n8n_no_code/`). Teaches AI agents in
-Python, from the raw agent loop up to LangGraph, all runnable in Google Colab.
+Python, from the raw agent loop up to LangGraph. The executable notebooks run in local JupyterLab
+or Google Colab.
 
 > **Live:** [ezponda.github.io/ai-agents-course/python](https://ezponda.github.io/ai-agents-course/python/).
 > Every push to `main` rebuilds and republishes it via `.github/workflows/deploy-book.yml`.
 > Build locally with `make build-python`. When you change anything under `_static/` (CSS/JS), use a
 > clean build so Sphinx recopies it: `jupyter-book build courses/python_code/book --all`.
+
+For executable cells with the book's MyST notes and dropdowns rendered, use the
+[local JupyterLab setup](book/local_setup.md). Colab remains available from each notebook as the
+zero-install alternative, with simplified Markdown rendering.
 
 ## Who this course is for
 
@@ -20,6 +25,25 @@ assumed.
 
 The live-model notebooks use an OpenRouter API key. Several lessons and offline tests can still be
 run without one, including the durable runtime project in `32c`.
+
+## Run locally
+
+Python 3.12 is the recommended environment. On macOS or Linux:
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r courses/python_code/requirements-local.txt
+python -m jupyter lab courses/python_code/book
+```
+
+`requirements-local.txt` installs the verified JupyterLab interface only. Run each notebook's
+first setup cell to install its lesson dependencies, or install `requirements.txt` once for the
+complete course. The [full setup guide](book/local_setup.md) includes PowerShell commands,
+troubleshooting, and the meaning of the launch, download, and GitHub toolbar buttons.
+
+With the environment active, `make install-python-lab` and `make lab-python` provide the same
+install and launch commands on systems with `make`.
 
 ## What you will be able to do
 
@@ -55,8 +79,8 @@ security boundaries, and measured evals. The
 - **Model-agnostic via one variable.** Every notebook has a single `MODEL = "..."` the student
   changes. The spine is the **OpenAI Chat Completions format via OpenRouter** (one key, any model —
   Claude / GPT / Gemini / Llama), chosen for durability and continuity with the n8n course.
-- **Colab-first.** Each notebook is self-contained (installs its own deps, downloads its own data)
-  and carries an "Open in Colab" badge.
+- **Local-first, Colab-compatible.** JupyterLab with `jupyterlab-myst` is the recommended executable
+  view. Each notebook remains self-contained and links to Colab as a zero-install fallback.
 - **Language: English** (same as the n8n book).
 
 ## Contents (41 notebooks)
@@ -96,6 +120,10 @@ next major to avoid a breaking release landing mid-lesson. See `requirements.txt
 | `pydantic-evals` | 2.5 | `>=2.0,<3.0` |
 | `langchain` / `langgraph` / `langchain-openai` | 1.3 / 1.2 / 1.3 | `>=1.x,<2.0` |
 | `sentence-transformers` (RAG) | 5.x | `>=3,<6` |
+
+The local notebook interface is verified with Python 3.12, JupyterLab 4.5.7, and
+`jupyterlab-myst` 2.7.0. These versions are pinned in `requirements-local.txt` because newer
+JupyterLab releases must be checked against the extension before upgrading.
 
 > **Note on PydanticAI:** the course uses the v2 API (`OpenAIChatModel`, `result.output`,
 > `output_type`). `OpenAIChatModel` is the forward-compatible name (the v1-only spelling was the now

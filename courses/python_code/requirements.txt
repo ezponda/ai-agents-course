@@ -1,6 +1,6 @@
 # Python AI Agents course — supported version ranges (last verified mid-2026).
 # Ranges cap at the next major so a breaking release can't land mid-lesson.
-# Each notebook also installs what it needs in its first cell (Colab-first);
+# Each notebook also installs what it needs in its first cell;
 # this file installs a compatible local environment; it is not a lockfile.
 
 # --- Block 0: pure Python core (verified against openai 2.x) ---

@@ -5,11 +5,13 @@ This file helps Claude Code maintain consistency when editing the student-facing
 ## Quick Reference
 
 **Build command:** `make build-python` (or `make clean-python && make build-python`)
+**Local notebook command:** `make install-python-lab && make lab-python`
 **Book source:** `courses/python_code/book/*.ipynb`
 **Book config:** `courses/python_code/book/_config.yml`
 **Table of contents:** `courses/python_code/book/_toc.yml`
 **Static assets:** `courses/python_code/book/_static/`
 **Dependencies:** `courses/python_code/requirements.txt`
+**Local notebook UI:** `courses/python_code/requirements-local.txt`
 **Output:** `courses/python_code/book/_build/html/`
 **Live URL:** `https://ezponda.github.io/ai-agents-course/python/`
 
@@ -40,15 +42,21 @@ Use `_toc.yml` as the source of truth for ordering. If notebook counts, block ra
 
 ## Design Decisions
 
-### 1. Colab-first
+### 1. Local-first, Colab-compatible
 
-Every notebook should work in Google Colab and locally in Jupyter.
+Executable notebooks should work in local JupyterLab and Google Colab.
 
-- Include an "Open in Colab" link near the top.
+- Recommend `[JupyterLab locally](local_setup.md)` for full MyST rendering.
+- Keep an "Open in Google Colab" link as the zero-install fallback and state that its formatting is
+  simplified.
 - Install notebook-specific dependencies in the first executable cell.
 - Avoid requiring local files unless the notebook writes or downloads them itself.
 - Avoid long-running servers inside Colab; write service files with `%%writefile` and explain how to run them locally or on a host.
 - Keep cells runnable top-to-bottom after a fresh runtime restart.
+
+The supported local interface is pinned in `requirements-local.txt`. Do not widen the JupyterLab
+range without checking `jupyter labextension list` and visually rendering a representative note
+and dropdown.
 
 Colab URL pattern:
 
@@ -134,7 +142,7 @@ Each notebook should have:
 
 1. A top-level `# Title`.
 2. A short "**What you will build:**" opening that names the concrete artifact or skill.
-3. A Colab/local run note.
+3. A local/Colab run note that links to `local_setup.md` and the current notebook's Colab URL.
 4. A first setup cell that installs only the dependencies needed for that notebook.
 5. A clear mental model before framework abstraction.
 6. Runnable code cells that build the idea incrementally.
@@ -231,7 +239,7 @@ Update all relevant places:
 2. `courses/python_code/README.md` - contents, block counts, and descriptions.
 3. Root `README.md` - only if the public course summary changes.
 4. Cross-references in other notebooks.
-5. Colab links inside the notebook itself.
+5. Local setup and Colab links inside the notebook itself.
 
 Then run:
 
@@ -251,7 +259,7 @@ jupyter-book build courses/python_code/book --all
 
 1. Create the `.ipynb` under `courses/python_code/book/`.
 2. Add it to `_toc.yml` in the right block.
-3. Start with title, "What you will build", Colab link, and setup cell.
+3. Start with title, "What you will build", local/Colab links, and setup cell.
 4. Use the course's OpenRouter pattern unless the lesson is intentionally offline.
 5. Add a "Common issues" dropdown if the notebook uses external APIs, frameworks, MCP, deploy, RAG, or server code.
 6. Update `courses/python_code/README.md`.

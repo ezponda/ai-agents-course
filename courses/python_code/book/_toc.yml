@@ -5,6 +5,9 @@ defaults:
   numbered: false
 
 parts:
+  - caption: "Start here"
+    chapters:
+      - file: local_setup
   - caption: "Block 0 · Pure Python core"
     chapters:
       - file: 01_setup_and_first_call

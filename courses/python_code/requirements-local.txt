@@ -1,0 +1,3 @@
+# Local notebook interface. Individual notebooks install their lesson dependencies.
+jupyterlab==4.5.7
+jupyterlab-myst==2.7.0

@@ -4,7 +4,7 @@ author: Alberto Ezpondaburu
 copyright: ""
 logo: ""
 
-# Execution settings — notebooks are Colab-first; don't execute at build (needs API keys)
+# Execution settings — students run notebooks locally or in Colab; builds do not need API keys.
 execute:
   execute_notebooks: "off"
 
@@ -33,16 +33,7 @@ repository:
   branch: main
   path_to_book: courses/python_code/book
 
-# Launch buttons: adds a launch dropdown in the top toolbar with "Colab" for each page.
-# (Uses the `repository` config above to build the GitHub path — resolves once the repo is pushed.)
+# The standard launch menu keeps Colab available as the zero-setup fallback.
 launch_buttons:
   notebook_interface: "classic"
   colab_url: "https://colab.research.google.com"
-
-# Swap the default rocket launch icon for the Colab logo (via custom CSS).
-sphinx:
-  config:
-    html_css_files:
-      - css/colab-btn.css
-    html_js_files:
-      - js/colab-direct.js

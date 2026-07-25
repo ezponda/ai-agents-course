@@ -1,7 +1,7 @@
 # AI Agents Course
 
 [![n8n](https://img.shields.io/badge/n8n-workflow%20automation-FF6D5A)](https://n8n.io/)
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://python.org/)
+[![Python](https://img.shields.io/badge/Python-3.10--3.12-3776AB?logo=python&logoColor=white)](https://python.org/)
 [![n8n Level](https://img.shields.io/badge/n8n-Beginner-brightgreen)](https://ezponda.github.io/ai-agents-course/)
 [![Python Track](https://img.shields.io/badge/Python-Code--first-blue)](https://ezponda.github.io/ai-agents-course/python/)
 
@@ -17,7 +17,7 @@ you want to inspect and implement the mechanisms yourself.
 | Course | For | Prerequisites | What you will build | Format |
 |--------|-----|---------------|---------------------|--------|
 | **[n8n No-Code](https://ezponda.github.io/ai-agents-course/)** | Beginners and automation practitioners | None | Visual workflows and agents with tools, memory, RAG, guardrails, evals, and seven projects | Jupyter Book + downloadable n8n workflows |
-| **[Python AI Agents](https://ezponda.github.io/ai-agents-course/python/)** | Python users who want to understand agent internals | Basic Python | The raw agent loop, typed agents, RAG, MCP, evals, LangGraph, deployment patterns, and capstone projects | 41 runnable, Colab-first notebooks |
+| **[Python AI Agents](https://ezponda.github.io/ai-agents-course/python/)** | Python users who want to understand agent internals | Basic Python | The raw agent loop, typed agents, RAG, MCP, evals, LangGraph, deployment patterns, and capstone projects | 41 notebooks (37 executable), local JupyterLab + Colab |
 
 ## Course Materials
 
@@ -51,8 +51,9 @@ The code counterpart, as a Jupyter Book:
 - **Book location:** `courses/python_code/book/`
 - **Live site:** [ezponda.github.io/ai-agents-course/python](https://ezponda.github.io/ai-agents-course/python/)
 
-Colab-first and model-agnostic (one `MODEL` variable via OpenRouter). The course assumes basic
-Python, but no previous experience building AI agents.
+Model-agnostic (one `MODEL` variable via OpenRouter) and executable in local JupyterLab or Colab.
+Local JupyterLab is recommended because it renders the course's MyST notes and dropdowns. The
+course assumes basic Python, but no previous experience building AI agents.
 
 **Course blocks:**
 1. Pure Python Core — Model calls, structured output, the tool loop, workflow patterns, memory,
@@ -68,6 +69,21 @@ Python, but no previous experience building AI agents.
 Onboarding · Atlas Resumable Coworker
 
 See `courses/python_code/README.md` for the full 41-notebook outline.
+
+## Run the Python Course Locally
+
+macOS/Linux quick start with Python 3.12 and an isolated environment:
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r courses/python_code/requirements-local.txt
+python -m jupyter lab courses/python_code/book
+```
+
+This installs JupyterLab with MyST rendering. Each notebook installs its lesson dependencies in
+its first code cell. See the complete [macOS, Linux, and Windows instructions](courses/python_code/book/local_setup.md),
+including troubleshooting and the optional full dependency install.
 
 ## Build the Books Locally
 
@@ -139,8 +155,10 @@ ai-agents-course/
 │       ├── book/                      # Jupyter Book source (served at /python/)
 │       │   ├── _config.yml
 │       │   ├── _toc.yml
-│       │   └── *.ipynb                # Chapter notebooks (runnable)
+│       │   ├── local_setup.md          # Local JupyterLab instructions
+│       │   └── *.ipynb                 # Course notebooks
 │       ├── README.md
+│       ├── requirements-local.txt      # JupyterLab + MyST interface
 │       └── requirements.txt           # supported ranges for running the notebooks
 ├── .github/
 │   └── workflows/
