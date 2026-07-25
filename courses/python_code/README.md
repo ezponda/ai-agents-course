@@ -86,10 +86,10 @@ Most notebooks carry a `🔧 Common issues (and fixes)` troubleshooting dropdown
 
 ## Versions — last verified
 
-The framework code was written and API-verified against these versions (mid-2026). Pins cap at the
+The framework code was written and API-verified against these versions (mid-2026). Ranges cap at the
 next major to avoid a breaking release landing mid-lesson. See `requirements.txt`.
 
-| Package | Verified | Pin |
+| Package | Verified | Range |
 |---------|----------|-----|
 | `openai` | 2.x | `>=2,<3` |
 | `pydantic-ai-slim[openai]` | **2.5** | `>=2.0,<3.0` |

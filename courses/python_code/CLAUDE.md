@@ -126,7 +126,7 @@ Current verified families:
 | MCP server | `fastmcp>=2.0,<3.0` |
 | Production | `fastapi>=0.115`, `uvicorn>=0.30`, `gradio>=5,<6` |
 
-When framework docs move, verify against the pinned course versions before changing lesson code. Do not use removed PydanticAI v1 names such as `OpenAIModel`; use `OpenAIChatModel`, `result.output`, and `output_type`.
+When framework docs move, verify against the course's supported version ranges before changing lesson code. Do not use removed PydanticAI v1 names such as `OpenAIModel`; use `OpenAIChatModel`, `result.output`, and `output_type`.
 
 ## Notebook Contract
 
@@ -260,7 +260,7 @@ jupyter-book build courses/python_code/book --all
 **Update framework code:**
 
 1. Check `courses/python_code/requirements.txt`.
-2. Verify the exact API against the pinned major version.
+2. Verify the exact API against the supported major version.
 3. Update install cells and prose together.
 4. Prefer one migration note in the relevant notebook or README over scattered warnings.
 5. Run the changed notebook cells when practical, then build the book.

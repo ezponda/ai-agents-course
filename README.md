@@ -141,7 +141,7 @@ ai-agents-course/
 │       │   ├── _toc.yml
 │       │   └── *.ipynb                # Chapter notebooks (runnable)
 │       ├── README.md
-│       └── requirements.txt           # pinned deps for running the notebooks
+│       └── requirements.txt           # supported ranges for running the notebooks
 ├── .github/
 │   └── workflows/
 │       └── deploy-book.yml            # Builds both books → GitHub Pages
