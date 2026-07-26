@@ -79,5 +79,4 @@ install at all.
 |---|---|
 | Jupyter uses a different Python environment | In JupyterLab, select the kernel from `.venv`, then restart the kernel. |
 | `ModuleNotFoundError` after opening a notebook | Run its first setup cell, or install the complete course requirements. |
-| The extension reports incompatible dependencies | Reinstall `requirements-local.txt`; the JupyterLab version is pinned deliberately. |
 | A live-model cell waits for input | Enter an OpenRouter key, or use the notebook's offline path when it has one. |

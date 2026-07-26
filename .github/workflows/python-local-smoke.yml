@@ -24,7 +24,7 @@ jobs:
           python-version: "3.12"
       - name: Install local notebook interface
         run: python -m pip install -r courses/python_code/requirements-local.txt
-      - name: Verify versions and extension
+      - name: Verify the pinned JupyterLab version
         run: |
-          python -c "from importlib.metadata import version; assert version('jupyterlab') == '4.5.7'; assert version('jupyterlab-myst') == '2.7.0'"
+          python -c "from importlib.metadata import version; assert version('jupyterlab') == '4.5.7'"
           python -m jupyter labextension list
