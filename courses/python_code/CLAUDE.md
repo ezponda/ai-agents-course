@@ -46,9 +46,13 @@ Use `_toc.yml` as the source of truth for ordering. If notebook counts, block ra
 
 Executable notebooks should work in local JupyterLab and Google Colab.
 
-- Recommend `[JupyterLab locally](local_setup.md)` for full MyST rendering.
-- Keep an "Open in Google Colab" link as the zero-install fallback and state that its formatting is
-  simplified.
+- Write notes and collapsible sections as portable Markdown/HTML, not MyST directives:
+  `<blockquote class="admonition note">` with a `<p class="admonition-title">`, and `<details>`
+  with `<summary>`. Both need a blank line after the opening tag or the Markdown inside is not
+  parsed. This renders in the book, JupyterLab, Colab, GitHub and VS Code from one source.
+- Recommend `[JupyterLab locally](local_setup.md)` and keep the "Open in Google Colab" link as the
+  zero-install option. Do not describe Colab as showing simplified or degraded formatting, and do
+  not claim JupyterLab is needed for MyST rendering — neither is true with portable source.
 - Install notebook-specific dependencies in the first executable cell.
 - Avoid requiring local files unless the notebook writes or downloads them itself.
 - Avoid long-running servers inside Colab; write service files with `%%writefile` and explain how to run them locally or on a host.

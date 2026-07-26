@@ -1,0 +1,126 @@
+/* Styling for the portable Markdown/HTML the notebooks are written in.
+ *
+ * The source uses plain <details> and blockquotes so it renders everywhere
+ * (Colab, GitHub, VS Code, JupyterLab). These rules give the book the same
+ * appearance the MyST directives produced, using the theme's own variables so
+ * light and dark follow automatically.
+ *
+ * WHY THE TWO CASES ARE HANDLED DIFFERENTLY — please do not "fix" the asymmetry:
+ *
+ *   Admonitions reuse the theme's own classes (`<blockquote class="admonition
+ *   note">`). The theme writes its ~45 admonition rules as the list
+ *   ".admonition, div.admonition", so a blockquote matches the ".admonition"
+ *   half of every one of them and inherits colour, bar, title band and icon for
+ *   free. Only the four aside.sidebar rules are element-specific, and the course
+ *   does not use them. That is why this file contains no admonition colours.
+ *
+ *   Dropdowns cannot do the same. sphinx-design's open/closed chevron is an
+ *   inline SVG that the directive injects into the markup, not something CSS
+ *   alone reproduces, and hand-writing its internal structure (summary spans,
+ *   content wrapper) would couple the source to that extension's internals. So
+ *   dropdowns use our own `.course-dropdown` classes and the chevron below is
+ *   redrawn with a CSS border, which is why these rules exist at all.
+ *
+ * ABOUT THE --sd-color-* VARIABLES USED BELOW:
+ *
+ *   They come from sphinx-design, which registers its stylesheet unconditionally
+ *   in its setup hook (it never checks whether any directive is used). So the
+ *   variables stay defined even after the last {dropdown} is gone from the
+ *   source. The fallbacks are only a safety net: they are fixed colours that do
+ *   NOT follow the light/dark theme, so if you ever see a dropdown header that
+ *   ignores the theme, the variable stopped being defined and the fallback is
+ *   what you are looking at.
+ */
+
+/* --- dropdowns ----------------------------------------------------- */
+
+details.course-dropdown {
+  border: 1px solid var(--pst-color-border);
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+details.course-dropdown > summary {
+  list-style: none;
+  cursor: pointer;
+  position: relative;
+  padding: 0.5rem 3em 0.5rem 1rem;
+  font-weight: 700;
+  color: var(--pst-color-text-base);
+}
+
+details.course-dropdown > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Chevron, rotated when open — sphinx-design used an inline SVG. */
+details.course-dropdown > summary::after {
+  content: "";
+  position: absolute;
+  right: 1.15rem;
+  top: 50%;
+  width: 0.5em;
+  height: 0.5em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-70%) rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+details.course-dropdown[open] > summary::after {
+  transform: translateY(-30%) rotate(-135deg);
+}
+
+details.course-dropdown[open] > summary {
+  border-bottom: 1px solid var(--pst-color-border);
+}
+
+details.course-dropdown-info {
+  --course-dropdown-color: var(--sd-color-info, #0dcaf0);
+}
+
+details.course-dropdown-info > summary {
+  background-color: var(--sd-color-info-bg, var(--pst-color-surface));
+  color: var(--sd-color-info-bg-text, var(--pst-color-text-base));
+}
+
+details.course-dropdown-secondary {
+  --course-dropdown-color: var(--sd-color-secondary, #6c757d);
+}
+
+details.course-dropdown-secondary > summary {
+  background-color: var(--sd-color-secondary-bg, var(--pst-color-surface));
+  color: var(--sd-color-secondary-bg-text, var(--pst-color-text-base));
+}
+
+/* The theme draws a coloured spine down the open body. */
+details.course-dropdown[open] {
+  border-left: 0.2rem solid var(--course-dropdown-color);
+}
+
+/* No wrapper element around the body, so pad the children directly. */
+details.course-dropdown > *:not(summary) {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+details.course-dropdown > *:nth-child(2) {
+  margin-top: 1rem;
+}
+
+details.course-dropdown > *:last-child {
+  margin-bottom: 1rem;
+}
+
+/* --- admonitions written as blockquotes ---------------------------- */
+
+/* Admonitions are written as <blockquote class="admonition note">, which the
+ * theme already styles (colour, bar, title band, icon). Only the base
+ * blockquote rule has to be neutralised: it is an element selector, so
+ * .admonition wins everywhere except the properties .admonition never sets. */
+blockquote.admonition {
+  color: inherit;
+  padding-left: 0;
+}
+
