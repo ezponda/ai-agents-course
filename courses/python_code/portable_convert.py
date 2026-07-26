@@ -96,11 +96,14 @@ def convert_admonitions(source: str, where: str) -> str:
         if close == -1:
             raise ConversionError(f"{where}: unclosed ```{{{kind}}} — no matching {marker}")
 
-        # A body fence of the same length would have closed the directive here.
-        # MyST tolerates it; a line-based matcher cannot tell the two apart, so
-        # refuse rather than silently truncate the admonition.
+        # A body fence at least as long as the opening marker would have closed
+        # the directive here. MyST tolerates it; a line-based matcher cannot tell
+        # the two apart, so refuse rather than silently truncate the admonition.
+        # A shorter inner fence is fine: it cannot close the outer one.
         for line in lines[index + 1 : close]:
-            if re.match(r"^`{3,}", line.strip()):
+            stripped = line.strip()
+            ticks = len(stripped) - len(stripped.lstrip("`"))
+            if ticks >= len(marker):
                 raise ConversionError(
                     f"{where}: ```{{{kind}}} contains a code fence of the same length "
                     f"({marker}). Re-open the directive with one more backtick, or "
@@ -152,6 +155,19 @@ def convert_dropdowns(source: str, where: str) -> str:
                 f"{where}: unclosed {marker}{{dropdown}} '{title.strip()[:40]}' — "
                 f"no matching {marker}. Fix the source before converting."
             )
+
+        # MyST applies typographic replacement to a directive title, but a
+        # <summary> is raw HTML and keeps whatever is written. Straight quotes,
+        # a double hyphen or three dots would silently render differently after
+        # conversion, so refuse and let the source be fixed instead.
+        for literal, replacement in (('"', "curly quotes"), ("'", "curly quotes"),
+                                     ("--", "an en dash"), ("...", "an ellipsis")):
+            if literal in title:
+                raise ConversionError(
+                    f"{where}: dropdown title contains {literal!r}, which MyST would "
+                    f"typeset but a <summary> would not. Use {replacement} in the "
+                    f"source: {title.strip()[:60]}"
+                )
 
         body = lines[index + 1 : close]
         color = "info"
