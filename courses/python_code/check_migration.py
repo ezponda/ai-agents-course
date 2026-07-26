@@ -37,6 +37,38 @@ def at_ref(path: Path, ref: str) -> dict:
     return json.loads(out.stdout)
 
 
+def code_blocks(text: str) -> list[str]:
+    """Fenced code blocks, scanned by line.
+
+    A regex would treat the closing fence of a ```{note} as the opening of a
+    code block and invent a block that is not there, which made two consecutive
+    admonitions look like a code change once converted.
+    """
+    blocks: list[str] = []
+    lines = text.split("\n")
+    index = 0
+    while index < len(lines):
+        stripped = lines[index].strip()
+        if not stripped.startswith("```"):
+            index += 1
+            continue
+        marker = "`" * (len(stripped) - len(stripped.lstrip("`")))
+        info = stripped[len(marker) :]
+        body: list[str] = []
+        index += 1
+        while index < len(lines) and lines[index].strip() != marker:
+            body.append(lines[index])
+            index += 1
+        index += 1
+        # A directive fence is not a code block, and its body is scanned
+        # separately so a code block inside it is still counted once.
+        if info.startswith("{"):
+            blocks.extend(code_blocks("\n".join(body)))
+        else:
+            blocks.append("\n".join(body).strip())
+    return blocks
+
+
 def article_text(page: Path) -> str:
     import html as H
 
@@ -126,8 +158,7 @@ def main() -> None:
             if la != lb:
                 links_changed += 1
                 failures.append(f"B {path.name} cell {i}: links changed")
-            fa = re.findall(r"```[a-z]*\n(.*?)```", sa, re.S)
-            fb = re.findall(r"```[a-z]*\n(.*?)```", sb, re.S)
+            fa, fb = code_blocks(sa), code_blocks(sb)
             if fa != fb:
                 fences_changed += 1
                 failures.append(f"B {path.name} cell {i}: fenced code changed")

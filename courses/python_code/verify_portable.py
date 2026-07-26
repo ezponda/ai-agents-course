@@ -70,7 +70,35 @@ def links_in(text: str) -> list[str]:
 
 
 def code_blocks(text: str) -> list[str]:
-    return [b.strip() for b in re.findall(r"```[a-z]*\n(.*?)```", text, re.S)]
+    """Fenced code blocks, scanned by line.
+
+    A regex would treat the closing fence of a ```{note} as the opening of a
+    code block and invent a block that is not there, which made two consecutive
+    admonitions look like a code change once converted.
+    """
+    blocks: list[str] = []
+    lines = text.split("\n")
+    index = 0
+    while index < len(lines):
+        stripped = lines[index].strip()
+        if not stripped.startswith("```"):
+            index += 1
+            continue
+        marker = "`" * (len(stripped) - len(stripped.lstrip("`")))
+        info = stripped[len(marker) :]
+        body: list[str] = []
+        index += 1
+        while index < len(lines) and lines[index].strip() != marker:
+            body.append(lines[index])
+            index += 1
+        index += 1
+        # A directive fence is not a code block, and its body is scanned
+        # separately so a code block inside it is still counted once.
+        if info.startswith("{"):
+            blocks.extend(code_blocks("\n".join(body)))
+        else:
+            blocks.append("\n".join(body).strip())
+    return blocks
 
 
 def table_rows(text: str) -> int:
