@@ -1,8 +1,8 @@
 # Run the Course Locally
 
-Local JupyterLab is the recommended way to execute the course. The
-[`jupyterlab-myst`](https://mystmd.org/guide/quickstart-jupyter-lab-myst) extension renders the
-notes, warnings, and dropdowns used by the book while keeping every Python cell executable.
+Local JupyterLab is the recommended way to execute the course. The notebooks are written in
+portable Markdown, so the notes, warnings and collapsible sections render the same way here as they
+do in the book, in Colab, on GitHub and in VS Code. No editor extension is needed.
 
 Use **Python 3.12**. The setup below creates an isolated `.venv` in the repository and installs
 only the notebook interface. Each notebook installs its own lesson dependencies in its first code
@@ -64,20 +64,19 @@ written into the notebook. Offline lessons and tests do not need a key. Create o
 
 The relevant toolbar actions above each notebook are:
 
-- **Launch (rocket):** opens a menu with Google Colab. Colab needs no local setup, but it shows
-  MyST notes and dropdowns as plain source text.
+- **Launch (rocket):** opens a menu with Google Colab, which needs no local setup.
 - **Download:** downloads the current `.ipynb` file.
 - **GitHub:** opens the source repository.
 
-The published Jupyter Book remains the canonical reading view. Use local JupyterLab when you want
-the same rich Markdown and executable cells together; use Colab when zero setup matters more than
-formatting.
+The published Jupyter Book remains the canonical reading view, and it is the only one with the
+course navigation. For running the code, choose on setup rather than on formatting: local
+JupyterLab if you want to keep your work in the repository, Colab if you want to start with no
+install at all.
 
 ## Common issues
 
 | Symptom | Fix |
 |---|---|
-| MyST blocks appear as raw `{note}` or `{dropdown}` text | Start JupyterLab from the `.venv` created above. Run `python -m jupyter labextension list` and confirm `jupyterlab-myst` is `enabled OK`. |
 | Jupyter uses a different Python environment | In JupyterLab, select the kernel from `.venv`, then restart the kernel. |
 | `ModuleNotFoundError` after opening a notebook | Run its first setup cell, or install the complete course requirements. |
 | The extension reports incompatible dependencies | Reinstall `requirements-local.txt`; the JupyterLab version is pinned deliberately. |

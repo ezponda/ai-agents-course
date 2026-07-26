@@ -9,9 +9,9 @@ or Google Colab.
 > Build locally with `make build-python`. When you change anything under `_static/` (CSS/JS), use a
 > clean build so Sphinx recopies it: `jupyter-book build courses/python_code/book --all`.
 
-For executable cells with the book's MyST notes and dropdowns rendered, use the
-[local JupyterLab setup](book/local_setup.md). Colab remains available from each notebook as the
-zero-install alternative, with simplified Markdown rendering.
+To run the code, use the [local JupyterLab setup](book/local_setup.md). Colab remains available
+from each notebook as the zero-install alternative; the notebooks are written in portable Markdown,
+so both render the notes and collapsible sections the same way.
 
 ## Who this course is for
 
@@ -79,8 +79,9 @@ security boundaries, and measured evals. The
 - **Model-agnostic via one variable.** Every notebook has a single `MODEL = "..."` the student
   changes. The spine is the **OpenAI Chat Completions format via OpenRouter** (one key, any model —
   Claude / GPT / Gemini / Llama), chosen for durability and continuity with the n8n course.
-- **Local-first, Colab-compatible.** JupyterLab with `jupyterlab-myst` is the recommended executable
-  view. Each notebook remains self-contained and links to Colab as a zero-install fallback.
+- **Local-first, Colab-compatible.** Local JupyterLab is the recommended executable view. Each
+  notebook remains self-contained, is written in portable Markdown so it renders correctly wherever
+  it is opened, and links to Colab as a zero-install fallback.
 - **Language: English** (same as the n8n book).
 
 ## Contents (41 notebooks)
@@ -121,9 +122,8 @@ next major to avoid a breaking release landing mid-lesson. See `requirements.txt
 | `langchain` / `langgraph` / `langchain-openai` | 1.3 / 1.2 / 1.3 | `>=1.x,<2.0` |
 | `sentence-transformers` (RAG) | 5.x | `>=3,<6` |
 
-The local notebook interface is verified with Python 3.12, JupyterLab 4.5.7, and
-`jupyterlab-myst` 2.7.0. These versions are pinned in `requirements-local.txt` because newer
-JupyterLab releases must be checked against the extension before upgrading.
+The local notebook interface is verified with Python 3.12 and JupyterLab 4.5.7, pinned in
+`requirements-local.txt`. The notebooks need no editor extension to render.
 
 > **Note on PydanticAI:** the course uses the v2 API (`OpenAIChatModel`, `result.output`,
 > `output_type`). `OpenAIChatModel` is the forward-compatible name (the v1-only spelling was the now

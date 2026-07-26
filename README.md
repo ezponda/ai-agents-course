@@ -52,8 +52,8 @@ The code counterpart, as a Jupyter Book:
 - **Live site:** [ezponda.github.io/ai-agents-course/python](https://ezponda.github.io/ai-agents-course/python/)
 
 Model-agnostic (one `MODEL` variable via OpenRouter) and executable in local JupyterLab or Colab.
-Local JupyterLab is recommended because it renders the course's MyST notes and dropdowns. The
-course assumes basic Python, but no previous experience building AI agents.
+The notebooks are written in portable Markdown, so they render the same in either one. The course
+assumes basic Python, but no previous experience building AI agents.
 
 **Course blocks:**
 1. Pure Python Core — Model calls, structured output, the tool loop, workflow patterns, memory,
