@@ -102,7 +102,8 @@ def main() -> None:
 
     myst_re = re.compile(r"^:{3,}|^`{3,}\{(note|tip|warning|important|dropdown)\}|^:color:", re.M)
     strip_re = [
-        (re.compile(r"^:{3,}\{dropdown\}.*$", re.M), ""),
+        # Keep the title: the converted side keeps it inside <summary>.
+        (re.compile(r"^:{3,}\{dropdown\}[ \t]*", re.M), ""),
         (re.compile(r"^:color:.*$", re.M), ""),
         (re.compile(r"^:{3,}$", re.M), ""),
         (re.compile(r"^`{3,}\{(note|tip|warning|important)\}$", re.M), ""),
