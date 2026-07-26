@@ -96,6 +96,17 @@ def convert_admonitions(source: str, where: str) -> str:
         if close == -1:
             raise ConversionError(f"{where}: unclosed ```{{{kind}}} — no matching {marker}")
 
+        # A body fence of the same length would have closed the directive here.
+        # MyST tolerates it; a line-based matcher cannot tell the two apart, so
+        # refuse rather than silently truncate the admonition.
+        for line in lines[index + 1 : close]:
+            if re.match(r"^`{3,}", line.strip()):
+                raise ConversionError(
+                    f"{where}: ```{{{kind}}} contains a code fence of the same length "
+                    f"({marker}). Re-open the directive with one more backtick, or "
+                    f"convert this cell by hand."
+                )
+
         body = lines[index + 1 : close]
         while body and not body[0].strip():
             body.pop(0)
