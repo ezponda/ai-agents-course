@@ -81,7 +81,7 @@ python -m pip install -r courses/python_code/requirements-local.txt
 python -m jupyter lab courses/python_code/book
 ```
 
-This installs JupyterLab with MyST rendering. Each notebook installs its lesson dependencies in
+This installs JupyterLab. Each notebook installs its lesson dependencies in
 its first code cell. See the complete [macOS, Linux, and Windows instructions](courses/python_code/book/local_setup.md),
 including troubleshooting and the optional full dependency install.
 
@@ -158,7 +158,7 @@ ai-agents-course/
 │       │   ├── local_setup.md          # Local JupyterLab instructions
 │       │   └── *.ipynb                 # Course notebooks
 │       ├── README.md
-│       ├── requirements-local.txt      # JupyterLab + MyST interface
+│       ├── requirements-local.txt      # Local notebook interface (JupyterLab)
 │       └── requirements.txt           # supported ranges for running the notebooks
 ├── .github/
 │   └── workflows/

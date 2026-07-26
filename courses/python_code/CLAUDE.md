@@ -295,6 +295,18 @@ Update all references, then rebuild.
 
 ## Validation
 
+**Opening a notebook in JupyterLab rewrites it on save.** It adds an `id` to every cell, sets
+`kernelspec.display_name` to `Python 3 (ipykernel)` and expands `language_info` from one key to
+seven. None of that changes the rendered page, but it produces a diff of hundreds of lines that
+hides the real change, and it is inconsistent: most notebooks in this repo carry no cell ids.
+
+After reviewing anything by hand, run `git status` before committing and revert notebooks you only
+opened:
+
+```bash
+git checkout -- courses/python_code/book/<notebook>.ipynb
+```
+
 Minimum check:
 
 ```bash
