@@ -52,7 +52,7 @@ def strip_markup(text: str) -> str:
     text = re.sub(r":{3,}\{dropdown\}\s*", "", text)
     text = re.sub(r"^:color:.*$", "", text, flags=re.M)
     text = re.sub(r"^:{3,}$", "", text, flags=re.M)
-    text = re.sub(r"```\{(note|tip|warning|important)\}", "", text)
+    text = re.sub(r"`{3,}\{(note|tip|warning|important)\}", "", text)
     text = re.sub(r"</?details[^>]*>|</?summary>", "", text)
     # The converted admonition carries its label in a title element the source
     # never had; drop the whole element so only the body is compared.
@@ -60,7 +60,7 @@ def strip_markup(text: str) -> str:
     text = re.sub(r"</?blockquote[^>]*>", "", text)
     # The launch note is deliberately re-worded; compare only that it is there.
     text = re.sub(r">?\s*\*\*Run it:\*\*.*", "", text)
-    text = re.sub(r"^```$", "", text, flags=re.M)
+    text = re.sub(r"^`{3,}$", "", text, flags=re.M)
     text = re.sub(r"<code>|</code>|<strong>|</strong>", "`", text)
     return re.sub(r"\s+", " ", text).strip()
 
